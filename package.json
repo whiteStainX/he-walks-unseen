@@ -1,0 +1,23 @@
+{
+  "name": "he-walks-unseen",
+  "version": "0.1.0",
+  "description": "A narrative RPG with a Git-like timeline mechanic.",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.tsx",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "ink": "^5.0.1",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
