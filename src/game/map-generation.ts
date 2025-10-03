@@ -1,5 +1,4 @@
-import { RNG } from 'rot-js';
-import Digger from 'rot-js/lib/map/digger.js';
+import { RNG, Map } from 'rot-js';
 import type { Tile } from '../engine/state.js';
 
 export const WALL_TILE: Tile = { char: '#', walkable: false, transparent: false };
@@ -11,8 +10,8 @@ export type TileMap = Tile[][];
 export function generateMap(width: number, height: number): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number } } {
   const map = Array.from({ length: height }, () => Array.from({ length: width }, () => WALL_TILE));
 
-  const digger = new Digger(width, height);
-  const rooms = [];
+  const digger = new Map.Digger(width, height);
+  const rooms: any[] = [];
   let playerStart = { x: 0, y: 0 };
   let exitPosition = { x: 0, y: 0 };
 

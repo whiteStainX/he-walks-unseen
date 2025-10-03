@@ -1,6 +1,5 @@
 import type { Actor, GameState, Point } from '../engine/state.js';
-import { FOV } from 'rot-js';
-import Path from 'rot-js/lib/path/astar.js';
+import { FOV, Path } from 'rot-js';
 import { handleAttack } from './combat.js';
 
 /**
