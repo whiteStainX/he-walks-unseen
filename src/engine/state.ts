@@ -26,10 +26,22 @@ export interface Tile {
 
 import type { GamePhase } from './fsm.js';
 
+export type PotionEffect = 'heal' | 'damage';
+
+export interface Item {
+  id: string;
+  name: string;
+  char: string;
+  position: Point;
+  effect: PotionEffect;
+  potency: number; // e.g., how much to heal or damage
+}
+
 // The complete snapshot of the game world at any given moment.
 export interface GameState {
   phase: GamePhase;
   actors: Actor[];
+  items: Item[];
   map: {
     tiles: Tile[][]; // 2D array for map layout
     width: number;

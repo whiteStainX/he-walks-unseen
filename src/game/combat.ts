@@ -22,27 +22,28 @@ export function handleAttack(
     message += `, but it has no effect.`;
   }
 
-  // Update the defender's HP or remove them if they are defeated
-  const newActors = state.actors
-    .map((actor) => {
-      if (actor.id === defender.id) {
-        return {
-          ...actor,
-          hp: { ...actor.hp, current: newDefenderHp },
-        };
-      }
-      return actor;
-    })
-    .filter((actor) => {
-      // If the actor is the defender, check if they have been defeated
-      if (actor.id === defender.id) {
-        if (newDefenderHp <= 0) {
-          message += ` ${defender.name} dies!`;
-          return false; // Remove the defeated actor
-        }
-      }
-      return true;
-    });
+  // Update the defender's HP
+  let newActors = state.actors.map((actor) => {
+    if (actor.id === defender.id) {
+      return {
+        ...actor,
+        hp: { ...actor.hp, current: newDefenderHp },
+      };
+    }
+    return actor;
+  });
+
+  // Check if the defender was defeated
+  if (newDefenderHp <= 0) {
+    message += ` ${defender.name} dies!`;
+    newActors = newActors.filter((actor) => actor.id !== defender.id);
+  } else {
+    // Add remaining HP to the message if the defender survived
+    const defenderData = newActors.find((a) => a.id === defender.id);
+    if (defenderData) {
+      message += ` (${defenderData.hp.current}/${defenderData.hp.max} HP left).`;
+    }
+  }
 
   return {
     newState: {

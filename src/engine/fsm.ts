@@ -1,6 +1,13 @@
 import { eventBus } from './events.js';
 
-export type GamePhase = 'MainMenu' | 'Playing' | 'Dialogue' | 'Paused' | 'Win' | 'Loss';
+export type GamePhase =
+  | 'MainMenu'
+  | 'PlayerTurn'
+  | 'EnemyTurn'
+  | 'Dialogue'
+  | 'Paused'
+  | 'Win'
+  | 'Loss';
 
 export class FiniteStateMachine {
   private currentState: GamePhase;
