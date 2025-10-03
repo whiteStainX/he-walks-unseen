@@ -46,6 +46,7 @@ export function createInitialGameState(message?: string): GameState {
     id: 'player',
     name: 'Player',
     char: '@',
+    color: 'white',
     position: playerStart,
     hp: { current: 10, max: 10 },
     attack: 2,
@@ -67,6 +68,7 @@ export function createInitialGameState(message?: string): GameState {
         id: nanoid(),
         name: 'Goblin',
         char: 'g',
+        color: 'lightgreen',
         position: enemyPosition,
         hp: { current: 5, max: 5 },
         attack: 1,
@@ -90,6 +92,7 @@ export function createInitialGameState(message?: string): GameState {
         id: nanoid(),
         name: 'Unidentified Potion',
         char: '!',
+        color: 'magenta',
         position: potionPosition,
         effect: randomEffect,
         potency: randomEffect === 'heal' ? 5 : 3, // Heal more than damage
@@ -109,5 +112,6 @@ export function createInitialGameState(message?: string): GameState {
       height: MAP_HEIGHT,
     },
     message: message ?? 'Welcome! Use the arrow keys or WASD to move. Find the > to exit.',
+    messageType: 'info',
   };
 }

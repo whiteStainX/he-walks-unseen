@@ -7,11 +7,13 @@ import type { Actor, GameState } from '../engine/state.js';
  * @param state The current game state.
  * @returns The new game state after the attack.
  */
+import type { Actor, GameState, MessageType } from '../engine/state.js';
+
 export function handleAttack(
   attacker: Actor,
   defender: Actor,
   state: GameState
-): { newState: GameState; message: string } {
+): GameState {
   const damage = Math.max(0, attacker.attack - defender.defense);
   const newDefenderHp = defender.hp.current - damage;
 
@@ -21,6 +23,8 @@ export function handleAttack(
   } else {
     message += `, but it has no effect.`;
   }
+
+  let messageType: MessageType = 'info';
 
   // Update the defender's HP
   let newActors = state.actors.map((actor) => {
@@ -37,19 +41,23 @@ export function handleAttack(
   if (newDefenderHp <= 0) {
     message += ` ${defender.name} dies!`;
     newActors = newActors.filter((actor) => actor.id !== defender.id);
+    messageType = 'death';
   } else {
     // Add remaining HP to the message if the defender survived
     const defenderData = newActors.find((a) => a.id === defender.id);
     if (defenderData) {
       message += ` (${defenderData.hp.current}/${defenderData.hp.max} HP left).`;
     }
+    // Set message type based on who was hit
+    if (damage > 0 && defender.isPlayer) {
+      messageType = 'damage';
+    }
   }
 
   return {
-    newState: {
-      ...state,
-      actors: newActors,
-    },
+    ...state,
+    actors: newActors,
     message,
+    messageType,
   };
 }

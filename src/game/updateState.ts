@@ -27,10 +27,10 @@ import { handleAttack } from './combat.js';
 
 function handlePlayerAction(state: GameState, action: GameAction): GameState {
   const player = state.actors.find((a) => a.isPlayer);
-  if (!player) return state; // Should not happen
+  if (!player) return state;
 
   const delta = MOVEMENT_DELTAS[action];
-  if (!delta) return state; // Not a turn-passing action
+  if (!delta) return state;
 
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
@@ -41,8 +41,8 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
   );
 
   if (targetEnemy) {
-    const { newState, message } = handleAttack(player, targetEnemy, state);
-    return { ...newState, message, phase: 'EnemyTurn' };
+    const stateAfterAttack = handleAttack(player, targetEnemy, state);
+    return { ...stateAfterAttack, phase: 'EnemyTurn' };
   }
 
   // Check for blocked tiles
@@ -54,7 +54,7 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       targetY >= state.map.height
         ? "You can't step beyond the treeline."
         : 'A wall blocks your way.';
-    return { ...state, message: boundaryMessage }; // No turn passes
+    return { ...state, message: boundaryMessage, messageType: 'info' }; // No turn passes
   }
 
   // The player is moving to a new tile
@@ -65,6 +65,7 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
   );
 
   let message = delta.successMessage;
+  let messageType: import('/app/src/engine/state.js').MessageType = 'info';
   let finalActors = actorsAfterPlayerMove;
   let finalItems = state.items;
 
@@ -83,9 +84,11 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
         playerAfterMove.hp.current + targetItem.potency
       );
       message = `You drink a potion and feel refreshed, gaining ${targetItem.potency} HP.`;
+      messageType = 'heal';
     } else if (targetItem.effect === 'damage') {
       newPlayerHp -= targetItem.potency;
       message = `The potion burns your throat! You lose ${targetItem.potency} HP.`;
+      messageType = 'damage';
     }
 
     const updatedPlayer = {
@@ -98,7 +101,6 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
     );
     finalItems = state.items.filter((item) => item.id !== targetItem.id);
 
-    // Check for death after drinking a damage potion
     if (newPlayerHp <= 0) {
       return {
         ...state,
@@ -106,11 +108,12 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
         items: finalItems,
         phase: 'Loss',
         message: `${message} You have been defeated.`,
+        messageType: 'death',
       };
     }
   }
 
-  // Check for win condition on the target tile
+  // Check for win condition
   const isExit = state.map.tiles[targetY][targetX].char === '>';
   if (isExit) {
     return {
@@ -119,15 +122,17 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       items: finalItems,
       phase: 'Win',
       message: 'You have escaped the dungeon!',
+      messageType: 'win',
     };
   }
 
-  // End of turn: transition to enemy turn
+  // End of turn
   return {
     ...state,
     actors: finalActors,
     items: finalItems,
     message,
+    messageType,
     phase: 'EnemyTurn',
   };
 }
@@ -150,6 +155,7 @@ function handleEnemyTurns(state: GameState): GameState {
       ...stateAfterEnemyTurns,
       phase: 'Loss',
       message: 'You have been defeated.',
+      messageType: 'death',
     };
   }
 

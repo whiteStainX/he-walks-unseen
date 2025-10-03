@@ -1,19 +1,45 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { GameState } from '../engine/state.js';
+import type { GameState, MessageType } from '../engine/state.js';
 
 interface Props {
   state: GameState;
 }
 
+// Helper to determine the color for a message based on its type
+const getMessageColor = (messageType: MessageType) => {
+  switch (messageType) {
+    case 'damage':
+    case 'death':
+      return 'red';
+    case 'heal':
+      return 'green';
+    case 'win':
+      return 'yellow'; // A bright color for a major event
+    default:
+      return 'white'; // For 'info'
+  }
+};
+
+interface DisplayTile {
+  char: string;
+  color: string;
+  backgroundColor?: string;
+}
+
 const MapView: React.FC<Props> = ({ state }) => {
-  const { actors, items, map, message } = state;
+  const { actors, items, map, message, messageType } = state;
   const player = actors.find((a) => a.isPlayer);
 
-  // Start with the base map tiles
-  const displayTiles = map.tiles.map((row) => row.map((tile) => tile.char));
+  // Create a grid of display objects, starting with the base map tiles
+  const displayGrid: DisplayTile[][] = map.tiles.map((row) =>
+    row.map((tile) => ({
+      char: tile.char,
+      color: tile.walkable ? 'grey' : 'white', // Dim floors, bright walls
+    }))
+  );
 
-  // Overlay items on the map first
+  // Overlay items on the map
   for (const item of items) {
     if (
       item.position.y >= 0 &&
@@ -21,7 +47,11 @@ const MapView: React.FC<Props> = ({ state }) => {
       item.position.x >= 0 &&
       item.position.x < map.width
     ) {
-      displayTiles[item.position.y][item.position.x] = item.char;
+      displayGrid[item.position.y][item.position.x] = {
+        ...displayGrid[item.position.y][item.position.x],
+        char: item.char,
+        color: item.color || 'white',
+      };
     }
   }
 
@@ -33,8 +63,19 @@ const MapView: React.FC<Props> = ({ state }) => {
       actor.position.x >= 0 &&
       actor.position.x < map.width
     ) {
-      displayTiles[actor.position.y][actor.position.x] = actor.char;
+      displayGrid[actor.position.y][actor.position.x] = {
+        ...displayGrid[actor.position.y][actor.position.x],
+        char: actor.char,
+        color: actor.color || 'white',
+      };
     }
+  }
+
+  // Highlight the player's position
+  if (player) {
+    displayGrid[player.position.y][player.position.x].backgroundColor = 'yellow';
+    // Make the player character black for better contrast on a yellow background
+    displayGrid[player.position.y][player.position.x].color = 'black';
   }
 
   const enemies = actors.filter((a) => !a.isPlayer);
@@ -43,14 +84,28 @@ const MapView: React.FC<Props> = ({ state }) => {
     <Box flexDirection="column" paddingX={2}>
       <Box flexDirection="column" alignItems="center" marginBottom={1}>
         <Text bold>He Walks Unseen</Text>
-        {player && <Text>HP: {player.hp.current}/{player.hp.max}</Text>}
+        {player && (
+          <Text>
+            HP:{' '}
+            <Text color={player.hp.current < player.hp.max * 0.3 ? 'red' : 'green'}>
+              {player.hp.current}
+            </Text>
+            /{player.hp.max}
+          </Text>
+        )}
       </Box>
 
       <Box flexDirection="row" justifyContent="center">
         {/* Map View */}
-        <Box flexDirection="column" alignItems="center">
-          {displayTiles.map((row, y) => (
-            <Text key={y}>{row.join(' ')}</Text>
+        <Box flexDirection="column" alignItems="flex-start">
+          {displayGrid.map((row, y) => (
+            <Box key={y} flexDirection="row">
+              {row.map((tile, x) => (
+                <Text key={`${x},${y}`} color={tile.color} backgroundColor={tile.backgroundColor}>
+                  {tile.char}{' '}
+                </Text>
+              ))}
+            </Box>
           ))}
         </Box>
 
@@ -66,7 +121,10 @@ const MapView: React.FC<Props> = ({ state }) => {
             <Text bold>Enemies</Text>
             {enemies.map((enemy) => (
               <Text key={enemy.id}>
-                {enemy.name} ({enemy.char}): {enemy.hp.current}/{enemy.hp.max} HP
+                <Text color={enemy.color || 'white'}>
+                  {enemy.name} ({enemy.char})
+                </Text>
+                : {enemy.hp.current}/{enemy.hp.max} HP
               </Text>
             ))}
           </Box>
@@ -74,7 +132,7 @@ const MapView: React.FC<Props> = ({ state }) => {
       </Box>
 
       <Box marginTop={1} paddingX={2} borderStyle="round">
-        <Text>{message}</Text>
+        <Text color={getMessageColor(messageType)}>{message}</Text>
       </Box>
     </Box>
   );
