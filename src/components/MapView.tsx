@@ -7,24 +7,29 @@ interface Props {
 }
 
 const MapView: React.FC<Props> = ({ state }) => {
-  const { player, map, message } = state;
+  const { actors, map, message } = state;
+  const player = actors.find((a) => a.isPlayer);
 
-  const displayTiles = map.tiles.map((row) => [...row]);
+  // Start with the base map tiles
+  const displayTiles = map.tiles.map((row) => row.map((tile) => tile.char));
 
-  if (
-    player.position.y >= 0 &&
-    player.position.y < map.height &&
-    player.position.x >= 0 &&
-    player.position.x < map.width
-  ) {
-    displayTiles[player.position.y][player.position.x] = '@';
+  // Overlay actors on the map
+  for (const actor of actors) {
+    if (
+      actor.position.y >= 0 &&
+      actor.position.y < map.height &&
+      actor.position.x >= 0 &&
+      actor.position.x < map.width
+    ) {
+      displayTiles[actor.position.y][actor.position.x] = actor.char;
+    }
   }
 
   return (
     <Box flexDirection="column" paddingX={2}>
       <Box flexDirection="column" alignItems="center" marginBottom={1}>
         <Text bold>He Walks Unseen</Text>
-        <Text>HP: {player.hp}</Text>
+        {player && <Text>HP: {player.hp.current}/{player.hp.max}</Text>}
       </Box>
 
       <Box flexDirection="column" alignItems="center">

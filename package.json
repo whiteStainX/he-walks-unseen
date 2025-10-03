@@ -7,7 +7,7 @@
   "scripts": {
     "start": "tsx src/main.tsx",
     "build": "tsc",
-    "test": "jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "dependencies": {
     "geotic": "^4.3.2",

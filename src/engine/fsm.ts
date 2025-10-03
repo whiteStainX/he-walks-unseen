@@ -1,19 +1,19 @@
 import { eventBus } from './events.js';
 
-export type GameState = 'MainMenu' | 'Playing' | 'Dialogue' | 'Paused';
+export type GamePhase = 'MainMenu' | 'Playing' | 'Dialogue' | 'Paused' | 'Win' | 'Loss';
 
 export class FiniteStateMachine {
-  private currentState: GameState;
+  private currentState: GamePhase;
 
-  constructor(initialState: GameState) {
+  constructor(initialState: GamePhase) {
     this.currentState = initialState;
   }
 
-  public getState(): GameState {
+  public getState(): GamePhase {
     return this.currentState;
   }
 
-  public transition(newState: GameState): void {
+  public transition(newState: GamePhase): void {
     if (this.currentState !== newState) {
       const oldState = this.currentState;
       this.currentState = newState;
