@@ -1,40 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { render, useApp, useInput } from 'ink';
-import { getInitialState, update } from './engine/game.js';
-import { GameAction } from './input/actions.js';
-import { resolveAction } from './input/keybindings.js';
-import MapView from './components/MapView.js';
-import type { GameState } from './engine/state.js';
+import { render, Text, Box } from 'ink';
+import { loadResources } from './engine/resourceManager.js';
+import { eventBus } from './engine/events.js';
 
 const App = () => {
-	const [state, setState] = useState<GameState>(getInitialState);
-	const { exit } = useApp();
+  const [message, setMessage] = useState('Initializing engine...');
 
-	// This effect will run after a render, checking if the game's state
-	// indicates it's time to quit. This is cleaner than exiting directly
-	// from the input handler.
-	useEffect(() => {
-		if (state.message === 'Quitting...') {
-			exit();
-		}
-	}, [state.message, exit]);
+  useEffect(() => {
+    const initializeEngine = async () => {
+      try {
+        await loadResources('./data');
+        // Emit an event to signal that the engine is ready
+        eventBus.emit('engineReady', 'Engine Initialized Successfully!');
+      } catch (error) {
+        console.error(error);
+        eventBus.emit('engineError', 'Failed to initialize engine.');
+      }
+    };
 
-        useInput((input, key) => {
-                // Allow Ctrl+C to exit at any time.
-                if (key.ctrl && input === 'c') {
-                        setState((prev) => update(prev, GameAction.QUIT));
-                        return;
-                }
+    const handleEngineReady = (newMessage: string) => {
+      setMessage(newMessage);
+    };
 
-                // Determine the action from the keybinding map.
-                const action = resolveAction(input, key);
+    const handleEngineError = (errorMessage: string) => {
+        setMessage(errorMessage);
+    }
 
-                if (action !== undefined) {
-                        setState((prev) => update(prev, action));
-                }
-        });
+    eventBus.on('engineReady', handleEngineReady);
+    eventBus.on('engineError', handleEngineError);
 
-	return <MapView state={state} />;
+    initializeEngine();
+
+    // Cleanup listener on unmount
+    return () => {
+      eventBus.off('engineReady', handleEngineReady);
+      eventBus.off('engineError', handleEngineError);
+    };
+  }, []);
+
+  return (
+    <Box borderStyle="round" padding={1}>
+      <Text>{message}</Text>
+    </Box>
+  );
 };
 
 render(<App />);

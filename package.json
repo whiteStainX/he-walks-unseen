@@ -6,18 +6,37 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/main.tsx",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest"
   },
   "dependencies": {
-    "ink": "^5.0.1",
-    "react": "^18.3.1"
+    "geotic": "^4.3.2",
+    "ink": "^5.2.1",
+    "nanoid": "^5.1.6",
+    "react": "^18.3.1",
+    "rot-js": "^2.2.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.6.2",
+    "@types/react": "^18.3.25",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.4",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.3"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/whiteStainX/he-walks-unseen.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/whiteStainX/he-walks-unseen/issues"
+  },
+  "homepage": "https://github.com/whiteStainX/he-walks-unseen#readme"
 }

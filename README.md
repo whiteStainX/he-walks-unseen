@@ -13,12 +13,18 @@ The core mechanic is a **"Git-like" narrative engine** that allows the player to
 This project is built with a strict **3-layer decoupled architecture** to ensure a clean separation of concerns.
 
 1.  **Data Layer (`/data`)**
-    *   **Responsibility:** Holds static game data, like map layouts, in JSON format.
-    *   **Implementation:** Plain JSON files.
+    *   **Responsibility:** Holds static game data, like map layouts, items, and dialogue, in JSON format.
+    *   **Implementation:** Plain JSON files. Loaded on startup by the `ResourceManager`.
 
 2.  **Logic Layer (`/src/engine`)**
     *   **Responsibility:** Contains the complete, "headless" game logic. It manages the `GameState`, implements all game rules, and handles the narrative engine's branching system.
     *   **Constraint:** This layer is pure TypeScript and contains **no UI code**. It cannot import from `ink` or `react`.
+    *   **Core Modules:**
+        *   **Event Bus (`events.ts`):** A global `EventEmitter` for decoupled communication between engine systems.
+        *   **Resource Manager (`resourceManager.ts`):** Loads and caches all game data from the `/data` directory at startup.
+        *   **Finite State Machine (`fsm.ts`):** Manages high-level game states (e.g., `MainMenu`, `Playing`, `Dialogue`).
+        *   **Narrative Engine (`narrativeEngine.ts`):** Implements the Git-like history system for saving state (`commit`), creating alternate timelines (`branch`), and switching between them (`checkout`).
+        *   **Script Processor (`scriptProcessor.ts`):** Executes simple, command-based scripts for in-game events (e.g., dialogue, cutscenes).
 
 3.  **Presentation Layer (`/src/components`, `main.tsx`)**
     *   **Responsibility:** Renders the UI using [Ink](https://github.com/vadimdemedes/ink) based on the `GameState` provided by the Logic Layer. It captures user input and translates it into abstract `GameAction`s.
@@ -50,10 +56,13 @@ npm start
 
 This will use `tsx` to compile and run the TypeScript source files directly.
 
-### Controls
+### Running Tests
 
-*   **Arrow Keys** or **WASD**: Move the character (`@`).
-*   **q** or **Ctrl+C**: Quit the game.
+This project uses Jest for testing. To run the test suite:
+
+```bash
+npm test
+```
 
 ## 4. Building for Production
 
