@@ -56,8 +56,7 @@ export function runEnemyTurn(enemy: Actor, state: GameState): GameState {
 
     // If the next step is the player's position, attack. Otherwise, move.
     if (nextStep.x === player.position.x && nextStep.y === player.position.y) {
-      const { newState, message } = handleAttack(enemy, player, state);
-      return { ...newState, message };
+      return handleAttack(enemy, player, state);
     } else {
       // Move towards the player
       const newActors = state.actors.map((actor) => {
@@ -71,6 +70,7 @@ export function runEnemyTurn(enemy: Actor, state: GameState): GameState {
         ...state,
         actors: newActors,
         message: `${enemy.name} spots you and moves closer!`,
+        messageType: 'info',
       };
     }
   }
