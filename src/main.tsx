@@ -19,21 +19,20 @@ const App = () => {
 		}
 	}, [state.message, exit]);
 
-	useInput((input, key) => {
-		// Allow Ctrl+C to exit at any time.
-		if (key.ctrl && input === 'c') {
-			setState(update(state, GameAction.QUIT));
-			return;
-		}
+        useInput((input, key) => {
+                // Allow Ctrl+C to exit at any time.
+                if (key.ctrl && input === 'c') {
+                        setState((prev) => update(prev, GameAction.QUIT));
+                        return;
+                }
 
-		// Determine the action from the keybinding map.
-		const action = resolveAction(input, key);
+                // Determine the action from the keybinding map.
+                const action = resolveAction(input, key);
 
-		if (action) {
-			const newState = update(state, action);
-			setState(newState);
-		}
-	});
+                if (action !== undefined) {
+                        setState((prev) => update(prev, action));
+                }
+        });
 
 	return <MapView state={state} />;
 };

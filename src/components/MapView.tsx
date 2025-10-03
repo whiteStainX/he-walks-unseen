@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { GameState } from '../engine/state';
+import type { GameState } from '../engine/state.js';
 
 interface Props {
 	state: GameState;

@@ -12,7 +12,10 @@ const characterBindings: Record<string, GameAction> = {
 export function resolveAction(input: string, key: Key): GameAction | undefined {
   const normalizedInput = input.toLowerCase();
 
-  if (normalizedInput && characterBindings[normalizedInput]) {
+  if (
+    normalizedInput &&
+    Object.prototype.hasOwnProperty.call(characterBindings, normalizedInput)
+  ) {
     return characterBindings[normalizedInput];
   }
 
