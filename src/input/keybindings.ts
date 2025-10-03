@@ -10,15 +10,6 @@ const characterBindings: Record<string, GameAction> = {
 };
 
 export function resolveAction(input: string, key: Key): GameAction | undefined {
-  const normalizedInput = input.toLowerCase();
-
-  if (
-    normalizedInput &&
-    Object.prototype.hasOwnProperty.call(characterBindings, normalizedInput)
-  ) {
-    return characterBindings[normalizedInput];
-  }
-
   if (key.upArrow) {
     return GameAction.MOVE_NORTH;
   }
@@ -33,6 +24,14 @@ export function resolveAction(input: string, key: Key): GameAction | undefined {
 
   if (key.leftArrow) {
     return GameAction.MOVE_WEST;
+  }
+
+  if (input) {
+    const normalizedInput = input.toLowerCase();
+
+    if (Object.prototype.hasOwnProperty.call(characterBindings, normalizedInput)) {
+      return characterBindings[normalizedInput];
+    }
   }
 
   return undefined;

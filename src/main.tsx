@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { render, Text, Box } from 'ink';
+import { render, Box, Text } from 'ink';
 import { loadResources } from './engine/resourceManager.js';
 import { eventBus } from './engine/events.js';
+import type { GameState } from './engine/state.js';
+import GameScreen from './components/GameScreen.js';
+import { createInitialGameState } from './game/initialState.js';
 
 const App = () => {
-  const [message, setMessage] = useState('Initializing engine...');
+  const [statusMessage, setStatusMessage] = useState('Initializing engine...');
+  const [gameState, setGameState] = useState<GameState | null>(null);
 
   useEffect(() => {
     const initializeEngine = async () => {
       try {
         await loadResources('./data');
-        // Emit an event to signal that the engine is ready
-        eventBus.emit('engineReady', 'Engine Initialized Successfully!');
+        eventBus.emit('engineReady', 'Engine ready. Use WASD or the arrow keys to move.');
       } catch (error) {
         console.error(error);
         eventBus.emit('engineError', 'Failed to initialize engine.');
@@ -19,30 +22,35 @@ const App = () => {
     };
 
     const handleEngineReady = (newMessage: string) => {
-      setMessage(newMessage);
+      setStatusMessage(newMessage);
+      setGameState(createInitialGameState(newMessage));
     };
 
     const handleEngineError = (errorMessage: string) => {
-        setMessage(errorMessage);
-    }
+      setStatusMessage(errorMessage);
+      setGameState(null);
+    };
 
     eventBus.on('engineReady', handleEngineReady);
     eventBus.on('engineError', handleEngineError);
 
     initializeEngine();
 
-    // Cleanup listener on unmount
     return () => {
       eventBus.off('engineReady', handleEngineReady);
       eventBus.off('engineError', handleEngineError);
     };
   }, []);
 
-  return (
-    <Box borderStyle="round" padding={1}>
-      <Text>{message}</Text>
-    </Box>
-  );
+  if (!gameState) {
+    return (
+      <Box borderStyle="round" padding={1}>
+        <Text>{statusMessage}</Text>
+      </Box>
+    );
+  }
+
+  return <GameScreen initialState={gameState} statusMessage={statusMessage} />;
 };
 
 render(<App />);
