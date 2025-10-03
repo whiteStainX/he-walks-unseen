@@ -12,17 +12,17 @@
 
 ### 1.2 Engine Capabilities
 - **Resource Loading**: Discovers every JSON file in `/data`, parses them, and caches the result for fast lookup.【F:src/engine/resourceManager.ts†L1-L42】
-- **Game State Modeling**: Centralized `GameState` snapshot includes player location/HP, the active tile map, and a UI message channel.【F:src/engine/state.ts†L2-L22】
+- **Game State Modeling**: Centralized `GameState` snapshot includes actors (player and NPCs), items, the active tile map, and a typed UI message channel.【F:src/engine/state.ts†L2-L55】
 - **Event-Driven Core**: Global `EventEmitter` enables decoupled communication across systems and the UI.【F:src/engine/events.ts†L1-L6】
-- **Finite State Machine**: Tracks high-level runtime phases (main menu, playing, dialogue, paused) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
+- **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Dialogue`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
 - **Git-Like Narrative History**: Supports committing deep-copied state snapshots, naming timeline branches, and checking out alternate histories.【F:src/engine/narrativeEngine.ts†L1-L82】
 - **Script Processor**: Executes simple verb-argument command tuples and broadcasts side effects (dialogue, inventory hooks).【F:src/engine/scriptProcessor.ts†L1-L27】
-- **Terminal Presentation Layer**: Ink-based map renderer overlays the player avatar on top of cached map tiles and surfaces system messages.【F:src/components/MapView.tsx†L1-L44】
+- **Terminal Presentation Layer**: Ink-based map renderer overlays actors and items on top of cached map tiles and surfaces system messages with color-coded feedback.【F:src/components/MapView.tsx†L1-L44】
 - **Input Abstraction**: Converts key presses into semantic `GameAction` enums for the logic layer to consume.【F:src/input/actions.ts†L1-L24】【F:src/input/keybindings.ts†L1-L39】
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
-- **Minimal Map Logic**: Map data is loaded but the engine does not yet enforce collision rules, NPC AI, or interactions beyond displaying tiles.【F:src/components/MapView.tsx†L9-L42】【F:src/engine/state.ts†L14-L22】
+- **Simple AI**: Enemies follow a basic "see and chase" AI. They will move towards the player if they have a line of sight. The engine includes basic bump-to-attack combat.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L49】
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.【F:src/engine/scriptProcessor.ts†L9-L26】
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.【F:src/main.tsx†L1-L48】
 - **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.【F:src/engine/resourceManager.ts†L15-L29】

@@ -8,7 +8,19 @@ In the dial-up haze of 2004, a socially invisible teenager at a high school summ
 
 The core mechanic is a **"Git-like" narrative engine** that allows the player to `commit` snapshots of their progress, create `branch`es to explore alternate paths, and `checkout` different timelines to see how choices unfold.
 
-## 2. Architecture
+## 2. Features
+
+This project implements several classic roguelike mechanics to create a challenging and replayable experience.
+
+*   **Turn-Based System:** The game operates on a strict "I-Go-You-Go" turn-based system. The world only advances when the player takes an action, allowing for careful, strategic thinking.
+*   **Permadeath & Replayability:** When the player is defeated, the game is over. Each new game generates a unique, procedurally-generated dungeon with randomized room layouts and enemy placements, ensuring no two runs are the same.
+*   **Risk vs. Reward:** The dungeon contains unidentified potions with random effects. A potion might heal you, or it might cause damage, forcing players to weigh the potential benefits against the risks.
+*   **Enhanced UI Feedback:**
+    *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
+    *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
+    *   **Enemy Status Panel:** A dedicated panel displays the health of all visible enemies, aiding in tactical decision-making.
+
+## 3. Architecture
 
 This project is built with a strict **3-layer decoupled architecture** to ensure a clean separation of concerns.
 
@@ -31,7 +43,7 @@ This project is built with a strict **3-layer decoupled architecture** to ensure
 
 This separation allows the game logic to be tested independently of the UI and makes the entire system more modular and maintainable.
 
-## 3. How to Run
+## 4. How to Run
 
 ### Prerequisites
 
@@ -64,7 +76,7 @@ This project uses Jest for testing. To run the test suite:
 npm test
 ```
 
-## 4. Building for Production
+## 5. Building for Production
 
 You can compile the TypeScript code into JavaScript using the build script:
 
