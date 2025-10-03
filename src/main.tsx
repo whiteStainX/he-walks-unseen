@@ -7,27 +7,26 @@ import GameScreen from './components/GameScreen.js';
 import { createInitialGameState } from './game/initialState.js';
 
 const App = () => {
-  const [statusMessage, setStatusMessage] = useState('Initializing engine...');
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const initializeEngine = async () => {
       try {
         await loadResources('./data');
-        eventBus.emit('engineReady', 'Engine ready. Use WASD or the arrow keys to move.');
-      } catch (error) {
-        console.error(error);
-        eventBus.emit('engineError', 'Failed to initialize engine.');
+        eventBus.emit('engineReady');
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        eventBus.emit('engineError', `Failed to initialize engine: ${errorMessage}`);
       }
     };
 
-    const handleEngineReady = (newMessage: string) => {
-      setStatusMessage(newMessage);
-      setGameState(createInitialGameState(newMessage));
+    const handleEngineReady = () => {
+      setGameState(createInitialGameState());
     };
 
     const handleEngineError = (errorMessage: string) => {
-      setStatusMessage(errorMessage);
+      setError(errorMessage);
       setGameState(null);
     };
 
@@ -42,15 +41,23 @@ const App = () => {
     };
   }, []);
 
-  if (!gameState) {
+  if (error) {
     return (
-      <Box borderStyle="round" padding={1}>
-        <Text>{statusMessage}</Text>
+      <Box borderStyle="round" padding={1} borderColor="red">
+        <Text color="red">{error}</Text>
       </Box>
     );
   }
 
-  return <GameScreen initialState={gameState} statusMessage={statusMessage} />;
+  if (!gameState) {
+    return (
+      <Box borderStyle="round" padding={1}>
+        <Text>Initializing engine...</Text>
+      </Box>
+    );
+  }
+
+  return <GameScreen initialState={gameState} />;
 };
 
 render(<App />);

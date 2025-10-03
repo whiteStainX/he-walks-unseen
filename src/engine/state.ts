@@ -4,17 +4,34 @@ export interface Point {
   y: number;
 }
 
-export interface Player {
+export interface Actor {
+  id: string;
+  name: string;
+  char: string;
   position: Point;
-  hp: number;
-  // Knowledge flags will be added here later to track cross-branch discoveries
+  hp: {
+    current: number;
+    max: number;
+  };
+  attack: number;
+  defense: number;
+  isPlayer?: true;
 }
+
+export interface Tile {
+  char: string;
+  walkable: boolean;
+  transparent: boolean;
+}
+
+import type { GamePhase } from './fsm.js';
 
 // The complete snapshot of the game world at any given moment.
 export interface GameState {
-  player: Player;
+  phase: GamePhase;
+  actors: Actor[];
   map: {
-    tiles: string[][]; // 2D array for map layout
+    tiles: Tile[][]; // 2D array for map layout
     width: number;
     height: number;
   };

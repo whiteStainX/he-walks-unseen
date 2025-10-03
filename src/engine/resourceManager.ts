@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import * as fs from 'fs/promises';
 import path from 'path';
 
 /**
@@ -39,4 +39,11 @@ export function getResource<T>(key: string): T {
     throw new Error(`Resource with key "${key}" not found.`);
   }
   return resourceCache.get(key) as T;
+}
+
+/**
+ * Clears the resource cache. Intended for use in test environments.
+ */
+export function clearResources(): void {
+  resourceCache.clear();
 }

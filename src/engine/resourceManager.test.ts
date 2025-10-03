@@ -1,44 +1,53 @@
-import { loadResources, getResource } from './resourceManager.js';
-import fs from 'fs/promises';
+import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import path from 'path';
 
-// Mock the fs/promises module to avoid actual file system access in tests
-jest.mock('fs/promises');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+// This is the modern way to mock ES Modules in Jest.
+// It must be called before any imports of the module to be mocked.
+jest.unstable_mockModule('fs/promises', () => ({
+  readdir: jest.fn(),
+  readFile: jest.fn(),
+}));
+
+// Now that the mock is set up, we can dynamically import the modules.
+const { loadResources, getResource, clearResources } = await import('./resourceManager.js');
+// We also import the mocked module to get a handle on the mock functions.
+const fs = await import('fs/promises');
+
+// jest.mocked is used to get a typed version of the mock functions.
+const mockedFs = {
+  readdir: jest.mocked(fs.readdir),
+  readFile: jest.mocked(fs.readFile),
+};
 
 describe('ResourceManager', () => {
-  // Clear any mocks before each test
   beforeEach(() => {
-    jest.clearAllMocks();
+    // It's good practice to clear mocks and caches before each test.
+    mockedFs.readdir.mockClear();
+    mockedFs.readFile.mockClear();
+    clearResources();
   });
 
   it('should load and cache JSON resources from a directory', async () => {
-    // Arrange: Set up the mock file system
     const mockData = { message: 'Test data' };
     const mockFiles = ['test.json', 'another.txt'];
 
     mockedFs.readdir.mockResolvedValue(mockFiles as any);
     mockedFs.readFile.mockResolvedValue(JSON.stringify(mockData));
 
-    // Act: Call the function to load resources
     await loadResources('fake/data/dir');
 
-    // Assert: Check that readdir and readFile were called correctly
     expect(mockedFs.readdir).toHaveBeenCalledWith('fake/data/dir');
-    expect(mockedFs.readFile).toHaveBeenCalledWith(path.join('fake/data/dir', 'test.json'), 'utf-8');
-    // It should only read the .json file
+    expect(mockedFs.readFile).toHaveBeenCalledWith(
+      path.join('fake/data/dir', 'test.json'),
+      'utf-8'
+    );
     expect(mockedFs.readFile).toHaveBeenCalledTimes(1);
 
-    // Assert: Check that the resource is cached correctly
     const resource = getResource<{ message: string }>('test');
     expect(resource).toEqual(mockData);
   });
 
   it('should throw an error if the requested resource is not found', () => {
-    // Arrange: Ensure the cache is empty or doesn't have the key
-    // (loadResources is not called in this test)
-
-    // Act & Assert: Expect getResource to throw an error for a non-existent key
     expect(() => {
       getResource('nonexistent');
     }).toThrow('Resource with key "nonexistent" not found.');
