@@ -8,16 +8,11 @@ import type {
   PotionEffect,
 } from '../engine/state.js';
 import { generateMap } from './map-generation.js';
+import { getResource } from '../engine/resourceManager.js';
 
 const MAP_WIDTH = 80;
 const MAP_HEIGHT = 24;
 
-/**
- * Finds a random walkable tile on the map that is not in the list of occupied points.
- * @param map The tile map to search.
- * @param occupied An array of points that are considered occupied.
- * @returns A random walkable and unoccupied point, or null if none is found.
- */
 function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null {
   const walkableTiles: Point[] = [];
   const isOccupied = (p: Point) => occupied.some((o) => o.x === p.x && o.y === p.y);
@@ -60,49 +55,46 @@ export function createInitialGameState(message?: string): GameState {
   const actors: Actor[] = [player];
   const occupiedPoints: Point[] = [player.position, exitPosition];
 
-  // Spawn a random number of enemies (e.g., between 2 and 5)
+  const enemyTemplates = getResource<any[]>('enemies');
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
 
   for (let i = 0; i < numberOfEnemies; i++) {
     const enemyPosition = findRandomWalkableTile(map, occupiedPoints);
-
     if (enemyPosition) {
-      const goblin: Actor = {
+      const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
+      const newEnemy: Actor = {
+        ...template,
         id: nanoid(),
-        name: 'Goblin',
-        char: 'g',
-        color: 'lightgreen',
         position: enemyPosition,
-        hp: { current: 5, max: 5 },
-        attack: 1,
-        defense: 0,
-        xpValue: 35,
       };
-      actors.push(goblin);
-      // Mark the new position as occupied for subsequent spawns
+      actors.push(newEnemy);
       occupiedPoints.push(enemyPosition);
     }
   }
 
   const items: Item[] = [];
-  const numberOfPotions = Math.floor(Math.random() * 3) + 2; // 2 to 4 potions
-  const potionEffects: PotionEffect[] = ['heal', 'damage'];
+  const itemTemplates = getResource<any[]>('items');
+  const numberOfItems = Math.floor(Math.random() * 3) + 2;
 
-  for (let i = 0; i < numberOfPotions; i++) {
-    const potionPosition = findRandomWalkableTile(map, occupiedPoints);
-    if (potionPosition) {
-      const randomEffect = potionEffects[Math.floor(Math.random() * potionEffects.length)];
-      const potion: Item = {
-        id: nanoid(),
-        name: 'Unidentified Potion',
-        char: '!',
-        color: 'magenta',
-        position: potionPosition,
-        effect: randomEffect,
-        potency: randomEffect === 'heal' ? 5 : 3, // Heal more than damage
-      };
-      items.push(potion);
-      occupiedPoints.push(potionPosition);
+  for (let i = 0; i < numberOfItems; i++) {
+    const itemPosition = findRandomWalkableTile(map, occupiedPoints);
+    if (itemPosition) {
+      const template = itemTemplates.find(t => t.id === 'unidentified-potion');
+      if (template) {
+        const randomEffect = template.effects[Math.floor(Math.random() * template.effects.length)];
+        const potency = template.potency[randomEffect];
+        const newItem: Item = {
+          id: nanoid(),
+          name: template.name,
+          char: template.char,
+          color: template.color,
+          position: itemPosition,
+          effect: randomEffect as PotionEffect,
+          potency: potency,
+        };
+        items.push(newItem);
+        occupiedPoints.push(itemPosition);
+      }
     }
   }
 

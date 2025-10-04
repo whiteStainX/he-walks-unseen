@@ -1,0 +1,30 @@
+[
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "char": "g",
+    "color": "lightgreen",
+    "hp": { "current": 5, "max": 5 },
+    "attack": 1,
+    "defense": 0,
+    "xpValue": 35,
+    "ai": {
+      "canChase": true,
+      "canWander": true
+    }
+  },
+  {
+    "id": "shrieker",
+    "name": "Shrieker",
+    "char": "s",
+    "color": "yellow",
+    "hp": { "current": 3, "max": 3 },
+    "attack": 0,
+    "defense": 0,
+    "xpValue": 10,
+    "ai": {
+      "canWander": false,
+      "canChase": false
+    }
+  }
+]

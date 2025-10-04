@@ -25,6 +25,10 @@ export interface Actor {
   // Enemy-specific XP value
   xpValue?: number;
   skills?: Skill[];
+  ai?: {
+    canWander?: boolean;
+    canChase?: boolean;
+  };
 }
 
 export interface Skill {
