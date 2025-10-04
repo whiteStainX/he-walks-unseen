@@ -566,14 +566,22 @@ export function applyActionToState(
   }
 
   if (stateAfterPlayerAction.pendingAction) {
-    let stateAfterAction = processAction(stateAfterPlayerAction);
-    let attackResolvedEvents: AttackResolvedEvent[] = [];
-    let damageDealtEvents: DamageDealtEvent[] = [];
-    let actorDiedEvents: ActorDiedEvent[] = [];
+    const attackResolvedEvents: AttackResolvedEvent[] = [];
+    const damageDealtEvents: DamageDealtEvent[] = [];
+    const actorDiedEvents: ActorDiedEvent[] = [];
 
-    eventBus.on('attackResolved', (event: AttackResolvedEvent) => attackResolvedEvents.push(event));
-    eventBus.on('damageDealt', (event: DamageDealtEvent) => damageDealtEvents.push(event));
-    eventBus.on('actorDied', (event: ActorDiedEvent) => actorDiedEvents.push(event));
+    const onAttackResolvedListener = (event: AttackResolvedEvent) =>
+      attackResolvedEvents.push(event);
+    const onDamageDealtListener = (event: DamageDealtEvent) =>
+      damageDealtEvents.push(event);
+    const onActorDiedListener = (event: ActorDiedEvent) =>
+      actorDiedEvents.push(event);
+
+    eventBus.on('attackResolved', onAttackResolvedListener);
+    eventBus.on('damageDealt', onDamageDealtListener);
+    eventBus.on('actorDied', onActorDiedListener);
+
+    let stateAfterAction = processAction(stateAfterPlayerAction);
 
     for (const event of attackResolvedEvents) {
       stateAfterAction = onAttackResolved(stateAfterAction, event);
@@ -587,9 +595,9 @@ export function applyActionToState(
       stateAfterAction = onActorDied(stateAfterAction, event);
     }
 
-    eventBus.removeAllListeners('attackResolved');
-    eventBus.removeAllListeners('damageDealt');
-    eventBus.removeAllListeners('actorDied');
+    eventBus.off('attackResolved', onAttackResolvedListener);
+    eventBus.off('damageDealt', onDamageDealtListener);
+    eventBus.off('actorDied', onActorDiedListener);
 
     return stateAfterAction;
   }
