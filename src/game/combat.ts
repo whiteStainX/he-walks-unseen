@@ -1,3 +1,4 @@
+import { checkForLevelUp } from './progression.js';
 import type { Actor, GameState, MessageType } from '../engine/state.js';
 
 /**
@@ -38,8 +39,23 @@ export function handleAttack(
   // Check if the defender was defeated
   if (newDefenderHp <= 0) {
     message += ` ${defender.name} dies!`;
-    newActors = newActors.filter((actor) => actor.id !== defender.id);
     messageType = 'death';
+
+    // If player defeated an enemy, grant XP
+    if (attacker.isPlayer && defender.xpValue && defender.xpValue > 0) {
+      const xpGained = defender.xpValue;
+      message += ` You gain ${xpGained} XP.`;
+
+      newActors = newActors.map((actor) => {
+        if (actor.id === attacker.id) {
+          return { ...actor, xp: (actor.xp ?? 0) + xpGained };
+        }
+        return actor;
+      });
+    }
+
+    // Remove defeated actor
+    newActors = newActors.filter((actor) => actor.id !== defender.id);
   } else {
     // Add remaining HP to the message if the defender survived
     const defenderData = newActors.find((a) => a.id === defender.id);
@@ -52,10 +68,16 @@ export function handleAttack(
     }
   }
 
-  return {
+  const finalState = {
     ...state,
     actors: newActors,
     message,
     messageType,
   };
+
+  if (newDefenderHp <= 0 && attacker.isPlayer) {
+    return checkForLevelUp(finalState);
+  }
+
+  return finalState;
 }

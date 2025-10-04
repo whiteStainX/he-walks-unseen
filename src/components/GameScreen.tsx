@@ -118,9 +118,15 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         <Box flexDirection="column" paddingBottom={1}>
           <Text bold>Status</Text>
           {player ? (
-            <Text>
-              HP: {player.hp.current}/{player.hp.max}
-            </Text>
+            <>
+              <Text>
+                HP: {player.hp.current}/{player.hp.max}
+              </Text>
+              <Text>Level: {player.level ?? 1}</Text>
+              <Text>
+                XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
+              </Text>
+            </>
           ) : (
             <Text>N/A</Text>
           )}
