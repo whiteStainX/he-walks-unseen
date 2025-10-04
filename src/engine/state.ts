@@ -44,6 +44,7 @@ export interface Actor extends Entity {
   xpToNextLevel?: number;
   xpValue?: number;
   skills?: Skill[];
+  loot?: string;
   ai?: {
     canWander?: boolean;
     canChase?: boolean;
