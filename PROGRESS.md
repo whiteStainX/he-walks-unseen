@@ -24,3 +24,16 @@ This milestone focused on improving the user interface and providing clearer vis
 -   **Player Highlighting:** The player's current tile is highlighted with a background color for easy visibility.
 -   **Enemy Status Panel:** A new UI panel was added to display the health of all visible enemies.
 -   **Enhanced Combat Log:** Combat messages now include damage dealt and the remaining health of the target.
+
+## Milestone 3: Core Gameplay Systems (October 2025)
+
+This milestone introduced foundational gameplay systems that add depth and player agency.
+
+-   **Items & Inventory System:**
+    -   Implemented the ability to pick up items from the dungeon floor.
+    -   Added a dedicated inventory screen for viewing and using items.
+    -   The system is extensible for various item types, starting with healing potions.
+-   **Skills & Progression System:**
+    -   Players now gain experience points (XP) for defeating enemies.
+    -   A leveling system was introduced, allowing players to increase their health and attack power.
+    -   The UI was updated to display the player's current level and XP.

@@ -14,11 +14,12 @@
 - **Resource Loading**: Discovers every JSON file in `/data`, parses them, and caches the result for fast lookup.【F:src/engine/resourceManager.ts†L1-L42】
 - **Game State Modeling**: Centralized `GameState` snapshot includes actors (player and NPCs), items, the active tile map, and a typed UI message channel.【F:src/engine/state.ts†L2-L55】
 - **Event-Driven Core**: Global `EventEmitter` enables decoupled communication across systems and the UI.【F:src/engine/events.ts†L1-L6】
-- **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Dialogue`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
+- **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Inventory`, `Dialogue`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
 - **Git-Like Narrative History**: Supports committing deep-copied state snapshots, naming timeline branches, and checking out alternate histories.【F:src/engine/narrativeEngine.ts†L1-L82】
 - **Script Processor**: Executes simple verb-argument command tuples and broadcasts side effects (dialogue, inventory hooks).【F:src/engine/scriptProcessor.ts†L1-L27】
 - **Terminal Presentation Layer**: Ink-based map renderer overlays actors and items on top of cached map tiles and surfaces system messages with color-coded feedback.【F:src/components/MapView.tsx†L1-L44】
-- **Input Abstraction**: Converts key presses into semantic `GameAction` enums for the logic layer to consume.【F:src/input/actions.ts†L1-L24】【F:src/input/keybindings.ts†L1-L39】
+- **Inventory & Progression**: The engine supports a full inventory system (pickup, use) and a player progression system (XP and leveling).【F:src/game/progression.ts†L1-L59】【F:src/game/updateState.ts†L1-L270】
+- **Input Abstraction**: Converts key presses into semantic `GameAction` enums for the logic layer to consume. The keybinding system is phase-aware, allowing for different controls in different game states (e.g., `PlayerTurn` vs. `Inventory`).【F:src/input/actions.ts†L1-L24】【F:src/input/keybindings.ts†L1-L39】
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】

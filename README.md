@@ -19,8 +19,28 @@ This project implements several classic roguelike mechanics to create a challeng
     *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
     *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
     *   **Enemy Status Panel:** A dedicated panel displays the health of all visible enemies, aiding in tactical decision-making.
+*   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions to heal from damage or gain other effects.
+*   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you delve deeper into the dungeon.
 
-## 3. Architecture
+## 3. Controls
+
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w`, `a`, `s`, `d` / `↑`, `←`, `↓`, `→` | Move Player           |
+| `g`             | Pick up Item          |
+| `i`             | Open/Close Inventory  |
+| `q`             | Quit Game             |
+
+### Inventory Mode
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w` / `↑`         | Select Previous Item  |
+| `s` / `↓`         | Select Next Item      |
+| `Enter`         | Use Selected Item     |
+| `Escape` / `i`  | Close Inventory       |
+
+
+## 4. Architecture
 
 This project is built with a strict **3-layer decoupled architecture** to ensure a clean separation of concerns.
 
@@ -43,7 +63,7 @@ This project is built with a strict **3-layer decoupled architecture** to ensure
 
 This separation allows the game logic to be tested independently of the UI and makes the entire system more modular and maintainable.
 
-## 4. How to Run
+## 5. How to Run
 
 ### Prerequisites
 
@@ -76,7 +96,7 @@ This project uses Jest for testing. To run the test suite:
 npm test
 ```
 
-## 5. Building for Production
+## 6. Building for Production
 
 You can compile the TypeScript code into JavaScript using the build script:
 
