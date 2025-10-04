@@ -19,5 +19,25 @@
       "isLooted": false,
       "loot": "unidentified-potion"
     }
+  },
+  {
+    "id": "upstairs",
+    "name": "Upstairs",
+    "char": "<",
+    "color": "white",
+    "interaction": {
+      "type": "stairs",
+      "direction": "up"
+    }
+  },
+  {
+    "id": "downstairs",
+    "name": "Downstairs",
+    "char": ">",
+    "color": "white",
+    "interaction": {
+      "type": "stairs",
+      "direction": "down"
+    }
   }
 ]

@@ -26,5 +26,34 @@
       "canWander": false,
       "canChase": false
     }
+  },
+  {
+    "id": "skeleton",
+    "name": "Skeleton",
+    "char": "s",
+    "color": "white",
+    "hp": { "current": 8, "max": 8 },
+    "attack": 2,
+    "defense": 1,
+    "xpValue": 50,
+    "ai": {
+      "canChase": true,
+      "canWander": true
+    }
+  },
+  {
+    "id": "ghost",
+    "name": "Ghost",
+    "char": "G",
+    "color": "white",
+    "hp": { "current": 10, "max": 10 },
+    "attack": 2,
+    "defense": 0,
+    "xpValue": 75,
+    "ai": {
+      "canChase": true,
+      "canWander": true,
+      "canPassThroughWalls": true
+    }
   }
 ]

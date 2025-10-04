@@ -26,6 +26,9 @@ function chasePlayer(enemy: Actor, player: Actor, state: GameState): GameState {
     player.position.x,
     player.position.y,
     (x, y) => {
+      if (enemy.ai?.canPassThroughWalls) {
+        return true;
+      }
       const isOccupied = state.actors.some(
         (a) => !a.isPlayer && a.position.x === x && a.position.y === y
       );

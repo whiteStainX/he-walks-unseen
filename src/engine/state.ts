@@ -11,7 +11,12 @@ export interface Entity {
   char: string;
   color?: string;
   position: Point;
-  interaction?: DoorInteraction | ChestInteraction;
+  interaction?: DoorInteraction | ChestInteraction | StairsInteraction;
+}
+
+export interface StairsInteraction {
+  type: 'stairs';
+  direction: 'up' | 'down';
 }
 
 export interface DoorInteraction {
@@ -42,6 +47,7 @@ export interface Actor extends Entity {
   ai?: {
     canWander?: boolean;
     canChase?: boolean;
+    canPassThroughWalls?: boolean;
   };
 }
 
@@ -80,4 +86,6 @@ export interface GameState {
   messageType: MessageType;
   selectedItemIndex?: number;
   target?: Point;
+  currentFloor: number;
+  floorStates: Map<number, GameState>;
 }

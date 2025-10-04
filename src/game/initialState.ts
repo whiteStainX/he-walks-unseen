@@ -35,30 +35,44 @@ function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null 
   return walkableTiles[randomIndex];
 }
 
-export function createInitialGameState(message?: string): GameState {
-  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT);
+interface InitialStateOptions {
+  message?: string;
+  player?: Actor;
+  floor?: number;
+  floorStates?: Map<number, GameState>;
+}
 
-  const player: Actor = {
-    id: 'player',
-    name: 'Player',
-    char: '@',
-    color: 'white',
-    position: playerStart,
-    hp: { current: 10, max: 10 },
-    attack: 2,
-    defense: 1,
-    isPlayer: true,
-    level: 1,
-    xp: 0,
-    xpToNextLevel: 100,
-  };
+export function createInitialGameState(options: InitialStateOptions = {}): GameState {
+  const { message, player: existingPlayer, floor = 1, floorStates = new Map() } = options;
+
+  const themes = getResource<any>('themes');
+  const theme = Object.values(themes).find((t: any) => t.floors.includes(floor)) || themes['overgrown-keep'];
+
+  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT, theme.map);
+
+  const player: Actor = existingPlayer
+    ? { ...existingPlayer, position: playerStart }
+    : {
+        id: 'player',
+        name: 'Player',
+        char: '@',
+        color: 'white',
+        position: playerStart,
+        hp: { current: 10, max: 10 },
+        attack: 2,
+        defense: 1,
+        isPlayer: true,
+        level: 1,
+        xp: 0,
+        xpToNextLevel: 100,
+      };
 
   const actors: Actor[] = [player];
   const entities: Entity[] = [];
   const items: Item[] = [];
   const occupiedPoints: Point[] = [player.position, exitPosition];
 
-  const enemyTemplates = getResource<any[]>('enemies');
+  const enemyTemplates = getResource<any[]>('enemies').filter(e => theme.enemies.includes(e.id));
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
 
   for (let i = 0; i < numberOfEnemies; i++) {
@@ -75,24 +89,18 @@ export function createInitialGameState(message?: string): GameState {
     }
   }
 
-  const itemTemplates = getResource<any[]>('items');
+  const itemTemplates = getResource<any[]>('items').filter(i => theme.items.includes(i.id));
   const numberOfItems = Math.floor(Math.random() * 3) + 2;
 
   for (let i = 0; i < numberOfItems; i++) {
     const itemPosition = findRandomWalkableTile(map, occupiedPoints);
     if (itemPosition) {
-      const template = itemTemplates.find(t => t.id === 'unidentified-potion');
+      const template = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
       if (template) {
-        const randomEffect = template.effects[Math.floor(Math.random() * template.effects.length)];
-        const potency = template.potency[randomEffect];
         const newItem: Item = {
+          ...template,
           id: nanoid(),
-          name: template.name,
-          char: template.char,
-          color: template.color,
           position: itemPosition,
-          effect: randomEffect as PotionEffect,
-          potency: potency,
         };
         items.push(newItem);
         occupiedPoints.push(itemPosition);
@@ -134,6 +142,30 @@ export function createInitialGameState(message?: string): GameState {
     }
   }
 
+  const downstairsTemplate = entityTemplates.find((e) => e.id === 'downstairs');
+  if (downstairsTemplate && floor < 5) { // Don't spawn downstairs on the last floor
+    const downstairs: Entity = {
+      ...downstairsTemplate,
+      id: nanoid(),
+      position: exitPosition,
+    };
+    entities.push(downstairs);
+    occupiedPoints.push(exitPosition);
+  }
+
+  if (floor > 1) {
+    const upstairsTemplate = entityTemplates.find((e) => e.id === 'upstairs');
+    if (upstairsTemplate) {
+      const upstairs: Entity = {
+        ...upstairsTemplate,
+        id: nanoid(),
+        position: playerStart, // Player starts at the upstairs
+      };
+      entities.push(upstairs);
+      occupiedPoints.push(playerStart);
+    }
+  }
+
   return {
     phase: 'PlayerTurn',
     actors,
@@ -144,7 +176,9 @@ export function createInitialGameState(message?: string): GameState {
       width: MAP_WIDTH,
       height: MAP_HEIGHT,
     },
-    message: message ?? 'Welcome! Use the arrow keys or WASD to move. Find the > to exit.',
+    message: message ?? `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
     messageType: 'info',
+    currentFloor: floor,
+    floorStates,
   };
 }

@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { GameState, MessageType } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
+import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
 import { handleAttack } from './combat.js';
 
@@ -171,19 +172,24 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
   );
 
   if (!entity || !entity.interaction) {
-    return { ...state, message: 'There is nothing to interact with there.' };
+    return { ...state, message: 'There is nothing to interact with here.' };
   }
 
   switch (entity.interaction.type) {
-    case 'door':
+    case 'door': {
       const isOpen = entity.interaction.isOpen;
       const newIsOpen = !isOpen;
 
-      const newEntities = state.entities.map((e) =>
-        e.id === entity.id
-          ? { ...e, char: newIsOpen ? "-" : "+", interaction: { ...e.interaction, isOpen: newIsOpen } }
-          : e
-      );
+      const newEntities = state.entities.map((e) => {
+        if (e.id === entity.id) {
+          return {
+            ...e,
+            char: newIsOpen ? '-' : '+',
+            interaction: { ...e.interaction, isOpen: newIsOpen },
+          };
+        }
+        return e;
+      });
 
       const newTiles = state.map.tiles.map((row, tileY) =>
         row.map((tile, tileX) => {
@@ -194,17 +200,16 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         })
       );
 
-      const newMap = { ...state.map, tiles: newTiles };
-
       return {
         ...state,
         entities: newEntities,
-        map: newMap,
+        map: { ...state.map, tiles: newTiles },
         message: newIsOpen ? 'You open the door.' : 'You close the door.',
         phase: 'EnemyTurn',
       };
+    }
 
-    case 'chest':
+    case 'chest': {
       if (entity.interaction.isLooted) {
         return { ...state, message: 'The chest is empty.' };
       }
@@ -217,7 +222,7 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         char: lootItemTemplate?.char || '!',
         color: lootItemTemplate?.color || 'magenta',
         position: player.position,
-        effect: lootItemTemplate?.effect || 'heal' as const,
+        effect: lootItemTemplate?.effect || ('heal' as const),
         potency: lootItemTemplate?.potency || 5,
       };
 
@@ -228,19 +233,45 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         a.id === player.id ? newPlayer : a
       );
 
-      const newEntities2 = state.entities.map((e) =>
-        e.id === entity.id
-          ? { ...e, interaction: { ...e.interaction, isLooted: true } }
-          : e
-      );
+      const newEntities = state.entities.map((e) => {
+        if (e.id === entity.id) {
+          return {
+            ...e,
+            interaction: { ...e.interaction, isLooted: true },
+          };
+        }
+        return e;
+      });
 
       return {
         ...state,
         actors: newActors,
-        entities: newEntities2,
+        entities: newEntities,
         message: 'You open the chest and find a potion.',
         phase: 'EnemyTurn',
       };
+    }
+
+    case 'stairs': {
+      const currentFloor = state.currentFloor;
+      const floorStates = state.floorStates;
+
+      // Save current floor state
+      floorStates.set(currentFloor, state);
+
+      const direction = entity.interaction.direction;
+      const nextFloor = direction === 'down' ? currentFloor + 1 : currentFloor - 1;
+
+      if (floorStates.has(nextFloor)) {
+        return floorStates.get(nextFloor)!;
+      } else {
+        return createInitialGameState({
+          player,
+          floor: nextFloor,
+          floorStates,
+        });
+      }
+    }
   }
 
   return state;
@@ -332,6 +363,14 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
 
+  const targetEntity = state.entities.find(
+    (e) => e.position.x === targetX && e.position.y === targetY
+  );
+
+  if (targetEntity && targetEntity.interaction?.type === 'stairs') {
+    return handleInteraction(state, targetX, targetY);
+  }
+
   const targetEnemy = state.actors.find(
     (a) => !a.isPlayer && a.position.x === targetX && a.position.y === targetY
   );
@@ -357,18 +396,6 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       ? { ...actor, position: { x: targetX, y: targetY } }
       : actor
   );
-
-  const isExit = state.map.tiles[targetY][targetX].char === '>';
-  if (isExit) {
-    return {
-      ...state,
-      actors: actorsAfterPlayerMove,
-      items: state.items,
-      phase: 'Win',
-      message: 'You have escaped the dungeon!',
-      messageType: 'win',
-    };
-  }
 
   return {
     ...state,
