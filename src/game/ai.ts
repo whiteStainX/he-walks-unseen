@@ -1,6 +1,6 @@
 import type { Actor, GameState, Point } from '../engine/state.js';
 import { FOV, Path } from 'rot-js';
-import { handleAttack } from './combat.js';
+import { resolveAttack } from './combat.js';
 
 function canSeePlayer(
   enemy: Actor,
@@ -45,7 +45,7 @@ function chasePlayer(enemy: Actor, player: Actor, state: GameState): GameState {
   if (path.length > 1) {
     const nextStep = path[1];
     if (nextStep.x === player.position.x && nextStep.y === player.position.y) {
-      return handleAttack(enemy, player, state);
+      return resolveAttack(enemy, player, state);
     } else {
       const newActors = state.actors.map((actor) =>
         actor.id === enemy.id ? { ...actor, position: nextStep } : actor

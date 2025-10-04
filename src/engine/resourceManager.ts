@@ -42,6 +42,15 @@ export function getResource<T>(key: string): T {
 }
 
 /**
+ * Manually sets a resource in the cache. Intended for use in test environments.
+ * @param key The key of the resource.
+ * @param value The resource data.
+ */
+export function setResource(key: string, value: any): void {
+  resourceCache.set(key, value);
+}
+
+/**
  * Clears the resource cache. Intended for use in test environments.
  */
 export function clearResources(): void {
