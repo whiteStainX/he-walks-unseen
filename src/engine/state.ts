@@ -89,4 +89,6 @@ export interface GameState {
   target?: Point;
   currentFloor: number;
   floorStates: Map<number, GameState>;
+  combatTargetId?: string;
+  selectedCombatMenuIndex?: number;
 }

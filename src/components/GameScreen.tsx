@@ -3,6 +3,7 @@ import { Box, Text, useInput } from 'ink';
 import MapView from './MapView.js';
 import InventoryView from './InventoryView.js';
 import SkillsView from './SkillsView.js';
+import { CombatMenuView } from './CombatMenuView.js';
 import type { GameState, MessageType } from '../engine/state.js';
 import type { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
@@ -50,7 +51,12 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
   useInput(
     (input, key) => {
-      if (state.phase === 'PlayerTurn' || state.phase === 'Inventory' || state.phase === 'Targeting') {
+      if (
+        state.phase === 'PlayerTurn' ||
+        state.phase === 'Inventory' ||
+        state.phase === 'Targeting' ||
+        state.phase === 'CombatMenu'
+      ) {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
           setState((currentState) => applyActionToState(currentState, action));
@@ -64,6 +70,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
         state.phase === 'Targeting' ||
+        state.phase === 'CombatMenu' ||
         state.phase === 'Loss',
     }
   );
@@ -109,7 +116,11 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
   return (
     <Box flexDirection="row">
-      <MapView state={state} isDimmed={state.phase === 'Inventory'} />
+      <MapView
+        state={state}
+        isDimmed={state.phase === 'Inventory' || state.phase === 'CombatMenu'}
+      />
+      <CombatMenuView state={state} />
       <Box
         flexDirection="column"
         marginLeft={2}
