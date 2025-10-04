@@ -20,9 +20,9 @@ export function generateMap(width: number, height: number): { map: TileMap, play
 
   // Add some randomization to the dungeon generation
   const diggerOptions = {
-    roomWidth: [randomInt(3, 8), randomInt(9, 15)],
-    roomHeight: [randomInt(3, 6), randomInt(7, 12)],
-    corridorLength: [randomInt(2, 5), randomInt(6, 10)],
+    roomWidth: [randomInt(3, 8), randomInt(9, 15)] as [number, number],
+    roomHeight: [randomInt(3, 6), randomInt(7, 12)] as [number, number],
+    corridorLength: [randomInt(2, 5), randomInt(6, 10)] as [number, number],
     dugPercentage: Math.random() * 0.2 + 0.6, // 60% to 80%
   };
 

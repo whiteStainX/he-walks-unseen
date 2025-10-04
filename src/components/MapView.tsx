@@ -4,6 +4,7 @@ import type { GameState, MessageType } from '../engine/state.js';
 
 interface Props {
   state: GameState;
+  isDimmed?: boolean;
 }
 
 // Helper to determine the color for a message based on its type
@@ -27,7 +28,7 @@ interface DisplayTile {
   backgroundColor?: string;
 }
 
-const MapView: React.FC<Props> = ({ state }) => {
+const MapView: React.FC<Props> = ({ state, isDimmed }) => {
   const { actors, items, map, message, messageType } = state;
   const player = actors.find((a) => a.isPlayer);
 
@@ -73,7 +74,8 @@ const MapView: React.FC<Props> = ({ state }) => {
 
   // Highlight the player's position
   if (player) {
-    displayGrid[player.position.y][player.position.x].backgroundColor = 'yellow';
+    displayGrid[player.position.y][player.position.x].backgroundColor =
+      'yellow';
     // Make the player character black for better contrast on a yellow background
     displayGrid[player.position.y][player.position.x].color = 'black';
   }
@@ -83,11 +85,15 @@ const MapView: React.FC<Props> = ({ state }) => {
   return (
     <Box flexDirection="column" paddingX={2}>
       <Box flexDirection="column" alignItems="center" marginBottom={1}>
-        <Text bold>He Walks Unseen</Text>
+        <Text bold dimColor={isDimmed}>
+          He Walks Unseen
+        </Text>
         {player && (
-          <Text>
+          <Text dimColor={isDimmed}>
             HP:{' '}
-            <Text color={player.hp.current < player.hp.max * 0.3 ? 'red' : 'green'}>
+            <Text
+              color={player.hp.current < player.hp.max * 0.3 ? 'red' : 'green'}
+            >
               {player.hp.current}
             </Text>
             /{player.hp.max}
@@ -101,7 +107,12 @@ const MapView: React.FC<Props> = ({ state }) => {
           {displayGrid.map((row, y) => (
             <Box key={y} flexDirection="row">
               {row.map((tile, x) => (
-                <Text key={`${x},${y}`} color={tile.color} backgroundColor={tile.backgroundColor}>
+                <Text
+                  key={`${x},${y}`}
+                  color={tile.color}
+                  backgroundColor={tile.backgroundColor}
+                  dimColor={isDimmed}
+                >
                   {tile.char}{' '}
                 </Text>
               ))}
@@ -118,9 +129,11 @@ const MapView: React.FC<Props> = ({ state }) => {
             borderStyle="round"
             borderColor="gray"
           >
-            <Text bold>Enemies</Text>
+            <Text bold dimColor={isDimmed}>
+              Enemies
+            </Text>
             {enemies.map((enemy) => (
-              <Text key={enemy.id}>
+              <Text key={enemy.id} dimColor={isDimmed}>
                 <Text color={enemy.color || 'white'}>
                   {enemy.name} ({enemy.char})
                 </Text>
@@ -132,7 +145,9 @@ const MapView: React.FC<Props> = ({ state }) => {
       </Box>
 
       <Box marginTop={1} paddingX={2} borderStyle="round">
-        <Text color={getMessageColor(messageType)}>{message}</Text>
+        <Text color={getMessageColor(messageType)} dimColor={isDimmed}>
+          {message}
+        </Text>
       </Box>
     </Box>
   );

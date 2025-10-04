@@ -1,5 +1,7 @@
-import type { GameState } from '../engine/state.js';
+import type { GameState, MessageType } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
+import { runEnemyTurn } from './ai.js';
+import { handleAttack } from './combat.js';
 
 interface MovementDelta {
   dx: number;
@@ -18,24 +20,153 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
   if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) {
     return true;
   }
-
   return !state.map.tiles[y][x].walkable;
 }
 
-import { runEnemyTurn } from './ai.js';
-import { handleAttack } from './combat.js';
+function handleInventoryAction(
+  state: GameState,
+  action: GameAction
+): GameState {
+  const player = state.actors.find((a) => a.isPlayer);
+  if (!player || !player.inventory || player.inventory.length === 0) {
+    return {
+      ...state,
+      phase: 'PlayerTurn',
+      selectedItemIndex: undefined,
+      message: 'Your inventory is empty.',
+      messageType: 'info',
+    };
+  }
+
+  const inventorySize = player.inventory.length;
+  let newIndex = state.selectedItemIndex ?? 0;
+
+  switch (action) {
+    case GameAction.CLOSE_INVENTORY:
+      return {
+        ...state,
+        phase: 'PlayerTurn',
+        selectedItemIndex: undefined,
+        message: '',
+      };
+
+    case GameAction.SELECT_NEXT_ITEM:
+      newIndex = (newIndex + 1) % inventorySize;
+      return { ...state, selectedItemIndex: newIndex };
+
+    case GameAction.SELECT_PREVIOUS_ITEM:
+      newIndex = (newIndex - 1 + inventorySize) % inventorySize;
+      return { ...state, selectedItemIndex: newIndex };
+
+    case GameAction.CONFIRM_SELECTION:
+      const selectedItem = player.inventory[newIndex];
+      if (!selectedItem) return state;
+
+      let message = `You can't use the ${selectedItem.name}.`;
+      let messageType: MessageType = 'info';
+      let finalActors = state.actors;
+      let newPlayerHp = player.hp.current;
+
+      if (selectedItem.effect === 'heal') {
+        newPlayerHp = Math.min(
+          player.hp.max,
+          player.hp.current + selectedItem.potency
+        );
+        message = `You use the ${selectedItem.name} and heal for ${selectedItem.potency} HP.`;
+        messageType = 'heal';
+      } else if (selectedItem.effect === 'damage') {
+        newPlayerHp -= selectedItem.potency;
+        message = `The ${selectedItem.name} damages you for ${selectedItem.potency} HP!`;
+        messageType = 'damage';
+      }
+
+      const updatedPlayer = {
+        ...player,
+        hp: { ...player.hp, current: newPlayerHp },
+      };
+
+      const newInventory = player.inventory.filter(
+        (_, index) => index !== newIndex
+      );
+      const playerWithNewInventory = { ...updatedPlayer, inventory: newInventory };
+
+      finalActors = state.actors.map((a) =>
+        a.id === player.id ? playerWithNewInventory : a
+      );
+
+      return {
+        ...state,
+        actors: finalActors,
+        phase: 'EnemyTurn',
+        selectedItemIndex: undefined,
+        message,
+        messageType,
+      };
+
+    default:
+      return state;
+  }
+}
 
 function handlePlayerAction(state: GameState, action: GameAction): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
 
+  if (action === GameAction.OPEN_INVENTORY) {
+    const hasItems = player.inventory && player.inventory.length > 0;
+    return {
+      ...state,
+      phase: 'Inventory',
+      selectedItemIndex: hasItems ? 0 : undefined,
+      message: hasItems
+        ? 'Select an item to use.'
+        : 'Your inventory is empty.',
+      messageType: 'info',
+    };
+  }
+
+  if (action === GameAction.PICKUP_ITEM) {
+    const item = state.items.find(
+      (i) =>
+        i.position.x === player.position.x && i.position.y === player.position.y
+    );
+
+    if (!item) {
+      return {
+        ...state,
+        message: 'There is nothing here to pick up.',
+        messageType: 'info',
+      };
+    }
+
+    const playerInventory = player.inventory || [];
+    const updatedInventory = [...playerInventory, item];
+    const updatedPlayer = { ...player, inventory: updatedInventory };
+
+    const updatedItems = state.items.filter((i) => i.id !== item.id);
+
+    const updatedActors = state.actors.map((a) =>
+      a.id === player.id ? updatedPlayer : a
+    );
+
+    return {
+      ...state,
+      actors: updatedActors,
+      items: updatedItems,
+      message: `You picked up the ${item.name}.`,
+      messageType: 'info',
+      phase: 'PlayerTurn',
+    };
+  }
+
   const delta = MOVEMENT_DELTAS[action];
-  if (!delta) return state;
+  if (!delta) {
+    return state;
+  }
 
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
 
-  // Check for enemy at target location
   const targetEnemy = state.actors.find(
     (a) => !a.isPlayer && a.position.x === targetX && a.position.y === targetY
   );
@@ -45,7 +176,6 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
     return { ...stateAfterAttack, phase: 'EnemyTurn' };
   }
 
-  // Check for blocked tiles
   if (isBlocked(state, targetX, targetY)) {
     const boundaryMessage =
       targetX < 0 ||
@@ -54,85 +184,33 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       targetY >= state.map.height
         ? "You can't step beyond the treeline."
         : 'A wall blocks your way.';
-    return { ...state, message: boundaryMessage, messageType: 'info' }; // No turn passes
+    return { ...state, message: boundaryMessage, messageType: 'info' };
   }
 
-  // The player is moving to a new tile
   const actorsAfterPlayerMove = state.actors.map((actor) =>
     actor.id === player.id
       ? { ...actor, position: { x: targetX, y: targetY } }
       : actor
   );
 
-  let message = delta.successMessage;
-  let messageType: import('/app/src/engine/state.js').MessageType = 'info';
-  let finalActors = actorsAfterPlayerMove;
-  let finalItems = state.items;
-
-  // Check for an item (potion) at the target location
-  const targetItem = state.items.find(
-    (item) => item.position.x === targetX && item.position.y === targetY
-  );
-
-  if (targetItem) {
-    const playerAfterMove = finalActors.find((a) => a.isPlayer)!;
-    let newPlayerHp = playerAfterMove.hp.current;
-
-    if (targetItem.effect === 'heal') {
-      newPlayerHp = Math.min(
-        playerAfterMove.hp.max,
-        playerAfterMove.hp.current + targetItem.potency
-      );
-      message = `You drink a potion and feel refreshed, gaining ${targetItem.potency} HP.`;
-      messageType = 'heal';
-    } else if (targetItem.effect === 'damage') {
-      newPlayerHp -= targetItem.potency;
-      message = `The potion burns your throat! You lose ${targetItem.potency} HP.`;
-      messageType = 'damage';
-    }
-
-    const updatedPlayer = {
-      ...playerAfterMove,
-      hp: { ...playerAfterMove.hp, current: newPlayerHp },
-    };
-
-    finalActors = finalActors.map((actor) =>
-      actor.id === player.id ? updatedPlayer : actor
-    );
-    finalItems = state.items.filter((item) => item.id !== targetItem.id);
-
-    if (newPlayerHp <= 0) {
-      return {
-        ...state,
-        actors: finalActors,
-        items: finalItems,
-        phase: 'Loss',
-        message: `${message} You have been defeated.`,
-        messageType: 'death',
-      };
-    }
-  }
-
-  // Check for win condition
   const isExit = state.map.tiles[targetY][targetX].char === '>';
   if (isExit) {
     return {
       ...state,
-      actors: finalActors,
-      items: finalItems,
+      actors: actorsAfterPlayerMove,
+      items: state.items,
       phase: 'Win',
       message: 'You have escaped the dungeon!',
       messageType: 'win',
     };
   }
 
-  // End of turn
   return {
     ...state,
-    actors: finalActors,
-    items: finalItems,
-    message,
-    messageType,
+    actors: actorsAfterPlayerMove,
+    items: state.items,
+    message: delta.successMessage,
+    messageType: 'info',
     phase: 'EnemyTurn',
   };
 }
@@ -142,13 +220,11 @@ function handleEnemyTurns(state: GameState): GameState {
   let stateAfterEnemyTurns = state;
 
   for (const enemy of enemies) {
-    // Ensure the enemy is still alive before its turn
     if (stateAfterEnemyTurns.actors.find((a) => a.id === enemy.id)) {
       stateAfterEnemyTurns = runEnemyTurn(enemy, stateAfterEnemyTurns);
     }
   }
 
-  // Check for loss condition after all enemies have acted
   const player = stateAfterEnemyTurns.actors.find((a) => a.isPlayer);
   if (!player || player.hp.current <= 0) {
     return {
@@ -159,7 +235,6 @@ function handleEnemyTurns(state: GameState): GameState {
     };
   }
 
-  // Return to player's turn
   return { ...stateAfterEnemyTurns, phase: 'PlayerTurn' };
 }
 
@@ -172,14 +247,17 @@ export function applyActionToState(
   }
 
   if (state.phase === 'Win' || state.phase === 'Loss') {
-    return state; // Game is over, no more actions
+    return state;
   }
 
   if (state.phase === 'PlayerTurn') {
     return handlePlayerAction(state, action);
   }
 
-  // This function is now only for player actions, so we shouldn't get here.
+  if (state.phase === 'Inventory') {
+    return handleInventoryAction(state, action);
+  }
+
   return state;
 }
 

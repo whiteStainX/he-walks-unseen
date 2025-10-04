@@ -1,4 +1,4 @@
-import type { Actor, GameState } from '../engine/state.js';
+import type { Actor, GameState, MessageType } from '../engine/state.js';
 
 /**
  * Handles an attack between two actors.
@@ -7,8 +7,6 @@ import type { Actor, GameState } from '../engine/state.js';
  * @param state The current game state.
  * @returns The new game state after the attack.
  */
-import type { Actor, GameState, MessageType } from '../engine/state.js';
-
 export function handleAttack(
   attacker: Actor,
   defender: Actor,

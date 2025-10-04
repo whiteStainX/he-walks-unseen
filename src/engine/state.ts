@@ -17,6 +17,7 @@ export interface Actor {
   attack: number;
   defense: number;
   isPlayer?: true;
+  inventory?: Item[];
 }
 
 export interface Tile {
@@ -53,4 +54,5 @@ export interface GameState {
   };
   message: string; // A message to display to the player (e.g., "You can't move there.")
   messageType: MessageType;
+  selectedItemIndex?: number;
 }
