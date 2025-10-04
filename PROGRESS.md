@@ -37,3 +37,21 @@ This milestone introduced foundational gameplay systems that add depth and playe
     -   Players now gain experience points (XP) for defeating enemies.
     -   A leveling system was introduced, allowing players to increase their health and attack power.
     -   The UI was updated to display the player's current level and XP.
+
+## Milestone 4: Foundational Systems Expansion (October 2025)
+
+This milestone focused on building robust, scalable, and data-driven foundations for key gameplay systems, in line with the "Stage 2: Expanding the Systems" phase of development.
+
+-   **Inventory Enhancements:**
+    -   Grouped stackable items in the inventory view for a cleaner UI.
+    -   Added a "drop item" action, allowing players to manage their inventory more effectively.
+-   **Foundational Skill System:**
+    -   Implemented the basic infrastructure for a skill system.
+    -   Players can now acquire skills through leveling up, starting with a passive "Power Strike" skill.
+-   **Flexible AI System:**
+    -   Moved to a data-driven AI model using behavior flags (`canWander`, `canChase`).
+    -   This allows for the easy creation of new enemy types with different behaviors.
+-   **Environmental Interactions:**
+    -   Introduced a unified `Entity` system to represent all objects in the game world.
+    -   Implemented a component-based interaction system, starting with doors and chests.
+    -   Added a `Targeting` mode for directional interactions.
