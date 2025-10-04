@@ -35,23 +35,32 @@ function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null 
   return walkableTiles[randomIndex];
 }
 
-export function createInitialGameState(message?: string): GameState {
+interface InitialStateOptions {
+  message?: string;
+  player?: Actor;
+  floor?: number;
+}
+
+export function createInitialGameState(options: InitialStateOptions = {}): GameState {
+  const { message, player: existingPlayer, floor = 1 } = options;
   const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT);
 
-  const player: Actor = {
-    id: 'player',
-    name: 'Player',
-    char: '@',
-    color: 'white',
-    position: playerStart,
-    hp: { current: 10, max: 10 },
-    attack: 2,
-    defense: 1,
-    isPlayer: true,
-    level: 1,
-    xp: 0,
-    xpToNextLevel: 100,
-  };
+  const player: Actor = existingPlayer
+    ? { ...existingPlayer, position: playerStart }
+    : {
+        id: 'player',
+        name: 'Player',
+        char: '@',
+        color: 'white',
+        position: playerStart,
+        hp: { current: 10, max: 10 },
+        attack: 2,
+        defense: 1,
+        isPlayer: true,
+        level: 1,
+        xp: 0,
+        xpToNextLevel: 100,
+      };
 
   const actors: Actor[] = [player];
   const entities: Entity[] = [];
@@ -144,7 +153,8 @@ export function createInitialGameState(message?: string): GameState {
       width: MAP_WIDTH,
       height: MAP_HEIGHT,
     },
-    message: message ?? 'Welcome! Use the arrow keys or WASD to move. Find the > to exit.',
+    message: message ?? `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
     messageType: 'info',
+    currentFloor: floor,
   };
 }

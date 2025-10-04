@@ -80,4 +80,5 @@ export interface GameState {
   messageType: MessageType;
   selectedItemIndex?: number;
   target?: Point;
+  currentFloor: number;
 }
