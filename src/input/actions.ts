@@ -21,6 +21,7 @@ export enum GameAction {
   SELECT_NEXT_ITEM,
   SELECT_PREVIOUS_ITEM,
   CONFIRM_SELECTION,
+  DROP_ITEM,
 
   // Narrative
   COMMIT,

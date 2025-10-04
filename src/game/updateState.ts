@@ -38,7 +38,14 @@ function handleInventoryAction(
     };
   }
 
-  const inventorySize = player.inventory.length;
+  const groupedInventory = Object.keys(
+    player.inventory.reduce((acc, item) => {
+      acc[item.name] = (acc[item.name] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  );
+
+  const inventorySize = groupedInventory.length;
   let newIndex = state.selectedItemIndex ?? 0;
 
   switch (action) {
@@ -59,24 +66,29 @@ function handleInventoryAction(
       return { ...state, selectedItemIndex: newIndex };
 
     case GameAction.CONFIRM_SELECTION:
-      const selectedItem = player.inventory[newIndex];
-      if (!selectedItem) return state;
+      const selectedItemName = groupedInventory[newIndex];
+      if (!selectedItemName) return state;
 
-      let message = `You can't use the ${selectedItem.name}.`;
+      const itemToUse = player.inventory.find(
+        (item) => item.name === selectedItemName
+      );
+      if (!itemToUse) return state;
+
+      let message = `You can't use the ${itemToUse.name}.`;
       let messageType: MessageType = 'info';
       let finalActors = state.actors;
       let newPlayerHp = player.hp.current;
 
-      if (selectedItem.effect === 'heal') {
+      if (itemToUse.effect === 'heal') {
         newPlayerHp = Math.min(
           player.hp.max,
-          player.hp.current + selectedItem.potency
+          player.hp.current + itemToUse.potency
         );
-        message = `You use the ${selectedItem.name} and heal for ${selectedItem.potency} HP.`;
+        message = `You use the ${itemToUse.name} and heal for ${itemToUse.potency} HP.`;
         messageType = 'heal';
-      } else if (selectedItem.effect === 'damage') {
-        newPlayerHp -= selectedItem.potency;
-        message = `The ${selectedItem.name} damages you for ${selectedItem.potency} HP!`;
+      } else if (itemToUse.effect === 'damage') {
+        newPlayerHp -= itemToUse.potency;
+        message = `The ${itemToUse.name} damages you for ${itemToUse.potency} HP!`;
         messageType = 'damage';
       }
 
@@ -85,8 +97,11 @@ function handleInventoryAction(
         hp: { ...player.hp, current: newPlayerHp },
       };
 
+      const itemIndexToRemove = player.inventory.findIndex(
+        (item) => item.id === itemToUse.id
+      );
       const newInventory = player.inventory.filter(
-        (_, index) => index !== newIndex
+        (_, index) => index !== itemIndexToRemove
       );
       const playerWithNewInventory = { ...updatedPlayer, inventory: newInventory };
 
@@ -101,6 +116,44 @@ function handleInventoryAction(
         selectedItemIndex: undefined,
         message,
         messageType,
+      };
+
+    case GameAction.DROP_ITEM:
+      const selectedItemNameToDrop = groupedInventory[newIndex];
+      if (!selectedItemNameToDrop) return state;
+
+      const itemToDrop = player.inventory.find(
+        (item) => item.name === selectedItemNameToDrop
+      );
+      if (!itemToDrop) return state;
+
+      const itemIndexToRemoveDropping = player.inventory.findIndex(
+        (item) => item.id === itemToDrop.id
+      );
+
+      const newInventoryDropping = player.inventory.filter(
+        (_, index) => index !== itemIndexToRemoveDropping
+      );
+
+      const updatedPlayerDropping = {
+        ...player,
+        inventory: newInventoryDropping,
+      };
+
+      const finalActorsDropping = state.actors.map((a) =>
+        a.id === player.id ? updatedPlayerDropping : a
+      );
+
+      const droppedItem = { ...itemToDrop, position: player.position };
+
+      return {
+        ...state,
+        actors: finalActorsDropping,
+        items: [...state.items, droppedItem],
+        phase: 'EnemyTurn',
+        selectedItemIndex: undefined,
+        message: `You drop the ${itemToDrop.name}.`,
+        messageType: 'info',
       };
 
     default:

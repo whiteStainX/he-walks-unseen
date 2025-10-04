@@ -21,17 +21,28 @@ const InventoryView: React.FC<InventoryViewProps> = ({
       {inventory.length === 0 ? (
         <Text>Your inventory is empty.</Text>
       ) : (
-        inventory.map((item, index) => {
+        Object.entries(
+          inventory.reduce((acc, item) => {
+            acc[item.name] = (acc[item.name] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>)
+        ).map(([name, count], index) => {
           const isSelected = isInventoryMode && index === selectedItemIndex;
           return (
-            <Box key={item.id}>
+            <Box key={name}>
               <Text color={isSelected ? 'cyan' : 'white'}>
                 {isSelected ? '> ' : '  '}
-                {item.name}
+                {name}
+                {count > 1 ? ` (x${count})` : ''}
               </Text>
             </Box>
           );
         })
+      )}
+      {isInventoryMode && inventory.length > 0 && (
+        <Box marginTop={1}>
+          <Text>Press 'd' to drop an item.</Text>
+        </Box>
       )}
     </Box>
   );
