@@ -32,28 +32,36 @@
     "name": "Skeleton",
     "char": "s",
     "color": "white",
-    "hp": { "current": 8, "max": 8 },
+    "hp": {
+      "max": 5,
+      "current": 5
+    },
     "attack": 2,
     "defense": 1,
-    "xpValue": 50,
+    "xp": 10,
     "ai": {
-      "canChase": true,
-      "canWander": true
-    }
+      "canWander": true,
+      "canChase": true
+    },
+    "loot": "key"
   },
   {
     "id": "ghost",
     "name": "Ghost",
-    "char": "G",
+    "char": "g",
     "color": "white",
-    "hp": { "current": 10, "max": 10 },
-    "attack": 2,
+    "hp": {
+      "max": 8,
+      "current": 8
+    },
+    "attack": 3,
     "defense": 0,
-    "xpValue": 75,
+    "xp": 15,
     "ai": {
-      "canChase": true,
       "canWander": true,
+      "canChase": true,
       "canPassThroughWalls": true
-    }
+    },
+    "loot": "unidentified-potion"
   }
 ]

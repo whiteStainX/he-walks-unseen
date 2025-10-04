@@ -102,8 +102,6 @@ npm test
 
 ## 6. Building for Production
 
-You can compile the TypeScript code into JavaScript using the build script:
-
 ```bash
 npm run build
 ```
@@ -113,3 +111,7 @@ The output will be placed in the `/dist` directory. You can then run the compile
 ```bash
 node dist/main.js
 ```
+
+## 7. Known Issues
+
+-   **Intermittent Door Bug:** There is a known intermittent bug where doors do not visually update correctly. This issue is being tracked in the `BUGLOG.md` file.

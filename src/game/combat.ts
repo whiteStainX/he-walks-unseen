@@ -1,5 +1,7 @@
+import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType } from '../engine/state.js';
+import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
+import { getResource } from '../engine/resourceManager.js';
 
 /**
  * Handles an attack between two actors.
@@ -29,6 +31,7 @@ export function handleAttack(
   }
 
   let messageType: MessageType = 'info';
+  let newItems = [...state.items];
 
   // Update the defender's HP
   let newActors = state.actors.map((actor) => {
@@ -47,8 +50,8 @@ export function handleAttack(
     messageType = 'death';
 
     // If player defeated an enemy, grant XP
-    if (attacker.isPlayer && defender.xpValue && defender.xpValue > 0) {
-      const xpGained = defender.xpValue;
+    if (attacker.isPlayer && defender.xp && defender.xp > 0) {
+      const xpGained = defender.xp;
       message += ` You gain ${xpGained} XP.`;
 
       newActors = newActors.map((actor) => {
@@ -57,6 +60,21 @@ export function handleAttack(
         }
         return actor;
       });
+    }
+
+    // Handle loot drops
+    if (defender.loot) {
+      const itemTemplates = getResource<any[]>('items');
+      const lootTemplate = itemTemplates.find(i => i.id === defender.loot);
+      if (lootTemplate) {
+        const newItem: Item = {
+          ...lootTemplate,
+          id: nanoid(),
+          position: defender.position,
+        };
+        newItems.push(newItem);
+        message += ` The ${defender.name} drops a ${lootTemplate.name}.`;
+      }
     }
 
     // Remove defeated actor
@@ -76,6 +94,7 @@ export function handleAttack(
   const finalState = {
     ...state,
     actors: newActors,
+    items: newItems,
     message,
     messageType,
   };
