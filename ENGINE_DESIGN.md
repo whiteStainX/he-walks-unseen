@@ -14,7 +14,7 @@
 - **Resource Loading**: Discovers every JSON file in `/data`, parses them, and caches the result for fast lookup.【F:src/engine/resourceManager.ts†L1-L42】
 - **Game State Modeling**: Centralized `GameState` snapshot includes a unified `Entity` system. `Actors`, `Items`, and other interactables are all extensions of the base `Entity` type. Interactions are handled through a component-based approach. The game state also tracks the `currentFloor` and caches the state of visited floors in `floorStates`.【F:src/engine/state.ts†L2-L55】
 - **Event-Driven Core**: Global `EventEmitter` enables decoupled communication across systems and the UI.【F:src/engine/events.ts†L1-L6】
-- **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Inventory`, `Targeting`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
+- **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Inventory`, `Targeting`, `CombatMenu`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
 - **Git-Like Narrative History**: Supports committing deep-copied state snapshots, naming timeline branches, and checking out alternate histories.【F:src/engine/narrativeEngine.ts†L1-L82】
 - **Script Processor**: Executes simple verb-argument command tuples and broadcasts side effects (dialogue, inventory hooks).【F:src/engine/scriptProcessor.ts†L1-L27】
 - **Terminal Presentation Layer**: Ink-based map renderer overlays actors and items on top of cached map tiles and surfaces system messages with color-coded feedback.【F:src/components/MapView.tsx†L1-L44】
@@ -23,7 +23,7 @@
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
-- **Simple AI**: Enemies follow a data-driven AI with behavior flags (`canWander`, `canChase`, `canPassThroughWalls`). The engine includes basic bump-to-attack combat.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L49】
+- **Simple AI**: Enemies follow a data-driven AI with behavior flags (`canWander`, `canChase`, `canPassThroughWalls`). The engine features a menu-driven combat system (replacing bump-to-attack) with modular logic for damage calculation and attack resolution.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L124】
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.【F:src/engine/scriptProcessor.ts†L9-L26】
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.【F:src/main.tsx†L1-L48】
 - **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.【F:src/engine/resourceManager.ts†L15-L29】

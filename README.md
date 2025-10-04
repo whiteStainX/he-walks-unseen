@@ -43,6 +43,14 @@ This project implements several classic roguelike mechanics to create a challeng
 | `Enter`         | Use Selected Item     |
 | `Escape` / `i`  | Close Inventory       |
 
+### Combat Menu Mode
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w` / `↑`         | Select Previous Option|
+| `s` / `↓`         | Select Next Option    |
+| `Enter`         | Confirm Action        |
+| `Escape`        | Cancel Combat         |
+
 
 ## 4. Architecture
 

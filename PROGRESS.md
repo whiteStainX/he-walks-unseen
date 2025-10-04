@@ -68,3 +68,15 @@ This milestone introduced a sense of progression and variety to the dungeon, mov
     -   Introduced two new themes: "The Overgrown Keep" and "The Sunken Crypt".
 -   **Bug Fixes:**
     -   Fixed a critical and intermittent bug where doors would not visually update correctly, ensuring a more stable and reliable player experience.
+
+## Milestone 6: Combat System Overhaul (October 2025)
+
+This milestone refactored the combat system to be more robust and strategic, moving beyond the initial "bump-to-attack" mechanic.
+
+-   **Modular Combat Foundation:**
+    -   Refactored the core combat logic into smaller, more modular functions (`calculateDamage`, `resolveAttack`).
+    -   This makes the system more transparent, extensible, and easier to test.
+    -   Greatly expanded the test suite to cover a wide range of combat scenarios.
+-   **Strategic Combat Menu:**
+    -   Replaced the "bump-to-attack" mechanic with a menu-driven system.
+    -   When engaging an enemy, players are now presented with options ("Attack", "Cancel"), allowing for more deliberate tactical decisions.
