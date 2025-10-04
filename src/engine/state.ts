@@ -11,7 +11,12 @@ export interface Entity {
   char: string;
   color?: string;
   position: Point;
-  interaction?: DoorInteraction | ChestInteraction;
+  interaction?: DoorInteraction | ChestInteraction | StairsInteraction;
+}
+
+export interface StairsInteraction {
+  type: 'stairs';
+  direction: 'up' | 'down';
 }
 
 export interface DoorInteraction {
@@ -82,4 +87,5 @@ export interface GameState {
   selectedItemIndex?: number;
   target?: Point;
   currentFloor: number;
+  floorStates: Map<number, GameState>;
 }

@@ -39,10 +39,11 @@ interface InitialStateOptions {
   message?: string;
   player?: Actor;
   floor?: number;
+  floorStates?: Map<number, GameState>;
 }
 
 export function createInitialGameState(options: InitialStateOptions = {}): GameState {
-  const { message, player: existingPlayer, floor = 1 } = options;
+  const { message, player: existingPlayer, floor = 1, floorStates = new Map() } = options;
 
   const themes = getResource<any>('themes');
   const theme = Object.values(themes).find((t: any) => t.floors.includes(floor)) || themes['overgrown-keep'];
@@ -141,6 +142,30 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     }
   }
 
+  const downstairsTemplate = entityTemplates.find((e) => e.id === 'downstairs');
+  if (downstairsTemplate && floor < 5) { // Don't spawn downstairs on the last floor
+    const downstairs: Entity = {
+      ...downstairsTemplate,
+      id: nanoid(),
+      position: exitPosition,
+    };
+    entities.push(downstairs);
+    occupiedPoints.push(exitPosition);
+  }
+
+  if (floor > 1) {
+    const upstairsTemplate = entityTemplates.find((e) => e.id === 'upstairs');
+    if (upstairsTemplate) {
+      const upstairs: Entity = {
+        ...upstairsTemplate,
+        id: nanoid(),
+        position: playerStart, // Player starts at the upstairs
+      };
+      entities.push(upstairs);
+      occupiedPoints.push(playerStart);
+    }
+  }
+
   return {
     phase: 'PlayerTurn',
     actors,
@@ -154,5 +179,6 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     message: message ?? `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
     messageType: 'info',
     currentFloor: floor,
+    floorStates,
   };
 }

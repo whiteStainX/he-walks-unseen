@@ -172,7 +172,7 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
   );
 
   if (!entity || !entity.interaction) {
-    return { ...state, message: 'There is nothing to interact with there.' };
+    return { ...state, message: 'There is nothing to interact with here.' };
   }
 
   switch (entity.interaction.type) {
@@ -250,6 +250,27 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         message: 'You open the chest and find a potion.',
         phase: 'EnemyTurn',
       };
+    }
+
+    case 'stairs': {
+      const currentFloor = state.currentFloor;
+      const floorStates = state.floorStates;
+
+      // Save current floor state
+      floorStates.set(currentFloor, state);
+
+      const direction = entity.interaction.direction;
+      const nextFloor = direction === 'down' ? currentFloor + 1 : currentFloor - 1;
+
+      if (floorStates.has(nextFloor)) {
+        return floorStates.get(nextFloor)!;
+      } else {
+        return createInitialGameState({
+          player,
+          floor: nextFloor,
+          floorStates,
+        });
+      }
     }
   }
 
@@ -342,6 +363,14 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
 
+  const targetEntity = state.entities.find(
+    (e) => e.position.x === targetX && e.position.y === targetY
+  );
+
+  if (targetEntity && targetEntity.interaction?.type === 'stairs') {
+    return handleInteraction(state, targetX, targetY);
+  }
+
   const targetEnemy = state.actors.find(
     (a) => !a.isPlayer && a.position.x === targetX && a.position.y === targetY
   );
@@ -367,23 +396,6 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       ? { ...actor, position: { x: targetX, y: targetY } }
       : actor
   );
-
-  const isExit = state.map.tiles[targetY][targetX].char === '>';
-  if (isExit) {
-    if (state.currentFloor === 5) {
-      return {
-        ...state,
-        phase: 'Win',
-        message: 'You have escaped the dungeon!',
-        messageType: 'win',
-      };
-    } else {
-      return createInitialGameState({
-        player: player,
-        floor: state.currentFloor + 1,
-      });
-    }
-  }
 
   return {
     ...state,
