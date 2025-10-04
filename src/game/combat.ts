@@ -13,7 +13,12 @@ export function handleAttack(
   defender: Actor,
   state: GameState
 ): GameState {
-  const damage = Math.max(0, attacker.attack - defender.defense);
+  const powerStrikeBonus = attacker.skills?.some((s) => s.id === 'power-strike')
+    ? 1
+    : 0;
+  const totalAttack = attacker.attack + powerStrikeBonus;
+
+  const damage = Math.max(0, totalAttack - defender.defense);
   const newDefenderHp = defender.hp.current - damage;
 
   let message = `${attacker.name} attacks ${defender.name}`;

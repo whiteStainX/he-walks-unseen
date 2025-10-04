@@ -24,6 +24,13 @@ export interface Actor {
   xpToNextLevel?: number;
   // Enemy-specific XP value
   xpValue?: number;
+  skills?: Skill[];
+}
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
 }
 
 export interface Tile {
