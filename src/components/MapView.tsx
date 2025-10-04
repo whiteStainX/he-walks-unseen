@@ -29,7 +29,7 @@ interface DisplayTile {
 }
 
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
-  const { actors, items, map, message, messageType } = state;
+  const { actors, items, entities, map, message, messageType } = state;
   const player = actors.find((a) => a.isPlayer);
 
   // Create a grid of display objects, starting with the base map tiles
@@ -52,6 +52,22 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
         ...displayGrid[item.position.y][item.position.x],
         char: item.char,
         color: item.color || 'white',
+      };
+    }
+  }
+
+  // Overlay entities on the map
+  for (const entity of entities) {
+    if (
+      entity.position.y >= 0 &&
+      entity.position.y < map.height &&
+      entity.position.x >= 0 &&
+      entity.position.x < map.width
+    ) {
+      displayGrid[entity.position.y][entity.position.x] = {
+        ...displayGrid[entity.position.y][entity.position.x],
+        char: entity.char,
+        color: entity.color || 'white',
       };
     }
   }

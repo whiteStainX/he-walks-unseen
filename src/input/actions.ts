@@ -11,7 +11,8 @@ export enum GameAction {
   MOVE_WEST,
 
   // Interaction
-  INTERACT,
+  START_INTERACTION,
+  CANCEL_TARGETING,
   USE_ITEM,
   PICKUP_ITEM,
 
@@ -21,6 +22,7 @@ export enum GameAction {
   SELECT_NEXT_ITEM,
   SELECT_PREVIOUS_ITEM,
   CONFIRM_SELECTION,
+  DROP_ITEM,
 
   // Narrative
   COMMIT,

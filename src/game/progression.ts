@@ -28,6 +28,15 @@ export function checkForLevelUp(state: GameState): GameState {
   const newMaxHp = player.hp.max + LEVEL_UP_HP_BONUS;
   const newAttack = player.attack + LEVEL_UP_ATTACK_BONUS;
 
+  const newSkills = [
+    ...(player.skills || []),
+    {
+      id: 'power-strike',
+      name: 'Power Strike',
+      description: 'Increases your attack by 1.',
+    },
+  ];
+
   const leveledUpPlayer: Actor = {
     ...player,
     level: newLevel,
@@ -38,6 +47,7 @@ export function checkForLevelUp(state: GameState): GameState {
       current: newMaxHp, // Fully heal on level up
     },
     attack: newAttack,
+    skills: newSkills,
   };
 
   const newActors = state.actors.map((actor) =>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import MapView from './MapView.js';
 import InventoryView from './InventoryView.js';
+import SkillsView from './SkillsView.js';
 import type { GameState, MessageType } from '../engine/state.js';
 import type { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
@@ -49,7 +50,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
   useInput(
     (input, key) => {
-      if (state.phase === 'PlayerTurn' || state.phase === 'Inventory') {
+      if (state.phase === 'PlayerTurn' || state.phase === 'Inventory' || state.phase === 'Targeting') {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
           setState((currentState) => applyActionToState(currentState, action));
@@ -62,6 +63,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
       isActive:
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
+        state.phase === 'Targeting' ||
         state.phase === 'Loss',
     }
   );
@@ -137,6 +139,8 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
           selectedItemIndex={state.selectedItemIndex}
           phase={state.phase}
         />
+
+        <SkillsView skills={player?.skills ?? []} />
 
         <Box flexDirection="column" paddingTop={1}>
           <Text bold>Log</Text>

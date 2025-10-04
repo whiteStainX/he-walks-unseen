@@ -1,0 +1,13 @@
+[
+  {
+    "id": "unidentified-potion",
+    "name": "Unidentified Potion",
+    "char": "!",
+    "color": "magenta",
+    "effects": ["heal", "damage"],
+    "potency": {
+      "heal": 5,
+      "damage": 3
+    }
+  }
+]
