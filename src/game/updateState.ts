@@ -3,7 +3,7 @@ import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction,
 import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
-import { handleAttack } from './combat.js';
+import { resolveAttack } from './combat.js';
 
 interface MovementDelta {
   dx: number;
@@ -385,7 +385,7 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
   );
 
   if (targetEnemy) {
-    const stateAfterAttack = handleAttack(player, targetEnemy, state);
+    const stateAfterAttack = resolveAttack(player, targetEnemy, state);
     return { ...stateAfterAttack, phase: 'EnemyTurn' };
   }
 
