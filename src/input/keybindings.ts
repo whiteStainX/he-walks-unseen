@@ -18,6 +18,13 @@ const inventoryBindings: Record<string, GameAction> = {
   d: GameAction.DROP_ITEM,
 };
 
+const targetingBindings: Record<string, GameAction> = {
+  w: GameAction.MOVE_NORTH,
+  s: GameAction.MOVE_SOUTH,
+  d: GameAction.MOVE_EAST,
+  a: GameAction.MOVE_WEST,
+};
+
 export function resolveAction(
   input: string,
   key: Key,
@@ -43,7 +50,7 @@ export function resolveAction(
     if (key.downArrow) return GameAction.MOVE_SOUTH;
     if (key.rightArrow) return GameAction.MOVE_EAST;
     if (key.leftArrow) return GameAction.MOVE_WEST;
-    if (key.escape) return GameAction.CANCEL_TARGETING; // I'll add this action next
+    if (key.escape) return GameAction.CANCEL_TARGETING;
   }
 
   // Then, handle character-based input.
@@ -58,12 +65,6 @@ export function resolveAction(
       return playerTurnBindings[normalizedInput];
     }
     if (phase === 'Targeting') {
-      const targetingBindings: Record<string, GameAction> = {
-        w: GameAction.MOVE_NORTH,
-        s: GameAction.MOVE_SOUTH,
-        d: GameAction.MOVE_EAST,
-        a: GameAction.MOVE_WEST,
-      };
       return targetingBindings[normalizedInput];
     }
     if (phase === 'Inventory') {

@@ -180,5 +180,6 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     messageType: 'info',
     currentFloor: floor,
     floorStates,
+    log: [],
   };
 }

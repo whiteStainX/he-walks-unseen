@@ -1,21 +1,24 @@
 import { nanoid } from 'nanoid';
-import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction } from '../engine/state.js';
-import { GameAction } from '../input/actions.js';
+import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction, Actor } from '../engine/state.js';
+import { GameAction as PlayerAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
 import { handleAttack } from './combat.js';
+import type { GameAction } from './actions.js';
+import { eventBus, DamageDealtEvent, ActorDiedEvent, AttackResolvedEvent } from '../engine/events.js';
+import { getResource } from '../engine/resourceManager.js';
+import { checkForLevelUp } from './progression.js';
 
 interface MovementDelta {
   dx: number;
   dy: number;
-  successMessage: string;
 }
 
-const MOVEMENT_DELTAS: Partial<Record<GameAction, MovementDelta>> = {
-  [GameAction.MOVE_NORTH]: { dx: 0, dy: -1, successMessage: 'You move north.' },
-  [GameAction.MOVE_SOUTH]: { dx: 0, dy: 1, successMessage: 'You move south.' },
-  [GameAction.MOVE_EAST]: { dx: 1, dy: 0, successMessage: 'You move east.' },
-  [GameAction.MOVE_WEST]: { dx: -1, dy: 0, successMessage: 'You move west.' },
+const MOVEMENT_DELTAS: Partial<Record<PlayerAction, MovementDelta>> = {
+  [PlayerAction.MOVE_NORTH]: { dx: 0, dy: -1 },
+  [PlayerAction.MOVE_SOUTH]: { dx: 0, dy: 1 },
+  [PlayerAction.MOVE_EAST]: { dx: 1, dy: 0 },
+  [PlayerAction.MOVE_WEST]: { dx: -1, dy: 0 },
 };
 
 function isBlocked(state: GameState, x: number, y: number): boolean {
@@ -27,7 +30,7 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
 
 function handleInventoryAction(
   state: GameState,
-  action: GameAction
+  action: PlayerAction
 ): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player || !player.inventory || player.inventory.length === 0) {
@@ -51,7 +54,7 @@ function handleInventoryAction(
   let newIndex = state.selectedItemIndex ?? 0;
 
   switch (action) {
-    case GameAction.CLOSE_INVENTORY:
+    case PlayerAction.CLOSE_INVENTORY:
       return {
         ...state,
         phase: 'PlayerTurn',
@@ -59,15 +62,15 @@ function handleInventoryAction(
         message: '',
       };
 
-    case GameAction.SELECT_NEXT_ITEM:
+    case PlayerAction.SELECT_NEXT_ITEM:
       newIndex = (newIndex + 1) % inventorySize;
       return { ...state, selectedItemIndex: newIndex };
 
-    case GameAction.SELECT_PREVIOUS_ITEM:
+    case PlayerAction.SELECT_PREVIOUS_ITEM:
       newIndex = (newIndex - 1 + inventorySize) % inventorySize;
       return { ...state, selectedItemIndex: newIndex };
 
-    case GameAction.CONFIRM_SELECTION:
+    case PlayerAction.CONFIRM_SELECTION:
       const selectedItemName = groupedInventory[newIndex];
       if (!selectedItemName) return state;
 
@@ -120,7 +123,7 @@ function handleInventoryAction(
         messageType,
       };
 
-    case GameAction.DROP_ITEM:
+    case PlayerAction.DROP_ITEM:
       const selectedItemNameToDrop = groupedInventory[newIndex];
       if (!selectedItemNameToDrop) return state;
 
@@ -286,11 +289,11 @@ export function handleInteraction(state: GameState, x: number, y: number): GameS
   return newState;
 }
 
-function handleTargeting(state: GameState, action: GameAction): GameState {
+function handleTargeting(state: GameState, action: PlayerAction): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
 
-  if (action === GameAction.CANCEL_TARGETING) {
+  if (action === PlayerAction.CANCEL_TARGETING) {
     return { ...state, phase: 'PlayerTurn', message: '' };
   }
 
@@ -305,14 +308,16 @@ function handleTargeting(state: GameState, action: GameAction): GameState {
   return handleInteraction(state, targetX, targetY);
 }
 
-function handlePlayerAction(state: GameState, action: GameAction): GameState {
+function handlePlayerAction(state: GameState, action: PlayerAction): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
 
-  if (action === GameAction.OPEN_INVENTORY) {
+  let newState = { ...state, log: [] };
+
+  if (action === PlayerAction.OPEN_INVENTORY) {
     const hasItems = player.inventory && player.inventory.length > 0;
     return {
-      ...state,
+      ...newState,
       phase: 'Inventory',
       selectedItemIndex: hasItems ? 0 : undefined,
       message: hasItems
@@ -322,7 +327,7 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
     };
   }
 
-  if (action === GameAction.PICKUP_ITEM) {
+  if (action === PlayerAction.PICKUP_ITEM) {
     const item = state.items.find(
       (i) =>
         i.position.x === player.position.x && i.position.y === player.position.y
@@ -330,35 +335,21 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
 
     if (!item) {
       return {
-        ...state,
+        ...newState,
         message: 'There is nothing here to pick up.',
         messageType: 'info',
       };
     }
 
-    const playerInventory = player.inventory || [];
-    const updatedInventory = [...playerInventory, item];
-    const updatedPlayer = { ...player, inventory: updatedInventory };
-
-    const updatedItems = state.items.filter((i) => i.id !== item.id);
-
-    const updatedActors = state.actors.map((a) =>
-      a.id === player.id ? updatedPlayer : a
-    );
-
     return {
-      ...state,
-      actors: updatedActors,
-      items: updatedItems,
-      message: `You picked up the ${item.name}.`,
-      messageType: 'info',
-      phase: 'PlayerTurn',
+      ...newState,
+      pendingAction: { type: 'pickup', actorId: player.id, itemId: item.id },
     };
   }
 
-  if (action === GameAction.START_INTERACTION) {
+  if (action === PlayerAction.START_INTERACTION) {
     return {
-      ...state,
+      ...newState,
       phase: 'Targeting',
       message: 'Which direction?',
     };
@@ -366,27 +357,21 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
 
   const delta = MOVEMENT_DELTAS[action];
   if (!delta) {
-    return state;
+    return newState;
   }
 
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
-
-  const targetEntity = state.entities.find(
-    (e) => e.position.x === targetX && e.position.y === targetY
-  );
-
-  if (targetEntity && targetEntity.interaction?.type === 'stairs') {
-    return handleInteraction(state, targetX, targetY);
-  }
 
   const targetEnemy = state.actors.find(
     (a) => !a.isPlayer && a.position.x === targetX && a.position.y === targetY
   );
 
   if (targetEnemy) {
-    const stateAfterAttack = handleAttack(player, targetEnemy, state);
-    return { ...stateAfterAttack, phase: 'EnemyTurn' };
+    return {
+      ...newState,
+      pendingAction: { type: 'attack', attackerId: player.id, defenderId: targetEnemy.id },
+    };
   }
 
   if (isBlocked(state, targetX, targetY)) {
@@ -397,22 +382,12 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       targetY >= state.map.height
         ? "You can't step beyond the treeline."
         : 'A wall blocks your way.';
-    return { ...state, message: boundaryMessage, messageType: 'info' };
+    return { ...newState, message: boundaryMessage, messageType: 'info' };
   }
 
-  const actorsAfterPlayerMove = state.actors.map((actor) =>
-    actor.id === player.id
-      ? { ...actor, position: { x: targetX, y: targetY } }
-      : actor
-  );
-
   return {
-    ...state,
-    actors: actorsAfterPlayerMove,
-    items: state.items,
-    message: delta.successMessage,
-    messageType: 'info',
-    phase: 'EnemyTurn',
+    ...newState,
+    pendingAction: { type: 'move', actorId: player.id, target: { x: targetX, y: targetY } },
   };
 }
 
@@ -439,11 +414,139 @@ function handleEnemyTurns(state: GameState): GameState {
   return { ...stateAfterEnemyTurns, phase: 'PlayerTurn' };
 }
 
+function processAction(state: GameState): GameState {
+  if (!state.pendingAction) {
+    return state;
+  }
+
+  const action = state.pendingAction as GameAction;
+  let newState = { ...state };
+
+  switch (action.type) {
+    case 'move': {
+      const actor = newState.actors.find((a) => a.id === action.actorId);
+      if (actor) {
+        const newActors = newState.actors.map((a) =>
+          a.id === action.actorId ? { ...a, position: action.target } : a
+        );
+        newState = { ...newState, actors: newActors };
+      }
+      break;
+    }
+    case 'attack': {
+      const attacker = newState.actors.find((a) => a.id === action.attackerId);
+      const defender = newState.actors.find((a) => a.id === action.defenderId);
+      if (attacker && defender) {
+        newState = handleAttack(attacker, defender, newState);
+      }
+      break;
+    }
+    case 'pickup': {
+      const actor = newState.actors.find((a) => a.id === action.actorId);
+      const item = newState.items.find((i) => i.id === action.itemId);
+      if (actor && item) {
+        const newInventory = [...(actor.inventory || []), item];
+        const newActors = newState.actors.map((a) =>
+          a.id === action.actorId ? { ...a, inventory: newInventory } : a
+        );
+        const newItems = newState.items.filter((i) => i.id !== action.itemId);
+        newState = { ...newState, actors: newActors, items: newItems, log: [...newState.log, `You picked up the ${item.name}.`] };
+      }
+      break;
+    }
+  }
+
+  return { ...newState, pendingAction: undefined, phase: 'EnemyTurn' };
+}
+
+function onAttackResolved(state: GameState, event: AttackResolvedEvent): GameState {
+  const attacker = state.actors.find(a => a.id === event.attackerId);
+  const defender = state.actors.find(a => a.id === event.defenderId);
+  if (attacker && defender) {
+    let message = `${attacker.name} attacks ${defender.name}`;
+    if (event.didHit) {
+      message += ' and hits.';
+    } else {
+      message += ' and misses.';
+    }
+    return { ...state, log: [...state.log, message] };
+  }
+  return state;
+}
+
+function onDamageDealt(state: GameState, event: DamageDealtEvent): GameState {
+  let newState = { ...state };
+  const { targetId, damage } = event;
+
+  const newActors = newState.actors.map((actor) => {
+    if (actor.id === targetId) {
+      const newHp = actor.hp.current - damage;
+      if (newHp <= 0) {
+        const actorDiedEvent: ActorDiedEvent = { actorId: actor.id };
+        eventBus.emit('actorDied', actorDiedEvent);
+      }
+      return { ...actor, hp: { ...actor.hp, current: newHp } };
+    }
+    return actor;
+  });
+
+  newState = { ...newState, actors: newActors };
+
+  const defender = newState.actors.find(a => a.id === targetId);
+  if (defender) {
+    newState = { ...newState, log: [...newState.log, `${defender.name} takes ${damage} damage.`] };
+  }
+
+  return newState;
+}
+
+function onActorDied(state: GameState, event: ActorDiedEvent): GameState {
+  let newState = { ...state };
+  const { actorId } = event;
+
+  const actor = newState.actors.find((a) => a.id === actorId);
+  if (!actor) return newState;
+
+  newState = { ...newState, log: [...newState.log, `${actor.name} dies!`] };
+
+  // Grant XP to player
+  if (!actor.isPlayer) {
+    const player = newState.actors.find(a => a.isPlayer);
+    if (player && actor.xp) {
+      const newPlayer = { ...player, xp: (player.xp ?? 0) + actor.xp };
+      const newActors = newState.actors.map(a => a.id === player.id ? newPlayer : a);
+      newState = { ...newState, actors: newActors, log: [...newState.log, `You gain ${actor.xp} XP.`] };
+      newState = checkForLevelUp(newState);
+    }
+  }
+
+  // Handle loot drops
+  if (actor.loot) {
+    const itemTemplates = getResource<any[]>('items');
+    const lootTemplate = itemTemplates.find(i => i.id === actor.loot);
+    if (lootTemplate) {
+      const newItem = {
+        ...lootTemplate,
+        id: nanoid(),
+        position: actor.position,
+      };
+      const newItems = [...newState.items, newItem];
+      newState = { ...newState, items: newItems, log: [...newState.log, `The ${actor.name} drops a ${lootTemplate.name}.`] };
+    }
+  }
+
+  // Remove dead actor
+  const newActors = newState.actors.filter((a) => a.id !== actorId);
+  newState = { ...newState, actors: newActors };
+
+  return newState;
+}
+
 export function applyActionToState(
   state: GameState,
-  action: GameAction
+  action: PlayerAction
 ): GameState {
-  if (action === GameAction.QUIT) {
+  if (action === PlayerAction.QUIT) {
     return { ...state, message: 'Press Ctrl+C to exit the simulation.' };
   }
 
@@ -451,19 +554,47 @@ export function applyActionToState(
     return state;
   }
 
+  let stateAfterPlayerAction: GameState;
   if (state.phase === 'PlayerTurn') {
-    return handlePlayerAction(state, action);
+    stateAfterPlayerAction = handlePlayerAction(state, action);
+  } else if (state.phase === 'Inventory') {
+    stateAfterPlayerAction = handleInventoryAction(state, action);
+  } else if (state.phase === 'Targeting') {
+    stateAfterPlayerAction = handleTargeting(state, action);
+  } else {
+    stateAfterPlayerAction = state;
   }
 
-  if (state.phase === 'Inventory') {
-    return handleInventoryAction(state, action);
+  if (stateAfterPlayerAction.pendingAction) {
+    let stateAfterAction = processAction(stateAfterPlayerAction);
+    let attackResolvedEvents: AttackResolvedEvent[] = [];
+    let damageDealtEvents: DamageDealtEvent[] = [];
+    let actorDiedEvents: ActorDiedEvent[] = [];
+
+    eventBus.on('attackResolved', (event: AttackResolvedEvent) => attackResolvedEvents.push(event));
+    eventBus.on('damageDealt', (event: DamageDealtEvent) => damageDealtEvents.push(event));
+    eventBus.on('actorDied', (event: ActorDiedEvent) => actorDiedEvents.push(event));
+
+    for (const event of attackResolvedEvents) {
+      stateAfterAction = onAttackResolved(stateAfterAction, event);
+    }
+
+    for (const event of damageDealtEvents) {
+      stateAfterAction = onDamageDealt(stateAfterAction, event);
+    }
+
+    for (const event of actorDiedEvents) {
+      stateAfterAction = onActorDied(stateAfterAction, event);
+    }
+
+    eventBus.removeAllListeners('attackResolved');
+    eventBus.removeAllListeners('damageDealt');
+    eventBus.removeAllListeners('actorDied');
+
+    return stateAfterAction;
   }
 
-  if (state.phase === 'Targeting') {
-    return handleTargeting(state, action);
-  }
-
-  return state;
+  return stateAfterPlayerAction;
 }
 
 export function processEnemyTurns(state: GameState): GameState {

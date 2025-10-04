@@ -41,10 +41,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
   useEffect(() => {
     if (state.phase === 'EnemyTurn') {
-      const timer = setTimeout(() => {
-        setState((currentState) => processEnemyTurns(currentState));
-      }, 100);
-      return () => clearTimeout(timer);
+      setState((currentState) => processEnemyTurns(currentState));
     }
   }, [state.phase, state]);
 
@@ -144,6 +141,11 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
         <Box flexDirection="column" paddingTop={1}>
           <Text bold>Log</Text>
+          {state.log.map((msg, i) => (
+            <Text key={i} color={getMessageColor(state.messageType)}>
+              {msg}
+            </Text>
+          ))}
           <Text color={getMessageColor(state.messageType)}>
             {state.message}
           </Text>

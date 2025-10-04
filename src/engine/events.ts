@@ -1,6 +1,19 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'events';
 
-/**
- * A globally accessible event bus for inter-module communication.
- */
 export const eventBus = new EventEmitter();
+
+export interface AttackResolvedEvent {
+  attackerId: string;
+  defenderId: string;
+  didHit: boolean;
+  isCritical: boolean;
+}
+
+export interface DamageDealtEvent {
+  targetId: string;
+  damage: number;
+}
+
+export interface ActorDiedEvent {
+  actorId: string;
+}
