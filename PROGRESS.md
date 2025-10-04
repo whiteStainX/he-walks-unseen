@@ -55,3 +55,16 @@ This milestone focused on building robust, scalable, and data-driven foundations
     -   Introduced a unified `Entity` system to represent all objects in the game world.
     -   Implemented a component-based interaction system, starting with doors and chests.
     -   Added a `Targeting` mode for directional interactions.
+
+## Milestone 5: Dungeon Progression and Variety (October 2025)
+
+This milestone introduced a sense of progression and variety to the dungeon, moving the project into the "Stage 3: Content Generation" phase.
+
+-   **Persistent Floor System:**
+    -   Implemented a multi-level dungeon with a floor system.
+    -   The state of each visited floor is cached, allowing for seamless transitions between levels.
+-   **Dungeon Theming:**
+    -   Created a data-driven theming system to define the visual style, enemies, and items for each floor.
+    -   Introduced two new themes: "The Overgrown Keep" and "The Sunken Crypt".
+-   **Bug Fixes:**
+    -   Fixed a critical and intermittent bug where doors would not visually update correctly, ensuring a more stable and reliable player experience.
