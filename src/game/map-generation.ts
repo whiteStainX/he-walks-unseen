@@ -44,7 +44,7 @@ export function generateMap(width: number, height: number, theme: any): { map: T
 
   // If no rooms were created (can happen with restrictive options), retry with default options.
   if (createdRooms.length === 0) {
-    return generateMap(width, height); // Recursive call to retry
+    return generateMap(width, height, theme); // Recursive call to retry
   }
 
   for (const room of createdRooms) {

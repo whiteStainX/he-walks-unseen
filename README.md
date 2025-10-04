@@ -22,6 +22,8 @@ This project implements several classic roguelike mechanics to create a challeng
 *   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions to heal from damage or gain other effects.
 *   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you delve deeper into the dungeon.
 *   **Environmental Interactions:** The dungeon is not just a static backdrop. Interact with doors to open them and loot chests to find valuable items.
+*   **Multi-Level Dungeons:** Explore a persistent, multi-level dungeon with interconnected floors.
+*   **Dungeon Themes:** Each floor has a unique theme with different enemies, items, and visuals.
 
 ## 3. Controls
 

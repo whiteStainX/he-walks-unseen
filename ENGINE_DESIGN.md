@@ -12,7 +12,7 @@
 
 ### 1.2 Engine Capabilities
 - **Resource Loading**: Discovers every JSON file in `/data`, parses them, and caches the result for fast lookup.【F:src/engine/resourceManager.ts†L1-L42】
-- **Game State Modeling**: Centralized `GameState` snapshot includes a unified `Entity` system. `Actors`, `Items`, and other interactables are all extensions of the base `Entity` type. Interactions are handled through a component-based approach.【F:src/engine/state.ts†L2-L55】
+- **Game State Modeling**: Centralized `GameState` snapshot includes a unified `Entity` system. `Actors`, `Items`, and other interactables are all extensions of the base `Entity` type. Interactions are handled through a component-based approach. The game state also tracks the `currentFloor` and caches the state of visited floors in `floorStates`.【F:src/engine/state.ts†L2-L55】
 - **Event-Driven Core**: Global `EventEmitter` enables decoupled communication across systems and the UI.【F:src/engine/events.ts†L1-L6】
 - **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Inventory`, `Targeting`) and publishes transitions on the event bus.【F:src/engine/fsm.ts†L1-L26】
 - **Git-Like Narrative History**: Supports committing deep-copied state snapshots, naming timeline branches, and checking out alternate histories.【F:src/engine/narrativeEngine.ts†L1-L82】
@@ -23,7 +23,7 @@
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
-- **Simple AI**: Enemies follow a data-driven AI with behavior flags (`canWander`, `canChase`). The engine includes basic bump-to-attack combat.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L49】
+- **Simple AI**: Enemies follow a data-driven AI with behavior flags (`canWander`, `canChase`, `canPassThroughWalls`). The engine includes basic bump-to-attack combat.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L49】
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.【F:src/engine/scriptProcessor.ts†L9-L26】
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.【F:src/main.tsx†L1-L48】
 - **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.【F:src/engine/resourceManager.ts†L15-L29】
@@ -54,6 +54,7 @@
 +------------+------------+
 |          Data Layer     |
 |   JSON under /data      |
+|   - themes.json         |
 |   - enemies.json        |
 |   - items.json          |
 |   - entities.json       |
@@ -61,7 +62,7 @@
 ```
 
 ### 2.1 Data Layer
-- Maintains canonical definitions for enemies, items, and interactable entities, serialized as JSON.【F:README.md†L15-L18】【F:data/enemies.json†L1-L21】【F:data/items.json†L1-L13】【F:data/entities.json†L1-L13】
+- Maintains canonical definitions for dungeon themes, enemies, items, and interactable entities, serialized as JSON.【F:README.md†L15-L18】【F:data/themes.json†L1-L21】【F:data/enemies.json†L1-L21】【F:data/items.json†L1-L13】【F:data/entities.json†L1-L13】
 - The `ResourceManager` ingests this directory during boot, populating an in-memory cache keyed by filename sans extension.【F:src/engine/resourceManager.ts†L15-L24】
 
 ### 2.2 Logic Layer

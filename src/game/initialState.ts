@@ -112,7 +112,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const doorTemplate = entityTemplates.find((e) => e.id === 'door');
   if (doorTemplate) {
     rooms.forEach(room => {
-      room.getDoors((x, y) => {
+      room.getDoors((x: number, y: number) => {
         const door: Entity = {
           ...doorTemplate,
           id: nanoid(),

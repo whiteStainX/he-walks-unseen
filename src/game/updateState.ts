@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import type { GameState, MessageType } from '../engine/state.js';
+import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
@@ -163,7 +163,7 @@ function handleInventoryAction(
   }
 }
 
-function handleInteraction(state: GameState, x: number, y: number): GameState {
+export function handleInteraction(state: GameState, x: number, y: number): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
 
@@ -175,9 +175,12 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
     return { ...state, message: 'There is nothing to interact with here.' };
   }
 
+  let newState = { ...state };
+
   switch (entity.interaction.type) {
     case 'door': {
-      const isOpen = entity.interaction.isOpen;
+      const interaction = entity.interaction as DoorInteraction;
+      const isOpen = interaction.isOpen;
       const newIsOpen = !isOpen;
 
       const newEntities = state.entities.map((e) => {
@@ -185,7 +188,7 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
           return {
             ...e,
             char: newIsOpen ? '-' : '+',
-            interaction: { ...e.interaction, isOpen: newIsOpen },
+            interaction: { ...e.interaction, type: 'door', isOpen: newIsOpen } as DoorInteraction,
           };
         }
         return e;
@@ -200,21 +203,24 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         })
       );
 
-      return {
+      newState = {
         ...state,
         entities: newEntities,
         map: { ...state.map, tiles: newTiles },
         message: newIsOpen ? 'You open the door.' : 'You close the door.',
         phase: 'EnemyTurn',
       };
+      break;
     }
 
     case 'chest': {
-      if (entity.interaction.isLooted) {
-        return { ...state, message: 'The chest is empty.' };
+      const interaction = entity.interaction as ChestInteraction;
+      if (interaction.isLooted) {
+        newState = { ...state, message: 'The chest is empty.' };
+        break;
       }
 
-      const lootItemTemplate = state.items.find(i => i.id === entity.interaction.loot);
+      const lootItemTemplate = state.items.find(i => i.id === interaction.loot);
 
       const lootItem = {
         id: nanoid(),
@@ -237,44 +243,47 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
         if (e.id === entity.id) {
           return {
             ...e,
-            interaction: { ...e.interaction, isLooted: true },
+            interaction: { ...e.interaction, type: 'chest', isLooted: true } as ChestInteraction,
           };
         }
         return e;
       });
 
-      return {
+      newState = {
         ...state,
         actors: newActors,
         entities: newEntities,
         message: 'You open the chest and find a potion.',
         phase: 'EnemyTurn',
       };
+      break;
     }
 
     case 'stairs': {
+      const interaction = entity.interaction as StairsInteraction;
       const currentFloor = state.currentFloor;
       const floorStates = state.floorStates;
 
       // Save current floor state
       floorStates.set(currentFloor, state);
 
-      const direction = entity.interaction.direction;
+      const direction = interaction.direction;
       const nextFloor = direction === 'down' ? currentFloor + 1 : currentFloor - 1;
 
       if (floorStates.has(nextFloor)) {
-        return floorStates.get(nextFloor)!;
+        newState = floorStates.get(nextFloor)!;
       } else {
-        return createInitialGameState({
+        newState = createInitialGameState({
           player,
           floor: nextFloor,
           floorStates,
         });
       }
+      break;
     }
   }
 
-  return state;
+  return newState;
 }
 
 function handleTargeting(state: GameState, action: GameAction): GameState {
