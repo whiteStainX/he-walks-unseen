@@ -46,6 +46,13 @@ export function resolveAction(
     if (key.escape) return GameAction.CANCEL_TARGETING; // I'll add this action next
   }
 
+  if (phase === 'CombatMenu') {
+    if (key.upArrow) return GameAction.SELECT_PREVIOUS_COMBAT_OPTION;
+    if (key.downArrow) return GameAction.SELECT_NEXT_COMBAT_OPTION;
+    if (key.return) return GameAction.CONFIRM_COMBAT_ACTION;
+    if (key.escape) return GameAction.CANCEL_COMBAT;
+  }
+
   // Then, handle character-based input.
   if (input) {
     const normalizedInput = input.toLowerCase();
@@ -68,6 +75,13 @@ export function resolveAction(
     }
     if (phase === 'Inventory') {
       return inventoryBindings[normalizedInput];
+    }
+    if (phase === 'CombatMenu') {
+      const combatMenuBindings: Record<string, GameAction> = {
+        w: GameAction.SELECT_PREVIOUS_COMBAT_OPTION,
+        s: GameAction.SELECT_NEXT_COMBAT_OPTION,
+      };
+      return combatMenuBindings[normalizedInput];
     }
   }
 

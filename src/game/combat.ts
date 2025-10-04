@@ -4,23 +4,33 @@ import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 
 /**
- * Handles an attack between two actors.
+ * Calculates the damage dealt in an attack.
+ * @param attacker The actor initiating the attack.
+ * @param defender The actor being attacked.
+ * @returns The amount of damage dealt.
+ */
+export function calculateDamage(attacker: Actor, defender: Actor): number {
+  const powerStrikeBonus = attacker.skills?.some((s) => s.id === 'power-strike')
+    ? 1
+    : 0;
+  const totalAttack = attacker.attack + powerStrikeBonus;
+  const damage = Math.max(0, totalAttack - defender.defense);
+  return damage;
+}
+
+/**
+ * Resolves an attack between two actors, updating the game state.
  * @param attacker The actor initiating the attack.
  * @param defender The actor being attacked.
  * @param state The current game state.
  * @returns The new game state after the attack.
  */
-export function handleAttack(
+export function resolveAttack(
   attacker: Actor,
   defender: Actor,
   state: GameState
 ): GameState {
-  const powerStrikeBonus = attacker.skills?.some((s) => s.id === 'power-strike')
-    ? 1
-    : 0;
-  const totalAttack = attacker.attack + powerStrikeBonus;
-
-  const damage = Math.max(0, totalAttack - defender.defense);
+  const damage = calculateDamage(attacker, defender);
   const newDefenderHp = defender.hp.current - damage;
 
   let message = `${attacker.name} attacks ${defender.name}`;
@@ -50,8 +60,8 @@ export function handleAttack(
     messageType = 'death';
 
     // If player defeated an enemy, grant XP
-    if (attacker.isPlayer && defender.xp && defender.xp > 0) {
-      const xpGained = defender.xp;
+    if (attacker.isPlayer && defender.xpValue && defender.xpValue > 0) {
+      const xpGained = defender.xpValue;
       message += ` You gain ${xpGained} XP.`;
 
       newActors = newActors.map((actor) => {
