@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import type { GameState, MessageType } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { runEnemyTurn } from './ai.js';
@@ -161,6 +162,101 @@ function handleInventoryAction(
   }
 }
 
+function handleInteraction(state: GameState, x: number, y: number): GameState {
+  const player = state.actors.find((a) => a.isPlayer);
+  if (!player) return state;
+
+  const entity = state.entities.find(
+    (e) => e.position.x === x && e.position.y === y
+  );
+
+  if (!entity || !entity.interaction) {
+    return { ...state, message: 'There is nothing to interact with there.' };
+  }
+
+  switch (entity.interaction.type) {
+    case 'door':
+      if (entity.interaction.isOpen) {
+        return { ...state, message: 'The door is already open.' };
+      }
+      const newEntities = state.entities.map((e) =>
+        e.id === entity.id
+          ? { ...e, char: "-", interaction: { ...e.interaction, isOpen: true } }
+          : e
+      );
+      const newMap = JSON.parse(JSON.stringify(state.map));
+      newMap.tiles[entity.position.y][entity.position.x].walkable = true;
+      newMap.tiles[entity.position.y][entity.position.x].transparent = true;
+
+      return {
+        ...state,
+        entities: newEntities,
+        map: newMap,
+        message: 'You open the door.',
+        phase: 'EnemyTurn',
+      };
+
+    case 'chest':
+      if (entity.interaction.isLooted) {
+        return { ...state, message: 'The chest is empty.' };
+      }
+
+      const lootItemTemplate = state.items.find(i => i.id === entity.interaction.loot);
+
+      const lootItem = {
+        id: nanoid(),
+        name: lootItemTemplate?.name || 'Unidentified Potion',
+        char: lootItemTemplate?.char || '!',
+        color: lootItemTemplate?.color || 'magenta',
+        position: player.position,
+        effect: lootItemTemplate?.effect || 'heal' as const,
+        potency: lootItemTemplate?.potency || 5,
+      };
+
+      const newPlayerInventory = [...(player.inventory || []), lootItem];
+      const newPlayer = { ...player, inventory: newPlayerInventory };
+
+      const newActors = state.actors.map((a) =>
+        a.id === player.id ? newPlayer : a
+      );
+
+      const newEntities2 = state.entities.map((e) =>
+        e.id === entity.id
+          ? { ...e, interaction: { ...e.interaction, isLooted: true } }
+          : e
+      );
+
+      return {
+        ...state,
+        actors: newActors,
+        entities: newEntities2,
+        message: 'You open the chest and find a potion.',
+        phase: 'EnemyTurn',
+      };
+  }
+
+  return state;
+}
+
+function handleTargeting(state: GameState, action: GameAction): GameState {
+  const player = state.actors.find((a) => a.isPlayer);
+  if (!player) return state;
+
+  if (action === GameAction.CANCEL_TARGETING) {
+    return { ...state, phase: 'PlayerTurn', message: '' };
+  }
+
+  const delta = MOVEMENT_DELTAS[action];
+  if (!delta) {
+    return state;
+  }
+
+  const targetX = player.position.x + delta.dx;
+  const targetY = player.position.y + delta.dy;
+
+  return handleInteraction(state, targetX, targetY);
+}
+
 function handlePlayerAction(state: GameState, action: GameAction): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
@@ -209,6 +305,14 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       message: `You picked up the ${item.name}.`,
       messageType: 'info',
       phase: 'PlayerTurn',
+    };
+  }
+
+  if (action === GameAction.START_INTERACTION) {
+    return {
+      ...state,
+      phase: 'Targeting',
+      message: 'Which direction?',
     };
   }
 
@@ -309,6 +413,10 @@ export function applyActionToState(
 
   if (state.phase === 'Inventory') {
     return handleInventoryAction(state, action);
+  }
+
+  if (state.phase === 'Targeting') {
+    return handleTargeting(state, action);
   }
 
   return state;

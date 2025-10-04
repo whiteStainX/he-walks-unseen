@@ -12,7 +12,7 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function generateMap(width: number, height: number): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number } } {
+export function generateMap(width: number, height: number): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number }, rooms: any[] } {
   // Each time a map is generated, we reset the RNG with a new random seed.
   RNG.setSeed(Date.now() + randomInt(1, 10000));
 
@@ -70,5 +70,5 @@ export function generateMap(width: number, height: number): { map: TileMap, play
   map[playerStart.y][playerStart.x] = FLOOR_TILE; // Ensure player start is walkable
   map[exitPosition.y][exitPosition.x] = EXIT_TILE;
 
-  return { map, playerStart, exitPosition };
+  return { map, playerStart, exitPosition, rooms: createdRooms };
 }

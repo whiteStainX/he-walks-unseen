@@ -50,7 +50,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
   useInput(
     (input, key) => {
-      if (state.phase === 'PlayerTurn' || state.phase === 'Inventory') {
+      if (state.phase === 'PlayerTurn' || state.phase === 'Inventory' || state.phase === 'Targeting') {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
           setState((currentState) => applyActionToState(currentState, action));
@@ -63,6 +63,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
       isActive:
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
+        state.phase === 'Targeting' ||
         state.phase === 'Loss',
     }
   );

@@ -1,15 +1,31 @@
-// src/engine/state.ts
+import type { GamePhase } from './fsm.js';
+
 export interface Point {
   x: number;
   y: number;
 }
 
-export interface Actor {
-  id:string;
+export interface Entity {
+  id: string;
   name: string;
   char: string;
   color?: string;
   position: Point;
+  interaction?: DoorInteraction | ChestInteraction;
+}
+
+export interface DoorInteraction {
+  type: 'door';
+  isOpen: boolean;
+}
+
+export interface ChestInteraction {
+  type: 'chest';
+  isLooted: boolean;
+  loot: string; // For now, a simple string representing the item id
+}
+
+export interface Actor extends Entity {
   hp: {
     current: number;
     max: number;
@@ -18,11 +34,9 @@ export interface Actor {
   defense: number;
   isPlayer?: true;
   inventory?: Item[];
-  // Player-specific progression stats
   level?: number;
   xp?: number;
   xpToNextLevel?: number;
-  // Enemy-specific XP value
   xpValue?: number;
   skills?: Skill[];
   ai?: {
@@ -31,10 +45,9 @@ export interface Actor {
   };
 }
 
-export interface Skill {
-  id: string;
-  name: string;
-  description: string;
+export interface Item extends Entity {
+  effect: PotionEffect;
+  potency: number;
 }
 
 export interface Tile {
@@ -43,33 +56,28 @@ export interface Tile {
   transparent: boolean;
 }
 
-import type { GamePhase } from './fsm.js';
-
 export type PotionEffect = 'heal' | 'damage';
 
-export interface Item {
+export interface Skill {
   id: string;
   name: string;
-  char: string;
-  color?: string;
-  position: Point;
-  effect: PotionEffect;
-  potency: number; // e.g., how much to heal or damage
+  description: string;
 }
 
 export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';
 
-// The complete snapshot of the game world at any given moment.
 export interface GameState {
   phase: GamePhase;
   actors: Actor[];
   items: Item[];
+  entities: Entity[];
   map: {
-    tiles: Tile[][]; // 2D array for map layout
+    tiles: Tile[][];
     width: number;
     height: number;
   };
-  message: string; // A message to display to the player (e.g., "You can't move there.")
+  message: string;
   messageType: MessageType;
   selectedItemIndex?: number;
+  target?: Point;
 }

@@ -6,6 +6,7 @@ import type {
   Tile,
   Item,
   PotionEffect,
+  Entity,
 } from '../engine/state.js';
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
@@ -35,7 +36,7 @@ function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null 
 }
 
 export function createInitialGameState(message?: string): GameState {
-  const { map, playerStart, exitPosition } = generateMap(MAP_WIDTH, MAP_HEIGHT);
+  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT);
 
   const player: Actor = {
     id: 'player',
@@ -53,6 +54,8 @@ export function createInitialGameState(message?: string): GameState {
   };
 
   const actors: Actor[] = [player];
+  const entities: Entity[] = [];
+  const items: Item[] = [];
   const occupiedPoints: Point[] = [player.position, exitPosition];
 
   const enemyTemplates = getResource<any[]>('enemies');
@@ -72,7 +75,6 @@ export function createInitialGameState(message?: string): GameState {
     }
   }
 
-  const items: Item[] = [];
   const itemTemplates = getResource<any[]>('items');
   const numberOfItems = Math.floor(Math.random() * 3) + 2;
 
@@ -98,10 +100,45 @@ export function createInitialGameState(message?: string): GameState {
     }
   }
 
+  const entityTemplates = getResource<any[]>('entities');
+  const doorTemplate = entityTemplates.find((e) => e.id === 'door');
+  if (doorTemplate) {
+    rooms.forEach(room => {
+      room.getDoors((x, y) => {
+        const door: Entity = {
+          ...doorTemplate,
+          id: nanoid(),
+          position: { x, y },
+        };
+        entities.push(door);
+        occupiedPoints.push({ x, y });
+        map[y][x] = { ...map[y][x], walkable: false };
+      });
+    });
+  }
+
+  const chestTemplate = entityTemplates.find((e) => e.id === 'chest');
+  if (chestTemplate) {
+    const numberOfChests = Math.floor(Math.random() * 2) + 1;
+    for (let i = 0; i < numberOfChests; i++) {
+      const chestPosition = findRandomWalkableTile(map, occupiedPoints);
+      if (chestPosition) {
+        const chest: Entity = {
+          ...chestTemplate,
+          id: nanoid(),
+          position: chestPosition,
+        };
+        entities.push(chest);
+        occupiedPoints.push(chestPosition);
+      }
+    }
+  }
+
   return {
     phase: 'PlayerTurn',
     actors,
     items,
+    entities,
     map: {
       tiles: map,
       width: MAP_WIDTH,

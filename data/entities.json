@@ -1,0 +1,23 @@
+[
+  {
+    "id": "door",
+    "name": "Door",
+    "char": "+",
+    "color": "brown",
+    "interaction": {
+      "type": "door",
+      "isOpen": false
+    }
+  },
+  {
+    "id": "chest",
+    "name": "Chest",
+    "char": "C",
+    "color": "brown",
+    "interaction": {
+      "type": "chest",
+      "isLooted": false,
+      "loot": "unidentified-potion"
+    }
+  }
+]

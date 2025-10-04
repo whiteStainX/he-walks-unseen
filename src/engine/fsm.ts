@@ -8,7 +8,8 @@ export type GamePhase =
   | 'Paused'
   | 'Win'
   | 'Loss'
-  | 'Inventory';
+  | 'Inventory'
+  | 'Targeting';
 
 export class FiniteStateMachine {
   private currentState: GamePhase;

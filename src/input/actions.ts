@@ -11,7 +11,8 @@ export enum GameAction {
   MOVE_WEST,
 
   // Interaction
-  INTERACT,
+  START_INTERACTION,
+  CANCEL_TARGETING,
   USE_ITEM,
   PICKUP_ITEM,
 
