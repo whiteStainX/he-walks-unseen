@@ -12,11 +12,13 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function generateMap(width: number, height: number): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number }, rooms: any[] } {
+export function generateMap(width: number, height: number, theme: any): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number }, rooms: any[] } {
   // Each time a map is generated, we reset the RNG with a new random seed.
   RNG.setSeed(Date.now() + randomInt(1, 10000));
 
-  const map = Array.from({ length: height }, () => Array.from({ length: width }, () => WALL_TILE));
+  const wallTile: Tile = { char: theme.wall, walkable: false, transparent: false };
+
+  const map = Array.from({ length: height }, () => Array.from({ length: width }, () => wallTile));
 
   // Add some randomization to the dungeon generation
   const diggerOptions = {
@@ -35,7 +37,7 @@ export function generateMap(width: number, height: number): { map: TileMap, play
     if (value) {
       return;
     }
-    map[y][x] = FLOOR_TILE;
+    map[y][x] = { char: theme.floor, walkable: true, transparent: true };
   });
 
   const createdRooms = digger.getRooms();
@@ -48,7 +50,7 @@ export function generateMap(width: number, height: number): { map: TileMap, play
   for (const room of createdRooms) {
     rooms.push(room);
     room.getDoors((x, y) => {
-      map[y][x] = FLOOR_TILE;
+      map[y][x] = { char: theme.floor, walkable: true, transparent: true };
     });
   }
 
@@ -67,7 +69,7 @@ export function generateMap(width: number, height: number): { map: TileMap, play
     exitPosition = { x: corners[2][0] - 1, y: corners[2][1] - 1 };
   }
 
-  map[playerStart.y][playerStart.x] = FLOOR_TILE; // Ensure player start is walkable
+  map[playerStart.y][playerStart.x] = { char: theme.floor, walkable: true, transparent: true }; // Ensure player start is walkable
   map[exitPosition.y][exitPosition.x] = EXIT_TILE;
 
   return { map, playerStart, exitPosition, rooms: createdRooms };

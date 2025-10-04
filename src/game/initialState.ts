@@ -43,7 +43,11 @@ interface InitialStateOptions {
 
 export function createInitialGameState(options: InitialStateOptions = {}): GameState {
   const { message, player: existingPlayer, floor = 1 } = options;
-  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT);
+
+  const themes = getResource<any>('themes');
+  const theme = Object.values(themes).find((t: any) => t.floors.includes(floor)) || themes['overgrown-keep'];
+
+  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT, theme.map);
 
   const player: Actor = existingPlayer
     ? { ...existingPlayer, position: playerStart }
@@ -67,7 +71,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const items: Item[] = [];
   const occupiedPoints: Point[] = [player.position, exitPosition];
 
-  const enemyTemplates = getResource<any[]>('enemies');
+  const enemyTemplates = getResource<any[]>('enemies').filter(e => theme.enemies.includes(e.id));
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
 
   for (let i = 0; i < numberOfEnemies; i++) {
@@ -84,24 +88,18 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     }
   }
 
-  const itemTemplates = getResource<any[]>('items');
+  const itemTemplates = getResource<any[]>('items').filter(i => theme.items.includes(i.id));
   const numberOfItems = Math.floor(Math.random() * 3) + 2;
 
   for (let i = 0; i < numberOfItems; i++) {
     const itemPosition = findRandomWalkableTile(map, occupiedPoints);
     if (itemPosition) {
-      const template = itemTemplates.find(t => t.id === 'unidentified-potion');
+      const template = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
       if (template) {
-        const randomEffect = template.effects[Math.floor(Math.random() * template.effects.length)];
-        const potency = template.potency[randomEffect];
         const newItem: Item = {
+          ...template,
           id: nanoid(),
-          name: template.name,
-          char: template.char,
-          color: template.color,
           position: itemPosition,
-          effect: randomEffect as PotionEffect,
-          potency: potency,
         };
         items.push(newItem);
         occupiedPoints.push(itemPosition);

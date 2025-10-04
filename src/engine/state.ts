@@ -42,6 +42,7 @@ export interface Actor extends Entity {
   ai?: {
     canWander?: boolean;
     canChase?: boolean;
+    canPassThroughWalls?: boolean;
   };
 }
 

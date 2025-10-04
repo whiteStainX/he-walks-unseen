@@ -1,0 +1,22 @@
+{
+  "overgrown-keep": {
+    "name": "The Overgrown Keep",
+    "floors": [1, 2],
+    "enemies": ["goblin", "shrieker"],
+    "items": ["unidentified-potion"],
+    "map": {
+      "wall": "#",
+      "floor": "."
+    }
+  },
+  "sunken-crypt": {
+    "name": "The Sunken Crypt",
+    "floors": [3, 4],
+    "enemies": ["skeleton", "ghost"],
+    "items": ["unidentified-potion", "key"],
+    "map": {
+      "wall": "#",
+      "floor": ","
+    }
+  }
+}

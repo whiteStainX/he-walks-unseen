@@ -9,5 +9,11 @@
       "heal": 5,
       "damage": 3
     }
+  },
+  {
+    "id": "key",
+    "name": "Key",
+    "char": "k",
+    "color": "yellow"
   }
 ]
