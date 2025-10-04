@@ -52,6 +52,9 @@ export function createInitialGameState(message?: string): GameState {
     attack: 2,
     defense: 1,
     isPlayer: true,
+    level: 1,
+    xp: 0,
+    xpToNextLevel: 100,
   };
 
   const actors: Actor[] = [player];
@@ -73,6 +76,7 @@ export function createInitialGameState(message?: string): GameState {
         hp: { current: 5, max: 5 },
         attack: 1,
         defense: 0,
+        xpValue: 35,
       };
       actors.push(goblin);
       // Mark the new position as occupied for subsequent spawns

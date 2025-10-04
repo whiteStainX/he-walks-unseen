@@ -13,6 +13,14 @@ export enum GameAction {
   // Interaction
   INTERACT,
   USE_ITEM,
+  PICKUP_ITEM,
+
+  // Inventory
+  OPEN_INVENTORY,
+  CLOSE_INVENTORY,
+  SELECT_NEXT_ITEM,
+  SELECT_PREVIOUS_ITEM,
+  CONFIRM_SELECTION,
 
   // Narrative
   COMMIT,

@@ -5,7 +5,7 @@ export interface Point {
 }
 
 export interface Actor {
-  id: string;
+  id:string;
   name: string;
   char: string;
   color?: string;
@@ -17,6 +17,13 @@ export interface Actor {
   attack: number;
   defense: number;
   isPlayer?: true;
+  inventory?: Item[];
+  // Player-specific progression stats
+  level?: number;
+  xp?: number;
+  xpToNextLevel?: number;
+  // Enemy-specific XP value
+  xpValue?: number;
 }
 
 export interface Tile {
@@ -53,4 +60,5 @@ export interface GameState {
   };
   message: string; // A message to display to the player (e.g., "You can't move there.")
   messageType: MessageType;
+  selectedItemIndex?: number;
 }
