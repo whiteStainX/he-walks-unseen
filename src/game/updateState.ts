@@ -176,23 +176,31 @@ function handleInteraction(state: GameState, x: number, y: number): GameState {
 
   switch (entity.interaction.type) {
     case 'door':
-      if (entity.interaction.isOpen) {
-        return { ...state, message: 'The door is already open.' };
-      }
+      const isOpen = entity.interaction.isOpen;
+      const newIsOpen = !isOpen;
+
       const newEntities = state.entities.map((e) =>
         e.id === entity.id
-          ? { ...e, char: "-", interaction: { ...e.interaction, isOpen: true } }
+          ? { ...e, char: newIsOpen ? "-" : "+", interaction: { ...e.interaction, isOpen: newIsOpen } }
           : e
       );
-      const newMap = JSON.parse(JSON.stringify(state.map));
-      newMap.tiles[entity.position.y][entity.position.x].walkable = true;
-      newMap.tiles[entity.position.y][entity.position.x].transparent = true;
+
+      const newTiles = state.map.tiles.map((row, tileY) =>
+        row.map((tile, tileX) => {
+          if (tileX === x && tileY === y) {
+            return { ...tile, walkable: newIsOpen, transparent: newIsOpen };
+          }
+          return tile;
+        })
+      );
+
+      const newMap = { ...state.map, tiles: newTiles };
 
       return {
         ...state,
         entities: newEntities,
         map: newMap,
-        message: 'You open the door.',
+        message: newIsOpen ? 'You open the door.' : 'You close the door.',
         phase: 'EnemyTurn',
       };
 
