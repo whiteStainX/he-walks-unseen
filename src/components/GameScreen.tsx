@@ -56,7 +56,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
           setState((currentState) => applyActionToState(currentState, action));
         }
       } else if (state.phase === 'Loss' && input.toLowerCase() === 'r') {
-        setState(createInitialGameState('A new adventure begins...'));
+        setState(createInitialGameState({ message: 'A new adventure begins...' }));
       }
     },
     {

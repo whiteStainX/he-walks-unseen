@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { GameState, MessageType } from '../engine/state.js';
+import type { GameState, MessageType, Entity, Actor, Item } from '../engine/state.js';
 
 interface Props {
   state: GameState;
@@ -28,36 +28,19 @@ interface DisplayTile {
   backgroundColor?: string;
 }
 
-const MapView: React.FC<Props> = ({ state, isDimmed }) => {
-  const { actors, items, entities, map, message, messageType } = state;
-  const player = actors.find((a) => a.isPlayer);
+const createDisplayGrid = (state: GameState): DisplayTile[][] => {
+  const { actors, items, entities, map } = state;
 
-  // Create a grid of display objects, starting with the base map tiles
   const displayGrid: DisplayTile[][] = map.tiles.map((row) =>
     row.map((tile) => ({
       char: tile.char,
-      color: tile.walkable ? 'grey' : 'white', // Dim floors, bright walls
+      color: tile.walkable ? 'grey' : 'white',
     }))
   );
 
-  // Overlay items on the map
-  for (const item of items) {
-    if (
-      item.position.y >= 0 &&
-      item.position.y < map.height &&
-      item.position.x >= 0 &&
-      item.position.x < map.width
-    ) {
-      displayGrid[item.position.y][item.position.x] = {
-        ...displayGrid[item.position.y][item.position.x],
-        char: item.char,
-        color: item.color || 'white',
-      };
-    }
-  }
+  const allEntities: (Entity | Actor | Item)[] = [...items, ...entities, ...actors];
 
-  // Overlay entities on the map
-  for (const entity of entities) {
+  for (const entity of allEntities) {
     if (
       entity.position.y >= 0 &&
       entity.position.y < map.height &&
@@ -72,30 +55,20 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
     }
   }
 
-  // Overlay actors on top of items and tiles
-  for (const actor of actors) {
-    if (
-      actor.position.y >= 0 &&
-      actor.position.y < map.height &&
-      actor.position.x >= 0 &&
-      actor.position.x < map.width
-    ) {
-      displayGrid[actor.position.y][actor.position.x] = {
-        ...displayGrid[actor.position.y][actor.position.x],
-        char: actor.char,
-        color: actor.color || 'white',
-      };
-    }
-  }
-
-  // Highlight the player's position
+  const player = actors.find((a) => a.isPlayer);
   if (player) {
     displayGrid[player.position.y][player.position.x].backgroundColor =
       'yellow';
-    // Make the player character black for better contrast on a yellow background
     displayGrid[player.position.y][player.position.x].color = 'black';
   }
 
+  return displayGrid;
+};
+
+const MapView: React.FC<Props> = ({ state, isDimmed }) => {
+  const { actors, message, messageType } = state;
+  const player = actors.find((a) => a.isPlayer);
+  const displayGrid = createDisplayGrid(state);
   const enemies = actors.filter((a) => !a.isPlayer);
 
   return (

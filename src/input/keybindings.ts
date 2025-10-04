@@ -66,6 +66,9 @@ export function resolveAction(
       };
       return targetingBindings[normalizedInput];
     }
+    if (phase === 'Inventory') {
+      return inventoryBindings[normalizedInput];
+    }
   }
 
   return undefined;
