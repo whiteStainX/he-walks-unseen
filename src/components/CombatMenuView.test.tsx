@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { render } from 'ink-testing-library';
 import { CombatMenuView } from './CombatMenuView.js';
 import type { GameState, Actor } from '../engine/state.js';

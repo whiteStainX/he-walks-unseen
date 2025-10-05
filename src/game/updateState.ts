@@ -1,8 +1,6 @@
 import { nanoid } from 'nanoid';
 import type {
   GameState,
-  MessageType,
-  Entity,
   DoorInteraction,
   ChestInteraction,
   StairsInteraction,

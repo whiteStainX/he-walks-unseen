@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
 
