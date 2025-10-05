@@ -88,7 +88,7 @@ describe('Combat Menu Logic', () => {
       GameAction.CONFIRM_COMBAT_ACTION
     );
     expect(newState.phase).toBe('EnemyTurn');
-    const updatedEnemy = newState.actors.find((a) => a.id === 'enemy-1');
+    const updatedEnemy = newState.actors.find((a: Actor) => a.id === 'enemy-1');
     expect(updatedEnemy?.hp.current).toBeLessThan(mockEnemy.hp.current);
   });
 

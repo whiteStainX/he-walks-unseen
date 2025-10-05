@@ -9,10 +9,8 @@ import { CombatMenuView } from './CombatMenuView.js';
 import type { GameState, MessageType } from '../engine/state.js';
 import type { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
-import {
-  applyActionToState,
-  processEnemyTurns,
-} from '../game/updateState.js';
+import { applyActionToState } from '../game/updateState.js';
+import { processEnemyTurns } from '../game/enemyTurns.js';
 import { createInitialGameState } from '../game/initialState.js';
 
 interface Props {
