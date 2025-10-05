@@ -122,3 +122,15 @@
 2. Upon success, it emits `engineReady`; failures emit `engineError` for graceful degradation.【F:src/main.tsx†L10-L38】
 3. Subscribers (e.g., UI components, dev tooling) listen on `eventBus` to react, then instantiate the FSM, load initial `GameState` from cached resources, render `MapView`, and start collecting input.
 4. As gameplay progresses, systems call into the narrative engine to checkpoint, branch, and retrieve alternate timelines, maintaining the Git-like storytelling loop.【F:src/engine/narrativeEngine.ts†L22-L82】
+
+## 5. Future Enhancements
+
+This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
+
+-   **Advanced Enemy AI**: Move beyond simple `canWander` and `canChase` flags to implement more complex behaviors. This could include patrol routes, fleeing at low health, using special abilities, and A* pathfinding for more intelligent pursuit.
+-   **Equipment System**: Allow actors to equip items (weapons, armor, accessories) into specific slots to gain passive stat bonuses or effects. This would be a primary driver of player progression.
+-   **Status Effects System**: Implement a framework for applying temporary conditions to actors, such as `Poisoned`, `Stunned`, `Confused`, or `Hasted`. This would add significant tactical depth to combat.
+-   **Expanded Item & Magic System**: Introduce a wider variety of items like scrolls (one-shot effects), wands (charged items), and food (hunger mechanics). This could also serve as the foundation for a more formal skill or magic system.
+-   **Item Identification**: Add a classic roguelike mechanic where potions, scrolls, and other magical items are initially unidentified, forcing the player to discover their properties through use or other means.
+-   **Persistent Save/Load**: Implement serialization for the entire game state, including the narrative engine's history, allowing players to save and resume their sessions.
+-   **Detailed Message Log**: Expand the UI to include a scrollable history of game messages, allowing the player to review past events and understand the flow of combat.
