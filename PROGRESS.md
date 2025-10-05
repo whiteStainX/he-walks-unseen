@@ -80,3 +80,14 @@ This milestone refactored the combat system to be more robust and strategic, mov
 -   **Strategic Combat Menu:**
     -   Replaced the "bump-to-attack" mechanic with a menu-driven system.
     -   When engaging an enemy, players are now presented with options ("Attack", "Cancel"), allowing for more deliberate tactical decisions.
+
+## Milestone 7: Advanced Enemy AI (October 2025)
+
+This milestone moved the enemy AI from a simple flag-based system to a more robust, state-based model, allowing for more complex and dynamic behaviors.
+
+-   **State-Based AI:**
+    -   Replaced simple boolean flags (`canWander`, `canChase`) with a state machine (`idle`, `wander`, `patrol`, `chase`, `flee`).
+    -   This provides a flexible foundation for creating more intelligent and varied enemy behaviors.
+-   **New AI Behaviors:**
+    -   **Patrol:** Enemies can now be assigned predefined patrol routes, making their movements more predictable and strategic.
+    -   **Flee:** Enemies can now be configured to flee from combat when their health drops below a certain threshold, adding a new layer of tactical depth.

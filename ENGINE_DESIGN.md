@@ -20,10 +20,10 @@
 - **Terminal Presentation Layer**: Ink-based map renderer overlays actors and items on top of cached map tiles and surfaces system messages with color-coded feedback.【F:src/components/MapView.tsx†L1-L44】
 - **Inventory & Progression**: The engine supports a full inventory system (pickup, use, drop, stacking) and a player progression system (XP and leveling).【F:src/game/progression.ts†L1-L59】【F:src/game/updateState.ts†L1-L270】
 - **Input Abstraction**: Converts key presses into semantic `GameAction` enums for the logic layer to consume. The keybinding system is phase-aware, allowing for different controls in different game states (e.g., `PlayerTurn` vs. `Inventory`).【F:src/input/actions.ts†L1-L24】【F:src/input/keybindings.ts†L1-L39】
+- **State-Based Enemy AI**: Enemies operate on a state machine (`idle`, `wander`, `patrol`, `chase`, `flee`). This allows for advanced behaviors like patrol routes, intelligent chasing via A* pathfinding, and fleeing when at low health.【F:src/game/ai.ts】
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
-- **Simple AI**: Enemies follow a data-driven AI with behavior flags (`canWander`, `canChase`, `canPassThroughWalls`). The engine features a menu-driven combat system (replacing bump-to-attack) with modular logic for damage calculation and attack resolution.【F:src/game/ai.ts†L1-L81】【F:src/game/combat.ts†L1-L124】
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.【F:src/engine/scriptProcessor.ts†L9-L26】
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.【F:src/main.tsx†L1-L48】
 - **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.【F:src/engine/resourceManager.ts†L15-L29】
@@ -127,7 +127,6 @@
 
 This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
 
--   **Advanced Enemy AI**: Move beyond simple `canWander` and `canChase` flags to implement more complex behaviors. This could include patrol routes, fleeing at low health, using special abilities, and A* pathfinding for more intelligent pursuit.
 -   **Equipment System**: Allow actors to equip items (weapons, armor, accessories) into specific slots to gain passive stat bonuses or effects. This would be a primary driver of player progression.
 -   **Status Effects System**: Implement a framework for applying temporary conditions to actors, such as `Poisoned`, `Stunned`, `Confused`, or `Hasted`. This would add significant tactical depth to combat.
 -   **Expanded Item & Magic System**: Introduce a wider variety of items like scrolls (one-shot effects), wands (charged items), and food (hunger mechanics). This could also serve as the foundation for a more formal skill or magic system.
