@@ -93,7 +93,7 @@ function handleInventoryAction(
           ...state,
           phase: 'Targeting',
           pendingItem: itemToUse,
-          message: 'Select a target.',
+          message: 'Which direction?',
           messageType: 'info',
         };
       }

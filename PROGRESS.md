@@ -117,3 +117,18 @@ This milestone introduced a foundational status effects system, adding a new lay
     -   A new "Active Effects" panel was added to the UI, clearly displaying all current status effects on the player and their remaining durations.
 -   **Data-Driven Effects:**
     -   Status effects are defined in data files, allowing for easy creation of new items and enemies that can apply them.
+
+## Milestone 10: Expanded Item & Magic System (October 2025)
+
+This milestone significantly enhances the item system, moving it from a simple model to a flexible, data-driven foundation for a wide range of magical effects.
+
+-   **Flexible Item Effects System:**
+    -   Replaced the hardcoded `PotionEffect` with a versatile `effects` array on items.
+    -   Each effect is a structured object, supporting various types (`heal`, `damage`, `fireball`, `revealMap`) and properties (e.g., `potency`, `radius`).
+-   **Targeting Mechanic:**
+    -   Implemented a new `Targeting` game phase for effects that require player input.
+    -   This allows for the creation of targeted spells and abilities, such as area-of-effect attacks.
+-   **New Item Types:**
+    -   Added new item types, including a "Scroll of Fireball" and a "Scroll of Mapping," to demonstrate the system's new capabilities.
+-   **Modular Effect Logic:**
+    -   Centralized all effect-handling logic in a new `src/game/itemEffects.ts` module, improving code organization and making the system easier to extend.
