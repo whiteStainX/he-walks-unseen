@@ -29,6 +29,8 @@ const createInitialState = (door: Entity): GameState => ({
   messageType: 'info',
   currentFloor: 1,
   floorStates: new Map(),
+  visibleTiles: new Set<string>(),
+  exploredTiles: new Set<string>(),
 });
 
 describe('handleInteraction', () => {

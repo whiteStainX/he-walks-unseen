@@ -4,6 +4,7 @@ import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
 import { resolveAttack } from './combat.js';
+import { updateVisibility } from './visibility.js';
 
 interface MovementDelta {
   dx: number;
@@ -203,13 +204,13 @@ export function handleInteraction(state: GameState, x: number, y: number): GameS
         })
       );
 
-      newState = {
+      newState = updateVisibility({
         ...state,
         entities: newEntities,
         map: { ...state.map, tiles: newTiles },
         message: newIsOpen ? 'You open the door.' : 'You close the door.',
         phase: 'EnemyTurn',
-      };
+      });
       break;
     }
 
@@ -271,7 +272,8 @@ export function handleInteraction(state: GameState, x: number, y: number): GameS
       const nextFloor = direction === 'down' ? currentFloor + 1 : currentFloor - 1;
 
       if (floorStates.has(nextFloor)) {
-        newState = floorStates.get(nextFloor)!;
+        // Recalculate visibility upon returning to a floor
+        newState = updateVisibility(floorStates.get(nextFloor)!);
       } else {
         newState = createInitialGameState({
           player,
@@ -471,14 +473,14 @@ function handlePlayerAction(state: GameState, action: GameAction): GameState {
       : actor
   );
 
-  return {
+  return updateVisibility({
     ...state,
     actors: actorsAfterPlayerMove,
     items: state.items,
     message: delta.successMessage,
     messageType: 'info',
     phase: 'EnemyTurn',
-  };
+  });
 }
 
 function handleEnemyTurns(state: GameState): GameState {

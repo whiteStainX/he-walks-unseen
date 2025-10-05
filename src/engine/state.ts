@@ -85,6 +85,8 @@ export interface GameState {
   };
   message: string;
   messageType: MessageType;
+  visibleTiles: Set<string>; // "x,y" format for quick lookups
+  exploredTiles: Set<string>; // "x,y" format for quick lookups
   selectedItemIndex?: number;
   target?: Point;
   currentFloor: number;

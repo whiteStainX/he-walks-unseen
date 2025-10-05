@@ -10,6 +10,7 @@ import type {
 } from '../engine/state.js';
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
+import { updateVisibility } from './visibility.js';
 
 const MAP_WIDTH = 80;
 const MAP_HEIGHT = 24;
@@ -166,7 +167,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     }
   }
 
-  return {
+  const baseState: GameState = {
     phase: 'PlayerTurn',
     actors,
     items,
@@ -180,5 +181,9 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     messageType: 'info',
     currentFloor: floor,
     floorStates,
+    visibleTiles: new Set<string>(),
+    exploredTiles: new Set<string>(),
   };
+
+  return updateVisibility(baseState);
 }

@@ -40,6 +40,8 @@ const mockGameState: GameState = {
   floorStates: new Map(),
   combatTargetId: 'enemy-1',
   selectedCombatMenuIndex: 0,
+  visibleTiles: new Set<string>(),
+  exploredTiles: new Set<string>(),
 };
 
 describe('CombatMenuView', () => {
