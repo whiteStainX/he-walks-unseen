@@ -1,5 +1,14 @@
 import { nanoid } from 'nanoid';
-import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction, Item } from '../engine/state.js';
+import type {
+  GameState,
+  MessageType,
+  Entity,
+  DoorInteraction,
+  ChestInteraction,
+  StairsInteraction,
+  Item,
+  Actor,
+} from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
@@ -8,6 +17,53 @@ import { equip } from './equipment.js';
 import { updateVisibility } from './visibility.js';
 import { processStatusEffects } from './statusEffects.js';
 import { applyEffect } from './itemEffects.js';
+
+const getDisplayName = (item: Item) =>
+  item.identified === false && item.unidentifiedName
+    ? item.unidentifiedName
+    : item.name;
+
+function processItemConsumption(
+  stateAfterEffect: GameState,
+  itemUsed: Item,
+  effectMessage: string
+): { finalActors: Actor[]; finalMessage: string } {
+  const wasUnidentified = itemUsed.identified === false;
+  const displayNameWhenUsed = getDisplayName(itemUsed);
+
+  const playerFromNewState = stateAfterEffect.actors.find((a) => a.isPlayer)!;
+
+  let finalMessage = effectMessage;
+  let inventoryToProcess = [...playerFromNewState.inventory!];
+
+  if (wasUnidentified) {
+    finalMessage = `You use the ${displayNameWhenUsed}. It is a ${itemUsed.name}! ${effectMessage}`;
+    inventoryToProcess = inventoryToProcess.map((item) => {
+      if (item.name === itemUsed.name) {
+        return { ...item, identified: true };
+      }
+      return item;
+    });
+  }
+
+  const itemIndexToRemove = inventoryToProcess.findIndex(
+    (item) => item.id === itemUsed.id
+  );
+
+  const finalInventory = inventoryToProcess.filter(
+    (_, index) => index !== itemIndexToRemove
+  );
+
+  const playerWithNewInventory = {
+    ...playerFromNewState,
+    inventory: finalInventory,
+  };
+  const finalActors = stateAfterEffect.actors.map((a) =>
+    a.id === playerFromNewState.id ? playerWithNewInventory : a
+  );
+
+  return { finalActors, finalMessage };
+}
 
 interface MovementDelta {
   dx: number;
@@ -46,7 +102,8 @@ function handleInventoryAction(
 
   const groupedInventory = Object.keys(
     player.inventory.reduce((acc, item) => {
-      acc[item.name] = (acc[item.name] || 0) + 1;
+      const displayName = getDisplayName(item);
+      acc[displayName] = (acc[displayName] || 0) + 1;
       return acc;
     }, {} as Record<string, number>)
   );
@@ -72,21 +129,33 @@ function handleInventoryAction(
       return { ...state, selectedItemIndex: newIndex };
 
     case GameAction.CONFIRM_SELECTION: {
-      const selectedItemName = groupedInventory[newIndex];
-      if (!selectedItemName) return state;
+      const selectedDisplayName = groupedInventory[newIndex];
+      if (!selectedDisplayName) return state;
 
       const itemToUse = player.inventory.find(
-        (item) => item.name === selectedItemName
+        (item) => getDisplayName(item) === selectedDisplayName
       );
+
       if (!itemToUse || !itemToUse.effects || itemToUse.effects.length === 0) {
         return {
           ...state,
-          message: `You can't use the ${itemToUse?.name}.`,
+          message: `You can't use the ${getDisplayName(itemToUse!)}.`,
           messageType: 'info',
         };
       }
 
       const effect = itemToUse.effects[0];
+
+      if (effect.type === 'identify') {
+        return {
+          ...state,
+          phase: 'IdentifyMenu',
+          pendingItem: itemToUse,
+          selectedItemIndex: 0,
+          message: 'Select an item to identify.',
+          messageType: 'info',
+        };
+      }
 
       if (effect.requiresTarget) {
         return {
@@ -98,29 +167,16 @@ function handleInventoryAction(
         };
       }
 
-      const { state: stateAfterEffect, message } = applyEffect(
+      const { state: stateAfterEffect, message: effectMessage } = applyEffect(
         player,
         state,
         effect
       );
 
-      const itemIndexToRemove = player.inventory.findIndex(
-        (item) => item.id === itemToUse.id
-      );
-      const newInventory = player.inventory.filter(
-        (_, index) => index !== itemIndexToRemove
-      );
-
-      const playerFromNewState = stateAfterEffect.actors.find(
-        (a) => a.isPlayer
-      )!;
-      const playerWithNewInventory = {
-        ...playerFromNewState,
-        inventory: newInventory,
-      };
-
-      const finalActors = stateAfterEffect.actors.map((a) =>
-        a.id === player.id ? playerWithNewInventory : a
+      const { finalActors, finalMessage } = processItemConsumption(
+        stateAfterEffect,
+        itemToUse,
+        effectMessage
       );
 
       return {
@@ -128,17 +184,17 @@ function handleInventoryAction(
         actors: finalActors,
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
-        message,
+        message: finalMessage,
         messageType: 'info',
       };
     }
 
     case GameAction.DROP_ITEM: {
-      const selectedItemNameToDrop = groupedInventory[newIndex];
-      if (!selectedItemNameToDrop) return state;
+      const selectedDisplayName = groupedInventory[newIndex];
+      if (!selectedDisplayName) return state;
 
       const itemToDrop = player.inventory.find(
-        (item) => item.name === selectedItemNameToDrop
+        (item) => getDisplayName(item) === selectedDisplayName
       );
       if (!itemToDrop) return state;
 
@@ -167,22 +223,22 @@ function handleInventoryAction(
         items: [...state.items, droppedItem],
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
-        message: `You drop the ${itemToDrop.name}.`,
+        message: `You drop the ${getDisplayName(itemToDrop)}.`,
         messageType: 'info',
       };
     }
 
     case GameAction.EQUIP_ITEM: {
-      const selectedItemName = groupedInventory[newIndex];
-      if (!selectedItemName) return state;
+      const selectedDisplayName = groupedInventory[newIndex];
+      if (!selectedDisplayName) return state;
 
       const itemToEquip = player.inventory.find(
-        (item) => item.name === selectedItemName
+        (item) => getDisplayName(item) === selectedDisplayName
       );
       if (!itemToEquip || !itemToEquip.equipment) {
         return {
           ...state,
-          message: `You can't equip the ${itemToEquip?.name}.`,
+          message: `You can't equip the ${getDisplayName(itemToEquip!)}.`,
           messageType: 'info',
         };
       }
@@ -361,29 +417,17 @@ function handleTargeting(state: GameState, action: GameAction): GameState {
       };
     }
 
-    const { state: stateAfterEffect, message } = applyEffect(
+    const { state: stateAfterEffect, message: effectMessage } = applyEffect(
       player,
       state,
       effect,
       targetPoint
     );
 
-    const playerFromNewState = stateAfterEffect.actors.find(
-      (a) => a.isPlayer
-    )!;
-    const itemIndexToRemove = playerFromNewState.inventory!.findIndex(
-      (item) => item.id === itemToUse.id
-    );
-    const newInventory = playerFromNewState.inventory!.filter(
-      (_, index) => index !== itemIndexToRemove
-    );
-    const playerWithNewInventory = {
-      ...playerFromNewState,
-      inventory: newInventory,
-    };
-
-    const finalActors = stateAfterEffect.actors.map((a) =>
-      a.id === player.id ? playerWithNewInventory : a
+    const { finalActors, finalMessage } = processItemConsumption(
+      stateAfterEffect,
+      itemToUse,
+      effectMessage
     );
 
     return {
@@ -392,7 +436,7 @@ function handleTargeting(state: GameState, action: GameAction): GameState {
       phase: 'EnemyTurn',
       pendingItem: undefined,
       target: undefined,
-      message,
+      message: finalMessage,
       messageType: 'info',
     };
   }
@@ -607,6 +651,105 @@ function handleEnemyTurns(state: GameState): GameState {
   return { ...stateAfterEffects, phase: 'PlayerTurn' };
 }
 
+function handleIdentifyMenuAction(
+  state: GameState,
+  action: GameAction
+): GameState {
+  const player = state.actors.find((a) => a.isPlayer);
+  const scroll = state.pendingItem;
+
+  // Safeguards
+  if (!player || !player.inventory || player.inventory.length === 0 || !scroll) {
+    return {
+      ...state,
+      phase: 'PlayerTurn',
+      selectedItemIndex: undefined,
+      pendingItem: undefined,
+      message: 'Identification failed: invalid state.',
+      messageType: 'info',
+    };
+  }
+
+  // The inventory list for identification is flat, so index maps directly.
+  const inventorySize = player.inventory.length;
+  let newIndex = state.selectedItemIndex ?? 0;
+
+  switch (action) {
+    case GameAction.CANCEL_TARGETING: // Re-using this action
+    case GameAction.CLOSE_INVENTORY:
+      return {
+        ...state,
+        phase: 'PlayerTurn',
+        selectedItemIndex: undefined,
+        pendingItem: undefined,
+        message: 'You decide not to identify anything.',
+        messageType: 'info',
+      };
+
+    case GameAction.SELECT_NEXT_ITEM:
+      newIndex = (newIndex + 1) % inventorySize;
+      return { ...state, selectedItemIndex: newIndex };
+
+    case GameAction.SELECT_PREVIOUS_ITEM:
+      newIndex = (newIndex - 1 + inventorySize) % inventorySize;
+      return { ...state, selectedItemIndex: newIndex };
+
+    case GameAction.CONFIRM_SELECTION: {
+      const itemToIdentify = player.inventory[newIndex];
+      if (!itemToIdentify) return state;
+
+      if (itemToIdentify.id === scroll.id) {
+        return {
+          ...state,
+          message: 'You cannot identify the scroll you are using.',
+          messageType: 'info',
+        };
+      }
+
+      if (itemToIdentify.identified !== false) {
+        return {
+          ...state,
+          message: `The ${getDisplayName(
+            itemToIdentify
+          )} is already identified.`,
+          messageType: 'info',
+        };
+      }
+
+      const newInventory = player.inventory.map((item, index) => {
+        if (index === newIndex) {
+          return { ...item, identified: true };
+        }
+        return item;
+      });
+
+      const finalInventory = newInventory.filter((s) => s.id !== scroll.id);
+
+      const updatedPlayer = { ...player, inventory: finalInventory };
+      const newActors = state.actors.map((a) =>
+        a.id === player.id ? updatedPlayer : a
+      );
+
+      const message = `The scroll flares! The ${getDisplayName(
+        itemToIdentify
+      )} is revealed to be a ${itemToIdentify.name}.`;
+
+      return {
+        ...state,
+        actors: newActors,
+        phase: 'EnemyTurn',
+        selectedItemIndex: undefined,
+        pendingItem: undefined,
+        message,
+        messageType: 'info',
+      };
+    }
+
+    default:
+      return state;
+  }
+}
+
 export function applyActionToState(
   state: GameState,
   action: GameAction
@@ -633,6 +776,10 @@ export function applyActionToState(
 
   if (state.phase === 'CombatMenu') {
     return handleCombatMenuAction(state, action);
+  }
+
+  if (state.phase === 'IdentifyMenu') {
+    return handleIdentifyMenuAction(state, action);
   }
 
   return state;

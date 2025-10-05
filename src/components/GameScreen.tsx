@@ -49,7 +49,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [state.phase, state]);
+  }, [state.phase]);
 
   useInput(
     (input, key) => {
@@ -57,7 +57,8 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
         state.phase === 'Targeting' ||
-        state.phase === 'CombatMenu'
+        state.phase === 'CombatMenu' ||
+        state.phase === 'IdentifyMenu'
       ) {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
@@ -73,6 +74,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         state.phase === 'Inventory' ||
         state.phase === 'Targeting' ||
         state.phase === 'CombatMenu' ||
+        state.phase === 'IdentifyMenu' ||
         state.phase === 'Loss',
     }
   );
@@ -120,7 +122,11 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
     <Box flexDirection="row">
       <MapView
         state={state}
-        isDimmed={state.phase === 'Inventory' || state.phase === 'CombatMenu'}
+        isDimmed={
+          state.phase === 'Inventory' ||
+          state.phase === 'CombatMenu' ||
+          state.phase === 'IdentifyMenu'
+        }
       />
       <CombatMenuView state={state} />
       <Box

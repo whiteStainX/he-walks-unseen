@@ -2,8 +2,10 @@
   {
     "id": "health-potion",
     "name": "Health Potion",
+    "unidentifiedName": "Bubbling Red Potion",
     "char": "!",
     "color": "red",
+    "identified": false,
     "effects": [
       {
         "type": "heal",
@@ -15,8 +17,10 @@
   {
     "id": "scroll-fireball",
     "name": "Scroll of Fireball",
+    "unidentifiedName": "Scroll with Fiery Glyphs",
     "char": "?",
     "color": "orange",
+    "identified": false,
     "effects": [
       {
         "type": "fireball",
@@ -29,12 +33,28 @@
   {
     "id": "scroll-mapping",
     "name": "Scroll of Mapping",
+    "unidentifiedName": "Scroll with Cartographic Marks",
     "char": "?",
     "color": "cyan",
+    "identified": false,
     "effects": [
       {
         "type": "revealMap",
         "requiresTarget": false
+      }
+    ]
+  },
+  {
+    "id": "scroll-identify",
+    "name": "Scroll of Identify",
+    "unidentifiedName": "Scroll with an Inquisitive Eye",
+    "char": "?",
+    "color": "white",
+    "identified": false,
+    "effects": [
+      {
+        "type": "identify",
+        "requiresTarget": true
       }
     ]
   },

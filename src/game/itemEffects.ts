@@ -10,7 +10,7 @@ import type {
 } from '../engine/state.js';
 import { getActorStats } from './equipment.js';
 
-interface EffectResult {
+export interface EffectResult {
   state: GameState;
   message: string;
 }
