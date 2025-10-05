@@ -121,6 +121,16 @@
 - **Gameplay Systems**: Introduce collision detection or combat by enriching `GameState` with additional structures and wiring new events or FSM states to orchestrate transitions.【F:src/engine/state.ts†L7-L22】【F:src/engine/fsm.ts†L3-L26】
 - **UI Enhancements**: Expand the Ink presentation with panels reacting to `dialogue`, `inventoryUpdate`, and custom events triggered by scripts and timeline operations.【F:src/main.tsx†L21-L37】【F:src/engine/scriptProcessor.ts†L13-L26】
 
+### 3.9 Code Hygiene
+
+To maintain a clean codebase, the project is configured to detect unused variables and imports. This is enforced by the TypeScript compiler via the `noUnusedLocals` option in `tsconfig.json`.
+
+To check for any unused code, you can run:
+```bash
+npx tsc --noEmit
+```
+This will report any unused local variables or imports without generating any JavaScript files.
+
 ## 4. Reference Startup Sequence
 1. `main.tsx` mounts the Ink app and invokes `loadResources('./data')`.
 2. Upon success, it emits `engineReady`; failures emit `engineError` for graceful degradation.【F:src/main.tsx†L10-L38】
