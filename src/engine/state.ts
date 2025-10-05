@@ -45,11 +45,17 @@ export interface Actor extends Entity {
   xpValue?: number;
   skills?: Skill[];
   loot?: string;
-  ai?: {
-    canWander?: boolean;
-    canChase?: boolean;
-    canPassThroughWalls?: boolean;
-  };
+  ai?: Ai;
+}
+
+export type AiState = 'idle' | 'wander' | 'chase' | 'flee' | 'patrol';
+
+export interface Ai {
+  state: AiState;
+  canPassThroughWalls?: boolean;
+  fleeThreshold?: number; // as a percentage of max HP
+  patrolPoints?: Point[];
+  currentPatrolIndex?: number;
 }
 
 export interface Item extends Entity {

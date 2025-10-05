@@ -9,8 +9,8 @@
     "defense": 0,
     "xpValue": 35,
     "ai": {
-      "canChase": true,
-      "canWander": true
+      "state": "wander",
+      "fleeThreshold": 0.4
     }
   },
   {
@@ -23,8 +23,7 @@
     "defense": 0,
     "xpValue": 10,
     "ai": {
-      "canWander": false,
-      "canChase": false
+      "state": "idle"
     }
   },
   {
@@ -40,8 +39,7 @@
     "defense": 1,
     "xp": 10,
     "ai": {
-      "canWander": true,
-      "canChase": true
+      "state": "wander"
     },
     "loot": "key"
   },
@@ -58,10 +56,29 @@
     "defense": 0,
     "xp": 15,
     "ai": {
-      "canWander": true,
-      "canChase": true,
+      "state": "wander",
       "canPassThroughWalls": true
     },
     "loot": "unidentified-potion"
+  },
+  {
+    "id": "guard",
+    "name": "Guard",
+    "char": "G",
+    "color": "orange",
+    "hp": { "current": 10, "max": 10 },
+    "attack": 2,
+    "defense": 1,
+    "xpValue": 50,
+    "ai": {
+      "state": "patrol",
+      "patrolPoints": [
+        { "x": 3, "y": 3 },
+        { "x": 3, "y": 8 },
+        { "x": 8, "y": 8 },
+        { "x": 8, "y": 3 }
+      ],
+      "currentPatrolIndex": 0
+    }
   }
 ]

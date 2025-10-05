@@ -25,6 +25,7 @@ This project implements several classic roguelike mechanics to create a challeng
 *   **Multi-Level Dungeons:** Explore a persistent, multi-level dungeon with interconnected floors.
 *   **Dungeon Themes:** Each floor has a unique theme with different enemies, items, and visuals.
 *   **Field of View / Fog of War:** The player's view is limited to what their character can see. Explored areas are remembered and displayed in a dimmed "fog of war."
+*   **Advanced Enemy AI:** Enemies are driven by a state-based AI system, allowing for complex behaviors. They can intelligently chase the player, patrol predefined routes, and even flee from combat when low on health.
 
 ## 3. Controls
 
