@@ -91,3 +91,15 @@ This milestone moved the enemy AI from a simple flag-based system to a more robu
 -   **New AI Behaviors:**
     -   **Patrol:** Enemies can now be assigned predefined patrol routes, making their movements more predictable and strategic.
     -   **Flee:** Enemies can now be configured to flee from combat when their health drops below a certain threshold, adding a new layer of tactical depth.
+
+## Milestone 8: Equipment System (October 2025)
+
+This milestone introduced a foundational equipment system, a critical component of player progression and customization.
+
+-   **Core Equipment Logic:**
+    -   Players can now equip and unequip items (weapons and armor) into designated slots.
+    -   Equipped items provide passive stat bonuses (e.g., attack, defense) that are applied in combat.
+-   **UI Integration:**
+    -   A new "Equipment" panel was added to the main game screen, providing players with a clear view of their equipped items and the bonuses they provide.
+-   **Data-Driven Items:**
+    -   The item data format was extended to support equippable properties, allowing for the easy creation of new equipment through JSON files.

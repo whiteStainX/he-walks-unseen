@@ -1,19 +1,40 @@
 [
   {
-    "id": "unidentified-potion",
-    "name": "Unidentified Potion",
+    "id": "health-potion",
+    "name": "Health Potion",
     "char": "!",
-    "color": "magenta",
-    "effects": ["heal", "damage"],
-    "potency": {
-      "heal": 5,
-      "damage": 3
-    }
+    "color": "red",
+    "effect": "heal",
+    "potency": 5
   },
   {
     "id": "key",
     "name": "Key",
     "char": "k",
     "color": "yellow"
+  },
+  {
+    "id": "dagger",
+    "name": "Dagger",
+    "char": ")",
+    "color": "silver",
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "attack": 2
+      }
+    }
+  },
+  {
+    "id": "leather-armor",
+    "name": "Leather Armor",
+    "char": "[",
+    "color": "brown",
+    "equipment": {
+      "slot": "armor",
+      "bonuses": {
+        "defense": 1
+      }
+    }
   }
 ]

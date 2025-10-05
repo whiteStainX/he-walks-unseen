@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
 import type { Actor, Ai, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
+import { getActorStats } from './equipment.js';
 
 /**
  * Calculates the damage dealt in an attack.
@@ -10,11 +11,14 @@ import { getResource } from '../engine/resourceManager.js';
  * @returns The amount of damage dealt.
  */
 export function calculateDamage(attacker: Actor, defender: Actor): number {
+  const attackerStats = getActorStats(attacker);
+  const defenderStats = getActorStats(defender);
+
   const powerStrikeBonus = attacker.skills?.some((s) => s.id === 'power-strike')
     ? 1
     : 0;
-  const totalAttack = attacker.attack + powerStrikeBonus;
-  const damage = Math.max(0, totalAttack - defender.defense);
+  const totalAttack = attackerStats.attack + powerStrikeBonus;
+  const damage = Math.max(0, totalAttack - defenderStats.defense);
   return damage;
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import MapView from './MapView.js';
+import EquipmentView from './EquipmentView.js';
 import InventoryView from './InventoryView.js';
 import SkillsView from './SkillsView.js';
 import { CombatMenuView } from './CombatMenuView.js';
@@ -144,6 +145,8 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
             <Text>N/A</Text>
           )}
         </Box>
+
+        {player && <EquipmentView player={player} />}
 
         <InventoryView
           inventory={player?.inventory ?? []}

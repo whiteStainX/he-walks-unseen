@@ -37,6 +37,28 @@ const mockPlayer: Actor = {
 };
 
 // A mock enemy actor for testing
+const mockDagger: Item = {
+  id: 'dagger-1',
+  name: 'Dagger',
+  char: ')',
+  position: { x: 0, y: 0 },
+  equipment: {
+    slot: 'weapon',
+    bonuses: { attack: 2 },
+  },
+};
+
+const mockLeatherArmor: Item = {
+  id: 'leather-armor-1',
+  name: 'Leather Armor',
+  char: '[',
+  position: { x: 0, y: 0 },
+  equipment: {
+    slot: 'armor',
+    bonuses: { defense: 1 },
+  },
+};
+
 const mockEnemy: Actor = {
   id: 'enemy-1',
   name: 'Goblin',
@@ -87,6 +109,22 @@ describe('calculateDamage', () => {
     };
     const damage = calculateDamage(playerWithSkill, mockEnemy);
     expect(damage).toBe(5); // (5 attack + 1 skill) - 1 defense
+  });
+
+  it('should factor in equipment bonuses', () => {
+    const playerWithDagger: Actor = {
+      ...mockPlayer,
+      equipment: { weapon: mockDagger },
+    };
+    const enemyWithArmor: Actor = {
+      ...mockEnemy,
+      equipment: { armor: mockLeatherArmor },
+    };
+    // Player: 5 base attack + 2 from dagger = 7 attack
+    // Enemy: 1 base defense + 1 from armor = 2 defense
+    // Damage: 7 - 2 = 5
+    const damage = calculateDamage(playerWithDagger, enemyWithArmor);
+    expect(damage).toBe(5);
   });
 });
 
@@ -143,5 +181,23 @@ describe('resolveAttack', () => {
 
     expect(updatedEnemy?.hp.current).toBe(5);
     expect(newState.message).toContain('but it has no effect.');
+  });
+
+  it('should factor in equipment when resolving an attack', () => {
+    const playerWithDagger: Actor = {
+      ...mockPlayer,
+      equipment: { weapon: mockDagger },
+    };
+    const stateWithEquippedPlayer = { ...mockGameState, actors: [playerWithDagger, mockEnemy] };
+    const newState = resolveAttack(playerWithDagger, mockEnemy, stateWithEquippedPlayer);
+
+    // Player attack: 5 + 2 = 7
+    // Enemy defense: 1
+    // Damage: 7 - 1 = 6
+    // Enemy HP: 5 - 6 = -1
+    const updatedEnemy = newState.actors.find((a) => a.id === 'enemy-1');
+    expect(updatedEnemy).toBeUndefined(); // Enemy should be defeated
+    expect(newState.message).toContain('Player attacks Goblin for 6 damage.');
+    expect(newState.message).toContain('Goblin dies!');
   });
 });
