@@ -26,6 +26,7 @@ This project implements several classic roguelike mechanics to create a challeng
 *   **Dungeon Themes:** Each floor has a unique theme with different enemies, items, and visuals.
 *   **Field of View / Fog of War:** The player's view is limited to what their character can see. Explored areas are remembered and displayed in a dimmed "fog of war."
 *   **Advanced Enemy AI:** Enemies are driven by a state-based AI system, allowing for complex behaviors. They can intelligently chase the player, patrol predefined routes, and even flee from combat when low on health.
+*   **Equipment System:** Find and equip weapons and armor to boost your stats. Equipped items provide passive bonuses to your attack and defense, which are automatically factored into combat.
 
 ## 3. Controls
 
@@ -42,6 +43,8 @@ This project implements several classic roguelike mechanics to create a challeng
 | --------------- | --------------------- |
 | `w` / `↑`         | Select Previous Item  |
 | `s` / `↓`         | Select Next Item      |
+| `d`             | Drop Selected Item    |
+| `e`             | Equip Selected Item   |
 | `Enter`         | Use Selected Item     |
 | `Escape` / `i`  | Close Inventory       |
 
