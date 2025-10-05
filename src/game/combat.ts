@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
+import type { Actor, Ai, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 
 /**
@@ -43,13 +43,32 @@ export function resolveAttack(
   let messageType: MessageType = 'info';
   let newItems = [...state.items];
 
-  // Update the defender's HP
+  // Update the defender's HP and check for AI state changes
   let newActors = state.actors.map((actor) => {
     if (actor.id === defender.id) {
-      return {
+      const updatedDefender = {
         ...actor,
         hp: { ...actor.hp, current: newDefenderHp },
       };
+
+      // If the defender is an enemy and is still alive, check for flee condition
+      if (
+        !updatedDefender.isPlayer &&
+        updatedDefender.ai?.fleeThreshold &&
+        newDefenderHp > 0
+      ) {
+        const hpPercentage = newDefenderHp / updatedDefender.hp.max;
+        if (hpPercentage <= updatedDefender.ai.fleeThreshold) {
+          // Switch to flee state
+          const newAi: Ai = { ...updatedDefender.ai, state: 'flee' };
+          return {
+            ...updatedDefender,
+            ai: newAi,
+          };
+        }
+      }
+
+      return updatedDefender;
     }
     return actor;
   });
