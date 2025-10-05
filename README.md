@@ -27,6 +27,7 @@ This project implements several classic roguelike mechanics to create a challeng
 *   **Field of View / Fog of War:** The player's view is limited to what their character can see. Explored areas are remembered and displayed in a dimmed "fog of war."
 *   **Advanced Enemy AI:** Enemies are driven by a state-based AI system, allowing for complex behaviors. They can intelligently chase the player, patrol predefined routes, and even flee from combat when low on health.
 *   **Equipment System:** Find and equip weapons and armor to boost your stats. Equipped items provide passive bonuses to your attack and defense, which are automatically factored into combat.
+*   **Status Effects:** Some weapons can inflict debilitating status effects like poison on your enemies. These effects are displayed on the UI and tick down each turn.
 
 ## 3. Controls
 

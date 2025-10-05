@@ -2,7 +2,7 @@
   "overgrown-keep": {
     "name": "The Overgrown Keep",
     "floors": [1, 2],
-    "enemies": ["goblin", "shrieker"],
+    "enemies": ["goblin", "shrieker", "goblin-ambusher"],
     "items": ["unidentified-potion"],
     "map": {
       "wall": "#",

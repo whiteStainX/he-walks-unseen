@@ -103,3 +103,17 @@ This milestone introduced a foundational equipment system, a critical component 
     -   A new "Equipment" panel was added to the main game screen, providing players with a clear view of their equipped items and the bonuses they provide.
 -   **Data-Driven Items:**
     -   The item data format was extended to support equippable properties, allowing for the easy creation of new equipment through JSON files.
+
+## Milestone 9: Status Effects System (October 2025)
+
+This milestone introduced a foundational status effects system, adding a new layer of tactical depth to combat encounters.
+
+-   **Core Status Effects Logic:**
+    -   A new system processes temporary conditions on actors each turn, such as poison.
+    -   Effects apply damage and tick down their duration until they expire.
+-   **Combat and Equipment Integration:**
+    -   The equipment system was extended to support `onHit` effects, allowing weapons to apply status effects with a certain probability.
+-   **UI Feedback:**
+    -   A new "Active Effects" panel was added to the UI, clearly displaying all current status effects on the player and their remaining durations.
+-   **Data-Driven Effects:**
+    -   Status effects are defined in data files, allowing for easy creation of new items and enemies that can apply them.

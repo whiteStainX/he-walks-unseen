@@ -47,6 +47,16 @@ export interface Actor extends Entity {
   skills?: Skill[];
   loot?: string;
   ai?: Ai;
+  statusEffects?: StatusEffect[];
+}
+
+export type StatusEffectType = 'poison';
+
+export interface StatusEffect {
+  id: string;
+  type: StatusEffectType;
+  duration: number; // in turns
+  potency: number; // e.g., damage per turn for poison
 }
 
 export type AiState = 'idle' | 'wander' | 'chase' | 'flee' | 'patrol';
@@ -66,6 +76,12 @@ export interface Equipment {
   bonuses: {
     attack?: number;
     defense?: number;
+  };
+  onHit?: {
+    type: StatusEffectType;
+    duration: number;
+    potency: number;
+    chance: number; // e.g., 0.5 for 50%
   };
 }
 
