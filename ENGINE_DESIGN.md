@@ -24,6 +24,7 @@
 - **Equipment System**: Actors can equip items (e.g., weapons, armor) into specific slots. Equipped items provide passive stat bonuses (e.g., attack, defense) that are automatically applied in combat calculations. The system is managed through `src/game/equipment.ts` and integrated into the UI via the `EquipmentView` component.
 - **Status Effects System**: A framework for applying temporary conditions to actors, such as `Poisoned`. The system processes effects each turn, applying damage and decrementing duration. Effects can be applied via combat hits and are displayed on the UI.
 - **Expanded Item & Magic System**: A flexible item system that supports a variety of effects, including healing, damage, area-of-effect spells, and utility magic. Items can have multiple effects and can require targeting, which transitions the game to a dedicated `Targeting` phase.
+- **Item Identification System**: A classic roguelike mechanic where magical items can be unidentified. The system supports identification through use (e.g., drinking a potion) or via a "Scroll of Identify". This is managed through `identified` and `unidentifiedName` properties on the `Item` object and a dedicated `IdentifyMenu` game phase.
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
@@ -130,6 +131,5 @@
 
 This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
 
--   **Item Identification**: Add a classic roguelike mechanic where potions, scrolls, and other magical items are initially unidentified, forcing the player to discover their properties through use or other means.
 -   **Persistent Save/Load**: Implement serialization for the entire game state, including the narrative engine's history, allowing players to save and resume their sessions.
 -   **Detailed Message Log**: Expand the UI to include a scrollable history of game messages, allowing the player to review past events and understand the flow of combat.

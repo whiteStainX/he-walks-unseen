@@ -54,6 +54,13 @@ export function resolveAction(
     if (key.escape) return GameAction.CANCEL_COMBAT;
   }
 
+  if (phase === 'IdentifyMenu') {
+    if (key.upArrow) return GameAction.SELECT_PREVIOUS_ITEM;
+    if (key.downArrow) return GameAction.SELECT_NEXT_ITEM;
+    if (key.return) return GameAction.CONFIRM_SELECTION;
+    if (key.escape) return GameAction.CANCEL_TARGETING;
+  }
+
   // Then, handle character-based input.
   if (input) {
     const normalizedInput = input.toLowerCase();

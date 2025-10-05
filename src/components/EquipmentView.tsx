@@ -14,7 +14,12 @@ const EquipmentView: React.FC<EquipmentViewProps> = ({ player }) => {
       <Text bold>Equipment</Text>
       {equipmentSlots.map(slot => {
         const item = player.equipment?.[slot];
-        const itemName = item ? item.name : 'None';
+        const itemName =
+          item && item.identified === false && item.unidentifiedName
+            ? item.unidentifiedName
+            : item
+            ? item.name
+            : 'None';
         const attackBonus = item?.equipment?.bonuses.attack ?? 0;
         const defenseBonus = item?.equipment?.bonuses.defense ?? 0;
 

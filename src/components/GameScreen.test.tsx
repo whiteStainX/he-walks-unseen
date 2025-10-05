@@ -40,7 +40,12 @@ describe('GameScreen', () => {
       },
     ]);
     setResource('items', [
-      { id: 'health-potion', name: 'Health Potion' },
+      {
+        id: 'health-potion',
+        name: 'Health Potion',
+        unidentifiedName: 'Bubbling Red Potion',
+        identified: false,
+      },
       { id: 'dagger', name: 'Dagger' },
     ]);
     setResource('entities', [
@@ -68,12 +73,12 @@ describe('GameScreen', () => {
   it('should transition from EnemyTurn to PlayerTurn without errors', async () => {
     const initialState = createInitialGameState();
     initialState.phase = 'EnemyTurn'; // Manually set phase for test
-    render(<GameScreen initialState={initialState} />);
+    const { unmount } = render(<GameScreen initialState={initialState} />);
 
     // Wait for the setTimeout in the component's useEffect to fire and update the state
     await new Promise(resolve => setTimeout(resolve, 200));
 
+    unmount();
     // The test's purpose is to ensure no errors are thrown during the async phase transition.
-    // There's no need for an explicit assertion here.
   });
 });

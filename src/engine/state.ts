@@ -90,7 +90,8 @@ export type ItemEffectType =
   | 'damage'
   | 'fireball'
   | 'revealMap'
-  | 'applyStatus';
+  | 'applyStatus'
+  | 'identify';
 
 export interface BaseEffect {
   type: ItemEffectType;
@@ -124,16 +125,23 @@ export interface ApplyStatusEffect extends BaseEffect {
   potency: number;
 }
 
+export interface IdentifyEffect extends BaseEffect {
+  type: 'identify';
+}
+
 export type ItemEffect =
   | HealEffect
   | DamageEffect
   | FireballEffect
   | RevealMapEffect
-  | ApplyStatusEffect;
+  | ApplyStatusEffect
+  | IdentifyEffect;
 
 export interface Item extends Entity {
   effects?: ItemEffect[];
   equipment?: Equipment;
+  unidentifiedName?: string;
+  identified?: boolean;
 }
 
 export interface Tile {
