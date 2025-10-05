@@ -85,9 +85,54 @@ export interface Equipment {
   };
 }
 
+export type ItemEffectType =
+  | 'heal'
+  | 'damage'
+  | 'fireball'
+  | 'revealMap'
+  | 'applyStatus';
+
+export interface BaseEffect {
+  type: ItemEffectType;
+  requiresTarget: boolean;
+}
+
+export interface HealEffect extends BaseEffect {
+  type: 'heal';
+  potency: number;
+}
+
+export interface DamageEffect extends BaseEffect {
+  type: 'damage';
+  potency: number;
+}
+
+export interface FireballEffect extends BaseEffect {
+  type: 'fireball';
+  potency: number;
+  radius: number;
+}
+
+export interface RevealMapEffect extends BaseEffect {
+  type: 'revealMap';
+}
+
+export interface ApplyStatusEffect extends BaseEffect {
+  type: 'applyStatus';
+  status: StatusEffectType;
+  duration: number;
+  potency: number;
+}
+
+export type ItemEffect =
+  | HealEffect
+  | DamageEffect
+  | FireballEffect
+  | RevealMapEffect
+  | ApplyStatusEffect;
+
 export interface Item extends Entity {
-  effect?: PotionEffect;
-  potency?: number;
+  effects?: ItemEffect[];
   equipment?: Equipment;
 }
 
@@ -96,8 +141,6 @@ export interface Tile {
   walkable: boolean;
   transparent: boolean;
 }
-
-export type PotionEffect = 'heal' | 'damage';
 
 export interface Skill {
   id: string;
@@ -122,6 +165,7 @@ export interface GameState {
   visibleTiles: Set<string>; // "x,y" format for quick lookups
   exploredTiles: Set<string>; // "x,y" format for quick lookups
   selectedItemIndex?: number;
+  pendingItem?: Item;
   target?: Point;
   currentFloor: number;
   floorStates: Map<number, GameState>;

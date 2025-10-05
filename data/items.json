@@ -4,8 +4,39 @@
     "name": "Health Potion",
     "char": "!",
     "color": "red",
-    "effect": "heal",
-    "potency": 5
+    "effects": [
+      {
+        "type": "heal",
+        "potency": 5,
+        "requiresTarget": false
+      }
+    ]
+  },
+  {
+    "id": "scroll-fireball",
+    "name": "Scroll of Fireball",
+    "char": "?",
+    "color": "orange",
+    "effects": [
+      {
+        "type": "fireball",
+        "potency": 10,
+        "radius": 3,
+        "requiresTarget": true
+      }
+    ]
+  },
+  {
+    "id": "scroll-mapping",
+    "name": "Scroll of Mapping",
+    "char": "?",
+    "color": "cyan",
+    "effects": [
+      {
+        "type": "revealMap",
+        "requiresTarget": false
+      }
+    ]
   },
   {
     "id": "key",

@@ -11,8 +11,7 @@ const mockItems: Partial<Item>[] = [
     name: 'Healing Potion',
     char: '!',
     color: 'red',
-    effect: 'heal',
-    potency: 5,
+    effects: [{ type: 'heal', potency: 5, requiresTarget: false }],
   },
 ];
 
