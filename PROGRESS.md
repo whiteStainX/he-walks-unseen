@@ -141,3 +141,10 @@ This milestone introduces a classic roguelike item identification system, adding
 -   **Identification by Use:** The first time an unidentified item is used, it becomes identified, and all other items of the same type in the player's inventory are also revealed.
 -   **Scroll of Identify:** A new "Scroll of Identify" allows the player to choose a specific item from their inventory to identify, providing a more reliable method of discovery.
 -   **UI Enhancements:** The inventory screen was updated with a dedicated `IdentifyMenu` phase to handle the identification process, and all relevant UI components now display the correct item name based on its identification status.
+
+## Milestone 12: Game Logic Refactoring (October 2025)
+
+This milestone focused on improving the codebase structure and maintainability.
+
+-   **Decoupled Game Logic:** The monolithic `updateState.ts` file was broken down into smaller, more focused modules, each responsible for a specific piece of game logic (e.g., `playerActions.ts`, `inventoryActions.ts`).
+-   **Improved Maintainability:** This refactoring makes the codebase easier to understand, test, and extend.
