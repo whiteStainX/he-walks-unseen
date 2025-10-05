@@ -50,10 +50,25 @@ export function resolveAttack(
   // Update the defender's HP and check for AI state changes
   let newActors = state.actors.map((actor) => {
     if (actor.id === defender.id) {
-      const updatedDefender = {
+      let updatedDefender = {
         ...actor,
         hp: { ...actor.hp, current: newDefenderHp },
       };
+
+      // Apply on-hit status effects from the attacker's weapon
+      const weapon = attacker.equipment?.weapon;
+      if (weapon?.equipment?.onHit && damage > 0) {
+        const { type, duration, potency, chance } = weapon.equipment.onHit;
+        if (Math.random() < chance) {
+          const newStatusEffect = { id: nanoid(), type, duration, potency };
+          const existingEffects = updatedDefender.statusEffects ?? [];
+          updatedDefender = {
+            ...updatedDefender,
+            statusEffects: [...existingEffects, newStatusEffect],
+          };
+          message += ` The ${defender.name} is poisoned!`;
+        }
+      }
 
       // If the defender is an enemy and is still alive, check for flee condition
       if (

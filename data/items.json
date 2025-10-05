@@ -36,5 +36,23 @@
         "defense": 1
       }
     }
+  },
+  {
+    "id": "poisoned-dagger",
+    "name": "Poisoned Dagger",
+    "char": ")",
+    "color": "green",
+    "equipment": {
+      "slot": "weapon",
+      "bonuses": {
+        "attack": 1
+      },
+      "onHit": {
+        "type": "poison",
+        "duration": 3,
+        "potency": 1,
+        "chance": 0.5
+      }
+    }
   }
 ]

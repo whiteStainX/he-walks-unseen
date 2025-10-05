@@ -22,6 +22,7 @@
 - **Input Abstraction**: Converts key presses into semantic `GameAction` enums for the logic layer to consume. The keybinding system is phase-aware, allowing for different controls in different game states (e.g., `PlayerTurn` vs. `Inventory`).【F:src/input/actions.ts†L1-L24】【F:src/input/keybindings.ts†L1-L39】
 - **State-Based Enemy AI**: Enemies operate on a state machine (`idle`, `wander`, `patrol`, `chase`, `flee`). This allows for advanced behaviors like patrol routes, intelligent chasing via A* pathfinding, and fleeing when at low health.【F:src/game/ai.ts】
 - **Equipment System**: Actors can equip items (e.g., weapons, armor) into specific slots. Equipped items provide passive stat bonuses (e.g., attack, defense) that are automatically applied in combat calculations. The system is managed through `src/game/equipment.ts` and integrated into the UI via the `EquipmentView` component.
+- **Status Effects System**: A framework for applying temporary conditions to actors, such as `Poisoned`. The system processes effects each turn, applying damage and decrementing duration. Effects can be applied via combat hits and are displayed on the UI.
 
 ### 1.3 Current Limitations
 - **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.【F:src/engine/narrativeEngine.ts†L7-L82】
@@ -128,7 +129,6 @@
 
 This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
 
--   **Status Effects System**: Implement a framework for applying temporary conditions to actors, such as `Poisoned`, `Stunned`, `Confused`, or `Hasted`. This would add significant tactical depth to combat.
 -   **Expanded Item & Magic System**: Introduce a wider variety of items like scrolls (one-shot effects), wands (charged items), and food (hunger mechanics). This could also serve as the foundation for a more formal skill or magic system.
 -   **Item Identification**: Add a classic roguelike mechanic where potions, scrolls, and other magical items are initially unidentified, forcing the player to discover their properties through use or other means.
 -   **Persistent Save/Load**: Implement serialization for the entire game state, including the narrative engine's history, allowing players to save and resume their sessions.

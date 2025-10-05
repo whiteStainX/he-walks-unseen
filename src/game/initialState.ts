@@ -80,11 +80,32 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     const enemyPosition = findRandomWalkableTile(map, occupiedPoints);
     if (enemyPosition) {
       const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
+      const { equipment: equipmentIds, ...restOfTemplate } = template;
       const newEnemy: Actor = {
-        ...template,
+        ...restOfTemplate,
         id: nanoid(),
         position: enemyPosition,
       };
+
+      // If the template specifies equipment, resolve the item and equip it
+      if (equipmentIds) {
+        const itemTemplates = getResource<any[]>('items');
+        const equipment: Partial<Record<keyof typeof equipmentIds, Item>> = {};
+        for (const slot in equipmentIds) {
+          const itemId = equipmentIds[slot];
+          const itemTemplate = itemTemplates.find(it => it.id === itemId);
+          if (itemTemplate) {
+            const newItem: Item = {
+              ...itemTemplate,
+              id: nanoid(),
+              position: { x: -1, y: -1 }, // Position doesn't matter, it's equipped
+            };
+            equipment[slot as keyof typeof equipmentIds] = newItem;
+          }
+        }
+        newEnemy.equipment = equipment;
+      }
+
       actors.push(newEnemy);
       occupiedPoints.push(enemyPosition);
     }

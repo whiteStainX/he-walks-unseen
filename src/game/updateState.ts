@@ -6,6 +6,7 @@ import { runEnemyTurn } from './ai.js';
 import { resolveAttack } from './combat.js';
 import { equip } from './equipment.js';
 import { updateVisibility } from './visibility.js';
+import { processStatusEffects } from './statusEffects.js';
 
 interface MovementDelta {
   dx: number;
@@ -518,17 +519,25 @@ function handleEnemyTurns(state: GameState): GameState {
     }
   }
 
-  const player = stateAfterEnemyTurns.actors.find((a) => a.isPlayer);
+  // Process status effects for all actors at the end of the round
+  const stateAfterEffects = processStatusEffects(stateAfterEnemyTurns);
+
+  // Check for player death after status effects have been processed
+  const player = stateAfterEffects.actors.find((a) => a.isPlayer);
   if (!player || player.hp.current <= 0) {
+    // The processStatusEffects function might have already set the 'Loss' phase
+    if (stateAfterEffects.phase === 'Loss') {
+      return stateAfterEffects;
+    }
     return {
-      ...stateAfterEnemyTurns,
+      ...stateAfterEffects,
       phase: 'Loss',
-      message: 'You have been defeated.',
+      message: stateAfterEffects.message || 'You have been defeated.',
       messageType: 'death',
     };
   }
 
-  return { ...stateAfterEnemyTurns, phase: 'PlayerTurn' };
+  return { ...stateAfterEffects, phase: 'PlayerTurn' };
 }
 
 export function applyActionToState(

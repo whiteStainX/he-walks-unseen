@@ -80,5 +80,21 @@
       ],
       "currentPatrolIndex": 0
     }
+  },
+  {
+    "id": "goblin-ambusher",
+    "name": "Goblin Ambusher",
+    "char": "a",
+    "color": "darkgreen",
+    "hp": { "current": 6, "max": 6 },
+    "attack": 1,
+    "defense": 1,
+    "xpValue": 50,
+    "ai": {
+      "state": "chase"
+    },
+    "equipment": {
+      "weapon": "poisoned-dagger"
+    }
   }
 ]
