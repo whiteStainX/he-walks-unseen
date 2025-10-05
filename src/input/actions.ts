@@ -23,6 +23,7 @@ export enum GameAction {
   SELECT_PREVIOUS_ITEM,
   CONFIRM_SELECTION,
   DROP_ITEM,
+  EQUIP_ITEM,
 
   // Combat Menu
   SELECT_NEXT_COMBAT_OPTION,

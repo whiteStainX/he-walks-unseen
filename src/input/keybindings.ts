@@ -16,6 +16,7 @@ const inventoryBindings: Record<string, GameAction> = {
   w: GameAction.SELECT_PREVIOUS_ITEM,
   s: GameAction.SELECT_NEXT_ITEM,
   d: GameAction.DROP_ITEM,
+  e: GameAction.EQUIP_ITEM,
 };
 
 export function resolveAction(

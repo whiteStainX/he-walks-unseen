@@ -4,6 +4,7 @@ import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
 import { resolveAttack } from './combat.js';
+import { equip } from './equipment.js';
 import { updateVisibility } from './visibility.js';
 
 interface MovementDelta {
@@ -82,14 +83,14 @@ function handleInventoryAction(
       let finalActors = state.actors;
       let newPlayerHp = player.hp.current;
 
-      if (itemToUse.effect === 'heal') {
+      if (itemToUse.effect === 'heal' && typeof itemToUse.potency === 'number') {
         newPlayerHp = Math.min(
           player.hp.max,
           player.hp.current + itemToUse.potency
         );
         message = `You use the ${itemToUse.name} and heal for ${itemToUse.potency} HP.`;
         messageType = 'heal';
-      } else if (itemToUse.effect === 'damage') {
+      } else if (itemToUse.effect === 'damage' && typeof itemToUse.potency === 'number') {
         newPlayerHp -= itemToUse.potency;
         message = `The ${itemToUse.name} damages you for ${itemToUse.potency} HP!`;
         messageType = 'damage';
@@ -158,6 +159,30 @@ function handleInventoryAction(
         message: `You drop the ${itemToDrop.name}.`,
         messageType: 'info',
       };
+
+    case GameAction.EQUIP_ITEM: {
+      const selectedItemName = groupedInventory[newIndex];
+      if (!selectedItemName) return state;
+
+      const itemToEquip = player.inventory.find(
+        (item) => item.name === selectedItemName
+      );
+      if (!itemToEquip || !itemToEquip.equipment) {
+        return {
+          ...state,
+          message: `You can't equip the ${itemToEquip?.name}.`,
+          messageType: 'info',
+        };
+      }
+
+      const stateAfterEquip = equip(state, player.id, itemToEquip.id);
+
+      return {
+        ...stateAfterEquip,
+        phase: 'EnemyTurn',
+        selectedItemIndex: undefined,
+      };
+    }
 
     default:
       return state;

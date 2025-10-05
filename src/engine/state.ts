@@ -38,6 +38,7 @@ export interface Actor extends Entity {
   attack: number;
   defense: number;
   isPlayer?: true;
+  equipment?: Partial<Record<EquipmentSlot, Item>>;
   inventory?: Item[];
   level?: number;
   xp?: number;
@@ -58,9 +59,20 @@ export interface Ai {
   currentPatrolIndex?: number;
 }
 
+export type EquipmentSlot = 'weapon' | 'armor';
+
+export interface Equipment {
+  slot: EquipmentSlot;
+  bonuses: {
+    attack?: number;
+    defense?: number;
+  };
+}
+
 export interface Item extends Entity {
-  effect: PotionEffect;
-  potency: number;
+  effect?: PotionEffect;
+  potency?: number;
+  equipment?: Equipment;
 }
 
 export interface Tile {
