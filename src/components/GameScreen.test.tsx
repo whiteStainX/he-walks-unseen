@@ -1,9 +1,7 @@
-import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import React from 'react';
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { render } from 'ink-testing-library';
 import { GameAction } from '../input/actions.js';
 import GameScreen, { isActionDefined } from './GameScreen.js';
-import type { GameState } from '../engine/state.js';
 import { createInitialGameState } from '../game/initialState.js';
 import { setResource, clearResources } from '../engine/resourceManager.js';
 

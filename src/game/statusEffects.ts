@@ -1,5 +1,5 @@
 import type { GameState, Actor } from '../engine/state.js';
-import { nanoid } from 'nanoid';
+
 
 /**
  * Processes all active status effects for all actors in the game state.

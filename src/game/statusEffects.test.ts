@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import type { GameState, Actor, StatusEffect } from '../engine/state';
-import { processStatusEffects } from './statusEffects';
-import { resolveAttack } from './combat';
-import { nanoid } from 'nanoid';
+import type { GameState, Actor, StatusEffect } from '../engine/state.js';
+import { processStatusEffects } from './statusEffects.js';
+import { resolveAttack } from './combat.js';
 
 describe('Status Effects System', () => {
   let mockState: GameState;

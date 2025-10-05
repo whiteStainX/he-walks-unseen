@@ -1,5 +1,5 @@
-import { jest } from '@jest/globals';
-import type { GameState, Actor, Item } from '../engine/state.js';
+
+import type { GameState, Actor } from '../engine/state.js';
 import { applyEffect } from './itemEffects.js';
 
 const createMockPlayer = (overrides: Partial<Actor> = {}): Actor => ({

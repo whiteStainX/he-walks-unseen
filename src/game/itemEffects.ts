@@ -5,10 +5,9 @@ import type {
   HealEffect,
   DamageEffect,
   FireballEffect,
-  RevealMapEffect,
   Point,
 } from '../engine/state.js';
-import { getActorStats } from './equipment.js';
+
 
 export interface EffectResult {
   state: GameState;
