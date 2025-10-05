@@ -19,7 +19,7 @@ This project implements several classic roguelike mechanics to create a challeng
     *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
     *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
     *   **Enemy Status Panel:** A dedicated panel displays the health of all visible enemies, aiding in tactical decision-making.
-*   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions to heal from damage or gain other effects.
+*   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions for healing, or powerful scrolls to cast area-of-effect spells and reveal the map.
 *   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you delve deeper into the dungeon.
 *   **Environmental Interactions:** The dungeon is not just a static backdrop. Interact with doors to open them and loot chests to find valuable items.
 *   **Multi-Level Dungeons:** Explore a persistent, multi-level dungeon with interconnected floors.
@@ -56,6 +56,12 @@ This project implements several classic roguelike mechanics to create a challeng
 | `s` / `↓`         | Select Next Option    |
 | `Enter`         | Confirm Action        |
 | `Escape`        | Cancel Combat         |
+
+### Targeting Mode
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w`, `a`, `s`, `d` / `↑`, `←`, `↓`, `→` | Select Target Direction |
+| `Escape`        | Cancel Targeting      |
 
 
 ## 4. Architecture

@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction } from '../engine/state.js';
+import type { GameState, MessageType, Entity, DoorInteraction, ChestInteraction, StairsInteraction, Item } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { createInitialGameState } from './initialState.js';
 import { runEnemyTurn } from './ai.js';
@@ -7,6 +7,7 @@ import { resolveAttack } from './combat.js';
 import { equip } from './equipment.js';
 import { updateVisibility } from './visibility.js';
 import { processStatusEffects } from './statusEffects.js';
+import { applyEffect } from './itemEffects.js';
 
 interface MovementDelta {
   dx: number;
@@ -70,37 +71,38 @@ function handleInventoryAction(
       newIndex = (newIndex - 1 + inventorySize) % inventorySize;
       return { ...state, selectedItemIndex: newIndex };
 
-    case GameAction.CONFIRM_SELECTION:
+    case GameAction.CONFIRM_SELECTION: {
       const selectedItemName = groupedInventory[newIndex];
       if (!selectedItemName) return state;
 
       const itemToUse = player.inventory.find(
         (item) => item.name === selectedItemName
       );
-      if (!itemToUse) return state;
-
-      let message = `You can't use the ${itemToUse.name}.`;
-      let messageType: MessageType = 'info';
-      let finalActors = state.actors;
-      let newPlayerHp = player.hp.current;
-
-      if (itemToUse.effect === 'heal' && typeof itemToUse.potency === 'number') {
-        newPlayerHp = Math.min(
-          player.hp.max,
-          player.hp.current + itemToUse.potency
-        );
-        message = `You use the ${itemToUse.name} and heal for ${itemToUse.potency} HP.`;
-        messageType = 'heal';
-      } else if (itemToUse.effect === 'damage' && typeof itemToUse.potency === 'number') {
-        newPlayerHp -= itemToUse.potency;
-        message = `The ${itemToUse.name} damages you for ${itemToUse.potency} HP!`;
-        messageType = 'damage';
+      if (!itemToUse || !itemToUse.effects || itemToUse.effects.length === 0) {
+        return {
+          ...state,
+          message: `You can't use the ${itemToUse?.name}.`,
+          messageType: 'info',
+        };
       }
 
-      const updatedPlayer = {
-        ...player,
-        hp: { ...player.hp, current: newPlayerHp },
-      };
+      const effect = itemToUse.effects[0];
+
+      if (effect.requiresTarget) {
+        return {
+          ...state,
+          phase: 'Targeting',
+          pendingItem: itemToUse,
+          message: 'Which direction?',
+          messageType: 'info',
+        };
+      }
+
+      const { state: stateAfterEffect, message } = applyEffect(
+        player,
+        state,
+        effect
+      );
 
       const itemIndexToRemove = player.inventory.findIndex(
         (item) => item.id === itemToUse.id
@@ -108,22 +110,30 @@ function handleInventoryAction(
       const newInventory = player.inventory.filter(
         (_, index) => index !== itemIndexToRemove
       );
-      const playerWithNewInventory = { ...updatedPlayer, inventory: newInventory };
 
-      finalActors = state.actors.map((a) =>
+      const playerFromNewState = stateAfterEffect.actors.find(
+        (a) => a.isPlayer
+      )!;
+      const playerWithNewInventory = {
+        ...playerFromNewState,
+        inventory: newInventory,
+      };
+
+      const finalActors = stateAfterEffect.actors.map((a) =>
         a.id === player.id ? playerWithNewInventory : a
       );
 
       return {
-        ...state,
+        ...stateAfterEffect,
         actors: finalActors,
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
         message,
-        messageType,
+        messageType: 'info',
       };
+    }
 
-    case GameAction.DROP_ITEM:
+    case GameAction.DROP_ITEM: {
       const selectedItemNameToDrop = groupedInventory[newIndex];
       if (!selectedItemNameToDrop) return state;
 
@@ -160,6 +170,7 @@ function handleInventoryAction(
         message: `You drop the ${itemToDrop.name}.`,
         messageType: 'info',
       };
+    }
 
     case GameAction.EQUIP_ITEM: {
       const selectedItemName = groupedInventory[newIndex];
@@ -249,14 +260,13 @@ export function handleInteraction(state: GameState, x: number, y: number): GameS
 
       const lootItemTemplate = state.items.find(i => i.id === interaction.loot);
 
-      const lootItem = {
+      const lootItem: Item = {
         id: nanoid(),
-        name: lootItemTemplate?.name || 'Unidentified Potion',
+        name: lootItemTemplate?.name || 'Unidentified Item',
         char: lootItemTemplate?.char || '!',
         color: lootItemTemplate?.color || 'magenta',
         position: player.position,
-        effect: lootItemTemplate?.effect || ('heal' as const),
-        potency: lootItemTemplate?.potency || 5,
+        effects: lootItemTemplate?.effects,
       };
 
       const newPlayerInventory = [...(player.inventory || []), lootItem];
@@ -280,7 +290,7 @@ export function handleInteraction(state: GameState, x: number, y: number): GameS
         ...state,
         actors: newActors,
         entities: newEntities,
-        message: 'You open the chest and find a potion.',
+        message: `You open the chest and find a ${lootItem.name}.`,
         phase: 'EnemyTurn',
       };
       break;
@@ -319,7 +329,13 @@ function handleTargeting(state: GameState, action: GameAction): GameState {
   if (!player) return state;
 
   if (action === GameAction.CANCEL_TARGETING) {
-    return { ...state, phase: 'PlayerTurn', message: '' };
+    return {
+      ...state,
+      phase: 'PlayerTurn',
+      message: '',
+      pendingItem: undefined,
+      target: undefined,
+    };
   }
 
   const delta = MOVEMENT_DELTAS[action];
@@ -329,6 +345,57 @@ function handleTargeting(state: GameState, action: GameAction): GameState {
 
   const targetX = player.position.x + delta.dx;
   const targetY = player.position.y + delta.dy;
+  const targetPoint = { x: targetX, y: targetY };
+
+  if (state.pendingItem) {
+    const itemToUse = state.pendingItem;
+    const effect = itemToUse.effects?.[0];
+
+    if (!effect) {
+      return {
+        ...state,
+        phase: 'PlayerTurn',
+        message: 'Invalid item effect.',
+        messageType: 'info',
+        pendingItem: undefined,
+      };
+    }
+
+    const { state: stateAfterEffect, message } = applyEffect(
+      player,
+      state,
+      effect,
+      targetPoint
+    );
+
+    const playerFromNewState = stateAfterEffect.actors.find(
+      (a) => a.isPlayer
+    )!;
+    const itemIndexToRemove = playerFromNewState.inventory!.findIndex(
+      (item) => item.id === itemToUse.id
+    );
+    const newInventory = playerFromNewState.inventory!.filter(
+      (_, index) => index !== itemIndexToRemove
+    );
+    const playerWithNewInventory = {
+      ...playerFromNewState,
+      inventory: newInventory,
+    };
+
+    const finalActors = stateAfterEffect.actors.map((a) =>
+      a.id === player.id ? playerWithNewInventory : a
+    );
+
+    return {
+      ...stateAfterEffect,
+      actors: finalActors,
+      phase: 'EnemyTurn',
+      pendingItem: undefined,
+      target: undefined,
+      message,
+      messageType: 'info',
+    };
+  }
 
   return handleInteraction(state, targetX, targetY);
 }

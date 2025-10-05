@@ -5,7 +5,6 @@ import type {
   Point,
   Tile,
   Item,
-  PotionEffect,
   Entity,
 } from '../engine/state.js';
 import { generateMap } from './map-generation.js';
