@@ -14,7 +14,8 @@ This project implements several classic roguelike mechanics to create a challeng
 
 *   **Turn-Based System:** The game operates on a strict "I-Go-You-Go" turn-based system. The world only advances when the player takes an action, allowing for careful, strategic thinking.
 *   **Permadeath & Replayability:** When the player is defeated, the game is over. Each new game generates a unique, procedurally-generated dungeon with randomized room layouts and enemy placements, ensuring no two runs are the same.
-*   **Risk vs. Reward:** The dungeon contains unidentified potions with random effects. A potion might heal you, or it might cause damage, forcing players to weigh the potential benefits against the risks.
+*   **Risk vs. Reward:** The dungeon contains unidentified potions and scrolls. Their effects are unknown until they are used or identified, forcing players to weigh the potential benefits against the risks.
+*   **Item Identification:** A classic roguelike feature where magical items like potions and scrolls are initially unidentified. Discover their true properties through use or by finding a special "Scroll of Identify."
 *   **Enhanced UI Feedback:**
     *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
     *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
@@ -62,6 +63,14 @@ This project implements several classic roguelike mechanics to create a challeng
 | --------------- | --------------------- |
 | `w`, `a`, `s`, `d` / `↑`, `←`, `↓`, `→` | Select Target Direction |
 | `Escape`        | Cancel Targeting      |
+
+### Identify Menu Mode
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w` / `↑`         | Select Previous Item  |
+| `s` / `↓`         | Select Next Item      |
+| `Enter`         | Confirm Selection     |
+| `Escape`        | Cancel Identification |
 
 
 ## 4. Architecture

@@ -132,3 +132,12 @@ This milestone significantly enhances the item system, moving it from a simple m
     -   Added new item types, including a "Scroll of Fireball" and a "Scroll of Mapping," to demonstrate the system's new capabilities.
 -   **Modular Effect Logic:**
     -   Centralized all effect-handling logic in a new `src/game/itemEffects.ts` module, improving code organization and making the system easier to extend.
+
+## Milestone 11: Item Identification System (October 2025)
+
+This milestone introduces a classic roguelike item identification system, adding a layer of mystery and risk vs. reward to the game.
+
+-   **Identification Mechanic:** Magical items like potions and scrolls are now initially unidentified. Their true properties are unknown to the player.
+-   **Identification by Use:** The first time an unidentified item is used, it becomes identified, and all other items of the same type in the player's inventory are also revealed.
+-   **Scroll of Identify:** A new "Scroll of Identify" allows the player to choose a specific item from their inventory to identify, providing a more reliable method of discovery.
+-   **UI Enhancements:** The inventory screen was updated with a dedicated `IdentifyMenu` phase to handle the identification process, and all relevant UI components now display the correct item name based on its identification status.
