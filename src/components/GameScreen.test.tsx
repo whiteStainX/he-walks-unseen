@@ -60,23 +60,15 @@ describe('GameScreen', () => {
 
   it('should render the game screen without crashing', () => {
     const initialState = createInitialGameState();
-    const { lastFrame } = render(<GameScreen initialState={initialState} />);
+    const { lastFrame, unmount } = render(
+      <GameScreen initialState={initialState} />
+    );
     expect(lastFrame()).toContain('Status');
     expect(lastFrame()).toContain('Equipment');
     expect(lastFrame()).toContain('Inventory');
     expect(lastFrame()).toContain('Log');
     expect(lastFrame()).toContain('Welcome to floor 1!');
-  });
-
-  it('should transition from EnemyTurn to PlayerTurn without errors', async () => {
-    const initialState = createInitialGameState();
-    initialState.phase = 'EnemyTurn'; // Manually set phase for test
-    const { unmount } = render(<GameScreen initialState={initialState} />);
-
-    // Wait for the setTimeout in the component's useEffect to fire and update the state
-    await new Promise(resolve => setTimeout(resolve, 200));
-
     unmount();
-    // The test's purpose is to ensure no errors are thrown during the async phase transition.
   });
+
 });

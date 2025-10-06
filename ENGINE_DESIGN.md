@@ -26,9 +26,9 @@
 - **Status Effects System**: A framework for applying temporary conditions to actors, such as `Poisoned`. The system processes effects each turn, applying damage and decrementing duration. Effects can be applied via combat hits and are displayed on the UI.
 - **Expanded Item & Magic System**: A flexible item system that supports a variety of effects, including healing, damage, area-of-effect spells, and utility magic. Items can have multiple effects and can require targeting, which transitions the game to a dedicated `Targeting` phase.
 - **Item Identification System**: A classic roguelike mechanic where magical items can be unidentified. The system supports identification through use (e.g., drinking a potion) or via a "Scroll of Identify". This is managed through `identified` and `unidentifiedName` properties on the `Item` object and a dedicated `IdentifyMenu` game phase.
+- **Persistent Save/Load**: The entire game state, including the narrative engine's commit history, is automatically saved to disk after every action and loaded on startup. This is handled by a dedicated `persistence.ts` module that serializes and deserializes complex data structures like `Map` and `Set` objects.[src/engine/persistence.ts](./src/engine/persistence.ts)
 
 ### 1.3 Current Limitations
-- **Volatile History**: Commit and branch registries live in-memory; no persistence between sessions or disk serialization is provided.[src/engine/narrativeEngine.ts:L7-L82](./src/engine/narrativeEngine.ts#L7-L82)
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.[src/engine/scriptProcessor.ts:L9-L26](./src/engine/scriptProcessor.ts#L9-L26)
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.[src/main.tsx:L1-L48](./src/main.tsx#L1-L48)
 - **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.[src/engine/resourceManager.ts:L15-L29](./src/engine/resourceManager.ts#L15-L29)
@@ -142,5 +142,4 @@ This will report any unused local variables or imports without generating any Ja
 
 This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
 
--   **Persistent Save/Load**: Implement serialization for the entire game state, including the narrative engine's history, allowing players to save and resume their sessions.
 -   **Detailed Message Log**: Expand the UI to include a scrollable history of game messages, allowing the player to review past events and understand the flow of combat.
