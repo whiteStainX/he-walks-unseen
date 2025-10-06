@@ -1,6 +1,6 @@
 import { GameState } from './state.js';
 import { customAlphabet } from 'nanoid';
-import { saveGame } from './persistence.js';
+import { saveGame, replacer, reviver } from './persistence.js';
 
 // Using a custom alphabet for shorter, URL-friendly IDs
 const nanoid = customAlphabet('1234567890abcdef', 7);
@@ -43,7 +43,7 @@ export function initializeEngine(
  */
 export function commit(state: GameState): string {
   const commitId = nanoid();
-  commitHistory.set(commitId, JSON.parse(JSON.stringify(state))); // Deep copy
+  commitHistory.set(commitId, JSON.parse(JSON.stringify(state, replacer), reviver)); // Deep copy
   branches.set(activeBranch, commitId); // Update the active branch head
 
   // Fire-and-forget save operation
