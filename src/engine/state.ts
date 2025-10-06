@@ -186,3 +186,9 @@ export interface GameState {
   combatTargetId?: string;
   selectedCombatMenuIndex?: number;
 }
+
+export type Prefab = Omit<Entity, 'id' | 'position'>;
+
+export interface PrefabCollection {
+  [id: string]: Prefab;
+}

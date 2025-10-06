@@ -52,6 +52,32 @@ describe('GameScreen', () => {
       { id: 'downstairs', char: '>' },
       { id: 'upstairs', char: '<' },
     ]);
+    setResource('prefabs', {
+      goblin: {
+        name: 'Goblin',
+        char: 'g',
+        color: 'green',
+        hp: { current: 8, max: 8 },
+        attack: 4,
+        defense: 1,
+        xpValue: 15,
+        ai: { behavior: 'wander' },
+      },
+      'health-potion': {
+        name: 'Health Potion',
+        char: '!',
+        color: 'red',
+        unidentifiedName: 'Bubbling Red Potion',
+        identified: false,
+        effects: [
+          {
+            type: 'heal',
+            potency: 10,
+            requiresTarget: false,
+          },
+        ],
+      },
+    });
   });
 
   afterEach(() => {

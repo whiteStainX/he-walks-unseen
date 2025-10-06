@@ -11,6 +11,7 @@ import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
 import { updateVisibility } from './visibility.js';
 import { addLogMessage } from './logger.js';
+import { instantiate } from '../engine/prefab.js';
 
 const MAP_WIDTH = 80;
 const MAP_HEIGHT = 24;
@@ -73,58 +74,29 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const items: Item[] = [];
   const occupiedPoints: Point[] = [player.position, exitPosition];
 
-  const enemyTemplates = getResource<any[]>('enemies').filter(e => theme.enemies.includes(e.id));
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
-
   for (let i = 0; i < numberOfEnemies; i++) {
     const enemyPosition = findRandomWalkableTile(map, occupiedPoints);
     if (enemyPosition) {
-      const template = enemyTemplates[Math.floor(Math.random() * enemyTemplates.length)];
-      const { equipment: equipmentIds, ...restOfTemplate } = template;
-      const newEnemy: Actor = {
-        ...restOfTemplate,
-        id: nanoid(),
-        position: enemyPosition,
-      };
-
-      // If the template specifies equipment, resolve the item and equip it
-      if (equipmentIds) {
-        const itemTemplates = getResource<any[]>('items');
-        const equipment: Partial<Record<keyof typeof equipmentIds, Item>> = {};
-        for (const slot in equipmentIds) {
-          const itemId = equipmentIds[slot];
-          const itemTemplate = itemTemplates.find(it => it.id === itemId);
-          if (itemTemplate) {
-            const newItem: Item = {
-              ...itemTemplate,
-              id: nanoid(),
-              position: { x: -1, y: -1 }, // Position doesn't matter, it's equipped
-            };
-            equipment[slot as keyof typeof equipmentIds] = newItem;
-          }
-        }
-        newEnemy.equipment = equipment;
+      const prefabId = theme.enemies[Math.floor(Math.random() * theme.enemies.length)];
+      const newEnemy = instantiate(prefabId) as Omit<Actor, 'position'>;
+      if (newEnemy) {
+        (newEnemy as Actor).position = enemyPosition;
+        actors.push(newEnemy as Actor);
+        occupiedPoints.push(enemyPosition);
       }
-
-      actors.push(newEnemy);
-      occupiedPoints.push(enemyPosition);
     }
   }
 
-  const itemTemplates = getResource<any[]>('items').filter(i => theme.items.includes(i.id));
   const numberOfItems = Math.floor(Math.random() * 3) + 2;
-
   for (let i = 0; i < numberOfItems; i++) {
     const itemPosition = findRandomWalkableTile(map, occupiedPoints);
     if (itemPosition) {
-      const template = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
-      if (template) {
-        const newItem: Item = {
-          ...template,
-          id: nanoid(),
-          position: itemPosition,
-        };
-        items.push(newItem);
+      const prefabId = theme.items[Math.floor(Math.random() * theme.items.length)];
+      const newItem = instantiate(prefabId) as Omit<Item, 'position'>;
+      if (newItem) {
+        (newItem as Item).position = itemPosition;
+        items.push(newItem as Item);
         occupiedPoints.push(itemPosition);
       }
     }
