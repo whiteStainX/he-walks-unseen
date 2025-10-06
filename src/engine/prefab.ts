@@ -1,8 +1,8 @@
 import { getResource } from './resourceManager.js';
 import { nanoid } from 'nanoid';
-import type { Actor, PrefabCollection } from './state.js';
+import type { Entity, PrefabCollection } from './state.js';
 
-export function instantiate(prefabId: string): Omit<Actor, 'position'> | null {
+export function instantiate(prefabId: string): Omit<Entity, 'id' | 'position'> | null {
   const prefabs = getResource<PrefabCollection>('prefabs');
   if (!prefabs || !prefabs[prefabId]) {
     return null;
