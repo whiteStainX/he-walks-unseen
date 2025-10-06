@@ -41,8 +41,8 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => {
             width: 10,
             height: 10,
         },
-        message: '',
-        messageType: 'info',
+        log: [],
+        logOffset: 0,
         visibleTiles: new Set<string>(),
         exploredTiles: new Set<string>(),
         currentFloor: 1,
@@ -57,11 +57,12 @@ describe('applyEffect', () => {
     const state = createMockState({ actors: [player] });
     const healEffect = { type: 'heal' as const, potency: 10, requiresTarget: false };
 
-    const { state: newState, message } = applyEffect(player, state, healEffect);
+    const newState = applyEffect(player, state, healEffect);
     const updatedPlayer = newState.actors.find((a) => a.isPlayer)!;
 
     expect(updatedPlayer.hp.current).toBe(15);
-    expect(message).toContain('heals for 10 HP');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('heals for 10 HP');
   });
 
   it('should not heal beyond max HP', () => {
@@ -69,11 +70,12 @@ describe('applyEffect', () => {
     const state = createMockState({ actors: [player] });
     const healEffect = { type: 'heal' as const, potency: 10, requiresTarget: false };
 
-    const { state: newState, message } = applyEffect(player, state, healEffect);
+    const newState = applyEffect(player, state, healEffect);
     const updatedPlayer = newState.actors.find((a) => a.isPlayer)!;
 
     expect(updatedPlayer.hp.current).toBe(20);
-    expect(message).toContain('heals for 2 HP');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('heals for 2 HP');
   });
 
   it('should damage a target', () => {
@@ -82,11 +84,12 @@ describe('applyEffect', () => {
     const state = createMockState({ actors: [player, enemy] });
     const damageEffect = { type: 'damage' as const, potency: 5, requiresTarget: true };
 
-    const { state: newState, message } = applyEffect(player, state, damageEffect, enemy.position);
+    const newState = applyEffect(player, state, damageEffect, enemy.position);
     const updatedEnemy = newState.actors.find((a) => a.id === 'enemy')!;
 
     expect(updatedEnemy.hp.current).toBe(5);
-    expect(message).toContain('takes 5 damage');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('takes 5 damage');
   });
 
   it('should apply a fireball effect to multiple actors in a radius', () => {
@@ -98,7 +101,7 @@ describe('applyEffect', () => {
     const fireballEffect = { type: 'fireball' as const, potency: 8, radius: 3, requiresTarget: true };
     const targetPoint = { x: 2, y: 2 };
 
-    const { state: newState, message } = applyEffect(player, state, fireballEffect, targetPoint);
+    const newState = applyEffect(player, state, fireballEffect, targetPoint);
 
     const updatedEnemy1 = newState.actors.find((a) => a.id === 'enemy1')!;
     const updatedEnemy2 = newState.actors.find((a) => a.id === 'enemy2')!;
@@ -107,7 +110,8 @@ describe('applyEffect', () => {
     expect(updatedEnemy1.hp.current).toBe(2); // 10 - 8
     expect(updatedEnemy2.hp.current).toBe(2); // 10 - 8
     expect(updatedEnemy3.hp.current).toBe(10); // Unchanged
-    expect(message).toContain('A fireball explodes');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('A fireball explodes');
   });
 
   it('should reveal the entire map', () => {
@@ -123,9 +127,10 @@ describe('applyEffect', () => {
     });
     const revealMapEffect = { type: 'revealMap' as const, requiresTarget: false };
 
-    const { state: newState, message } = applyEffect(player, state, revealMapEffect);
+    const newState = applyEffect(player, state, revealMapEffect);
 
     expect(newState.exploredTiles.size).toBe(25); // 5x5 grid
-    expect(message).toContain('reveals the entire map');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('reveals the entire map');
   });
 });

@@ -2,6 +2,7 @@ import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { updateVisibility } from './visibility.js';
 import { handleInteraction } from './interaction.js';
+import { addLogMessage } from './logger.js';
 
 interface MovementDelta {
   dx: number;
@@ -23,20 +24,23 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
   return !state.map.tiles[y][x].walkable;
 }
 
-export function handlePlayerAction(state: GameState, action: GameAction): GameState {
+export function handlePlayerAction(
+  state: GameState,
+  action: GameAction
+): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return state;
 
   if (action === GameAction.OPEN_INVENTORY) {
     const hasItems = player.inventory && player.inventory.length > 0;
+    const message = hasItems
+      ? 'Select an item to use.'
+      : 'Your inventory is empty.';
+    const stateWithMessage = addLogMessage(state, message, 'info');
     return {
-      ...state,
+      ...stateWithMessage,
       phase: 'Inventory',
       selectedItemIndex: hasItems ? 0 : undefined,
-      message: hasItems
-        ? 'Select an item to use.'
-        : 'Your inventory is empty.',
-      messageType: 'info',
     };
   }
 
@@ -47,11 +51,7 @@ export function handlePlayerAction(state: GameState, action: GameAction): GameSt
     );
 
     if (!item) {
-      return {
-        ...state,
-        message: 'There is nothing here to pick up.',
-        messageType: 'info',
-      };
+      return addLogMessage(state, 'There is nothing here to pick up.', 'info');
     }
 
     const playerInventory = player.inventory || [];
@@ -64,22 +64,30 @@ export function handlePlayerAction(state: GameState, action: GameAction): GameSt
       a.id === player.id ? updatedPlayer : a
     );
 
-    return {
+    const stateWithItem: GameState = {
       ...state,
       actors: updatedActors,
       items: updatedItems,
-      message: `You picked up the ${item.name}.`,
-      messageType: 'info',
       phase: 'PlayerTurn',
     };
+
+    return addLogMessage(
+      stateWithItem,
+      `You picked up the ${item.name}.`,
+      'info'
+    );
   }
 
   if (action === GameAction.START_INTERACTION) {
+    const stateWithMessage = addLogMessage(state, 'Which direction?', 'info');
     return {
-      ...state,
+      ...stateWithMessage,
       phase: 'Targeting',
-      message: 'Which direction?',
     };
+  }
+
+  if (action === GameAction.OPEN_MESSAGE_LOG) {
+    return { ...state, phase: 'MessageLog' };
   }
 
   const delta = MOVEMENT_DELTAS[action];
@@ -103,13 +111,16 @@ export function handlePlayerAction(state: GameState, action: GameAction): GameSt
   );
 
   if (targetEnemy) {
+    const stateWithMessage = addLogMessage(
+      state,
+      `You engage the ${targetEnemy.name}.`,
+      'info'
+    );
     return {
-      ...state,
+      ...stateWithMessage,
       phase: 'CombatMenu',
       combatTargetId: targetEnemy.id,
       selectedCombatMenuIndex: 0,
-      message: `You engage the ${targetEnemy.name}.`,
-      messageType: 'info',
     };
   }
 
@@ -121,7 +132,7 @@ export function handlePlayerAction(state: GameState, action: GameAction): GameSt
       targetY >= state.map.height
         ? "You can't step beyond the treeline."
         : 'A wall blocks your way.';
-    return { ...state, message: boundaryMessage, messageType: 'info' };
+    return addLogMessage(state, boundaryMessage, 'info');
   }
 
   const actorsAfterPlayerMove = state.actors.map((actor) =>
@@ -130,12 +141,14 @@ export function handlePlayerAction(state: GameState, action: GameAction): GameSt
       : actor
   );
 
-  return updateVisibility({
+  const stateAfterMove: GameState = {
     ...state,
     actors: actorsAfterPlayerMove,
     items: state.items,
-    message: delta.successMessage,
-    messageType: 'info',
     phase: 'EnemyTurn',
-  });
+  };
+
+  const stateWithVisibility = updateVisibility(stateAfterMove);
+
+  return addLogMessage(stateWithVisibility, delta.successMessage, 'info');
 }

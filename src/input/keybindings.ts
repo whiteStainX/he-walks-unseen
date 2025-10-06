@@ -9,6 +9,7 @@ const playerTurnBindings: Record<string, GameAction> = {
   a: GameAction.MOVE_WEST,
   g: GameAction.PICKUP_ITEM,
   i: GameAction.OPEN_INVENTORY,
+  l: GameAction.OPEN_MESSAGE_LOG,
   e: GameAction.START_INTERACTION,
 };
 
@@ -61,6 +62,12 @@ export function resolveAction(
     if (key.escape) return GameAction.CANCEL_TARGETING;
   }
 
+  if (phase === 'MessageLog') {
+    if (key.upArrow) return GameAction.SCROLL_LOG_UP;
+    if (key.downArrow) return GameAction.SCROLL_LOG_DOWN;
+    if (key.escape) return GameAction.CLOSE_MESSAGE_LOG;
+  }
+
   // Then, handle character-based input.
   if (input) {
     const normalizedInput = input.toLowerCase();
@@ -90,6 +97,14 @@ export function resolveAction(
         s: GameAction.SELECT_NEXT_COMBAT_OPTION,
       };
       return combatMenuBindings[normalizedInput];
+    }
+    if (phase === 'MessageLog') {
+      const messageLogBindings: Record<string, GameAction> = {
+        w: GameAction.SCROLL_LOG_UP,
+        s: GameAction.SCROLL_LOG_DOWN,
+        l: GameAction.CLOSE_MESSAGE_LOG,
+      };
+      return messageLogBindings[normalizedInput];
     }
   }
 

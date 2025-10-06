@@ -3,6 +3,7 @@ import { checkForLevelUp } from './progression.js';
 import type { Actor, Ai, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
+import { addLogMessage } from './logger.js';
 
 /**
  * Calculates the damage dealt in an attack.
@@ -139,17 +140,17 @@ export function resolveAttack(
     }
   }
 
-  const finalState = {
+  const stateAfterCombat = {
     ...state,
     actors: newActors,
     items: newItems,
-    message,
-    messageType,
   };
 
+  const stateWithLog = addLogMessage(stateAfterCombat, message, messageType);
+
   if (newDefenderHp <= 0 && attacker.isPlayer) {
-    return checkForLevelUp(finalState);
+    return checkForLevelUp(stateWithLog);
   }
 
-  return finalState;
+  return stateWithLog;
 }

@@ -1,6 +1,7 @@
 import type { GameState } from '../engine/state.js';
 import { runEnemyTurn } from './ai.js';
 import { processStatusEffects } from './statusEffects.js';
+import { addLogMessage } from './logger.js';
 
 function handleEnemyTurns(state: GameState): GameState {
   const enemies = state.actors.filter((a) => !a.isPlayer);
@@ -22,11 +23,16 @@ function handleEnemyTurns(state: GameState): GameState {
     if (stateAfterEffects.phase === 'Loss') {
       return stateAfterEffects;
     }
+
+    const stateWithDefeatMessage = addLogMessage(
+      stateAfterEffects,
+      'You have been defeated.',
+      'death'
+    );
+
     return {
-      ...stateAfterEffects,
+      ...stateWithDefeatMessage,
       phase: 'Loss',
-      message: stateAfterEffects.message || 'You have been defeated.',
-      messageType: 'death',
     };
   }
 

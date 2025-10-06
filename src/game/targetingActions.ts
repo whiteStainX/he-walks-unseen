@@ -3,6 +3,7 @@ import { GameAction } from '../input/actions.js';
 import { applyEffect } from './itemEffects.js';
 import { processItemConsumption } from './inventoryActions.js';
 import { handleInteraction } from './interaction.js';
+import { addLogMessage } from './logger.js';
 
 // This is duplicated from updateState.ts. We should find a better home for it later.
 interface MovementDelta {
@@ -26,7 +27,6 @@ export function handleTargeting(state: GameState, action: GameAction): GameState
     return {
       ...state,
       phase: 'PlayerTurn',
-      message: '',
       pendingItem: undefined,
       target: undefined,
     };
@@ -46,37 +46,31 @@ export function handleTargeting(state: GameState, action: GameAction): GameState
     const effect = itemToUse.effects?.[0];
 
     if (!effect) {
-      return {
+      const stateWithoutItem: GameState = {
         ...state,
         phase: 'PlayerTurn',
-        message: 'Invalid item effect.',
-        messageType: 'info',
         pendingItem: undefined,
       };
+      return addLogMessage(stateWithoutItem, 'Invalid item effect.', 'info');
     }
 
-    const { state: stateAfterEffect, message: effectMessage } = applyEffect(
-      player,
-      state,
-      effect,
-      targetPoint
-    );
+    const stateAfterEffect = applyEffect(player, state, effect, targetPoint);
 
-    const { finalActors, finalMessage } = processItemConsumption(
-      stateAfterEffect,
-      itemToUse,
-      effectMessage
-    );
+    const { stateWithConsumption, message: consumptionMessage } =
+      processItemConsumption(stateAfterEffect, itemToUse);
 
-    return {
-      ...stateAfterEffect,
-      actors: finalActors,
+    let finalState: GameState = {
+      ...stateWithConsumption,
       phase: 'EnemyTurn',
       pendingItem: undefined,
       target: undefined,
-      message: finalMessage,
-      messageType: 'info',
     };
+
+    if (consumptionMessage) {
+      finalState = addLogMessage(finalState, consumptionMessage, 'info');
+    }
+
+    return finalState;
   }
 
   return handleInteraction(state, targetX, targetY);

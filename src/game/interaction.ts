@@ -8,6 +8,7 @@ import type {
 } from '../engine/state.js';
 import { updateVisibility } from './visibility.js';
 import { createInitialGameState } from './initialState.js';
+import { addLogMessage } from './logger.js';
 
 export function handleInteraction(
   state: GameState,
@@ -22,7 +23,11 @@ export function handleInteraction(
   );
 
   if (!entity || !entity.interaction) {
-    return { ...state, message: 'There is nothing to interact with here.' };
+    return addLogMessage(
+      state,
+      'There is nothing to interact with here.',
+      'info'
+    );
   }
 
   let newState = { ...state };
@@ -57,24 +62,31 @@ export function handleInteraction(
         })
       );
 
-      newState = updateVisibility({
+      const stateAfterDoorToggle = updateVisibility({
         ...state,
         entities: newEntities,
         map: { ...state.map, tiles: newTiles },
-        message: newIsOpen ? 'You open the door.' : 'You close the door.',
         phase: 'EnemyTurn',
-      });
+      } as GameState);
+
+      newState = addLogMessage(
+        stateAfterDoorToggle,
+        newIsOpen ? 'You open the door.' : 'You close the door.',
+        'info'
+      );
       break;
     }
 
     case 'chest': {
       const interaction = entity.interaction as ChestInteraction;
       if (interaction.isLooted) {
-        newState = { ...state, message: 'The chest is empty.' };
+        newState = addLogMessage(state, 'The chest is empty.', 'info');
         break;
       }
 
-      const lootItemTemplate = state.items.find((i) => i.id === interaction.loot);
+      const lootItemTemplate = state.items.find(
+        (i) => i.id === interaction.loot
+      );
 
       const lootItem: Item = {
         id: nanoid(),
@@ -106,13 +118,18 @@ export function handleInteraction(
         return e;
       });
 
-      newState = {
+      const stateAfterLoot: GameState = {
         ...state,
         actors: newActors,
         entities: newEntities,
-        message: `You open the chest and find a ${lootItem.name}.`,
         phase: 'EnemyTurn',
       };
+
+      newState = addLogMessage(
+        stateAfterLoot,
+        `You open the chest and find a ${lootItem.name}.`,
+        'info'
+      );
       break;
     }
 

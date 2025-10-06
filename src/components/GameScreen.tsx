@@ -5,8 +5,9 @@ import StatusEffectsView from './StatusEffectsView.js';
 import EquipmentView from './EquipmentView.js';
 import InventoryView from './InventoryView.js';
 import SkillsView from './SkillsView.js';
+import MessageLogView from './MessageLogView.js';
 import { CombatMenuView } from './CombatMenuView.js';
-import type { GameState, MessageType } from '../engine/state.js';
+import type { GameState } from '../engine/state.js';
 import type { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
 import { applyActionToState } from '../game/updateState.js';
@@ -22,20 +23,6 @@ export function isActionDefined(
 ): action is GameAction {
   return action !== undefined;
 }
-
-const getMessageColor = (messageType: MessageType) => {
-  switch (messageType) {
-    case 'damage':
-    case 'death':
-      return 'red';
-    case 'heal':
-    case 'win':
-      return 'green';
-    case 'info':
-    default:
-      return 'white';
-  }
-};
 
 const GameScreen: React.FC<Props> = ({ initialState }) => {
   const [state, setState] = useState<GameState>(initialState);
@@ -56,14 +43,15 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         state.phase === 'Inventory' ||
         state.phase === 'Targeting' ||
         state.phase === 'CombatMenu' ||
-        state.phase === 'IdentifyMenu'
+        state.phase === 'IdentifyMenu' ||
+        state.phase === 'MessageLog'
       ) {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
           setState((currentState) => applyActionToState(currentState, action));
         }
       } else if (state.phase === 'Loss' && input.toLowerCase() === 'r') {
-        setState(createInitialGameState({ message: 'A new adventure begins...' }));
+        setState(createInitialGameState());
       }
     },
     {
@@ -73,6 +61,7 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         state.phase === 'Targeting' ||
         state.phase === 'CombatMenu' ||
         state.phase === 'IdentifyMenu' ||
+        state.phase === 'MessageLog' ||
         state.phase === 'Loss',
     }
   );
@@ -123,10 +112,19 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
         isDimmed={
           state.phase === 'Inventory' ||
           state.phase === 'CombatMenu' ||
-          state.phase === 'IdentifyMenu'
+          state.phase === 'IdentifyMenu' ||
+          state.phase === 'MessageLog'
         }
       />
       <CombatMenuView state={state} />
+      {state.phase === 'MessageLog' && (
+        <MessageLogView
+          log={state.log}
+          logOffset={state.logOffset}
+          phase={state.phase}
+          height={state.map.height}
+        />
+      )}
       <Box
         flexDirection="column"
         marginLeft={2}
@@ -163,12 +161,11 @@ const GameScreen: React.FC<Props> = ({ initialState }) => {
 
         <SkillsView skills={player?.skills ?? []} />
 
-        <Box flexDirection="column" paddingTop={1}>
-          <Text bold>Log</Text>
-          <Text color={getMessageColor(state.messageType)}>
-            {state.message}
-          </Text>
-        </Box>
+        <MessageLogView
+          log={state.log}
+          logOffset={state.logOffset}
+          phase={state.phase}
+        />
       </Box>
     </Box>
   );

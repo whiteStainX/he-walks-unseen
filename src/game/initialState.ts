@@ -10,6 +10,7 @@ import type {
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
 import { updateVisibility } from './visibility.js';
+import { addLogMessage } from './logger.js';
 
 const MAP_WIDTH = 80;
 const MAP_HEIGHT = 24;
@@ -197,13 +198,20 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
       width: MAP_WIDTH,
       height: MAP_HEIGHT,
     },
-    message: message ?? `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
-    messageType: 'info',
+    log: [],
+    logOffset: 0,
     currentFloor: floor,
     floorStates,
     visibleTiles: new Set<string>(),
     exploredTiles: new Set<string>(),
   };
 
-  return updateVisibility(baseState);
+  const stateWithLog = addLogMessage(
+    baseState,
+    message ??
+      `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
+    'info'
+  );
+
+  return updateVisibility(stateWithLog);
 }

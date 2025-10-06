@@ -1,7 +1,8 @@
-import type { GameState, Item, Actor } from '../engine/state.js';
+import type { GameState, Item } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { applyEffect } from './itemEffects.js';
 import { equip } from './equipment.js';
+import { addLogMessage } from './logger.js';
 
 export const getDisplayName = (item: Item) =>
   item.identified === false && item.unidentifiedName
@@ -9,20 +10,19 @@ export const getDisplayName = (item: Item) =>
     : item.name;
 
 export function processItemConsumption(
-  stateAfterEffect: GameState,
-  itemUsed: Item,
-  effectMessage: string
-): { finalActors: Actor[]; finalMessage: string } {
+  state: GameState,
+  itemUsed: Item
+): { stateWithConsumption: GameState; message?: string } {
   const wasUnidentified = itemUsed.identified === false;
   const displayNameWhenUsed = getDisplayName(itemUsed);
 
-  const playerFromNewState = stateAfterEffect.actors.find((a) => a.isPlayer)!;
+  const playerFromState = state.actors.find((a) => a.isPlayer)!;
 
-  let finalMessage = effectMessage;
-  let inventoryToProcess = [...playerFromNewState.inventory!];
+  let message: string | undefined;
+  let inventoryToProcess = [...playerFromState.inventory!];
 
   if (wasUnidentified) {
-    finalMessage = `You use the ${displayNameWhenUsed}. It is a ${itemUsed.name}! ${effectMessage}`;
+    message = `You use the ${displayNameWhenUsed}. It is a ${itemUsed.name}!`;
     inventoryToProcess = inventoryToProcess.map((item) => {
       if (item.name === itemUsed.name) {
         return { ...item, identified: true };
@@ -40,14 +40,18 @@ export function processItemConsumption(
   );
 
   const playerWithNewInventory = {
-    ...playerFromNewState,
+    ...playerFromState,
     inventory: finalInventory,
   };
-  const finalActors = stateAfterEffect.actors.map((a) =>
-    a.id === playerFromNewState.id ? playerWithNewInventory : a
+
+  const finalActors = state.actors.map((a) =>
+    a.id === playerFromState.id ? playerWithNewInventory : a
   );
 
-  return { finalActors, finalMessage };
+  return {
+    stateWithConsumption: { ...state, actors: finalActors },
+    message,
+  };
 }
 
 export function handleInventoryAction(
@@ -56,12 +60,15 @@ export function handleInventoryAction(
 ): GameState {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player || !player.inventory || player.inventory.length === 0) {
+    const stateWithMessage = addLogMessage(
+      state,
+      'Your inventory is empty.',
+      'info'
+    );
     return {
-      ...state,
+      ...stateWithMessage,
       phase: 'PlayerTurn',
       selectedItemIndex: undefined,
-      message: 'Your inventory is empty.',
-      messageType: 'info',
     };
   }
 
@@ -82,7 +89,6 @@ export function handleInventoryAction(
         ...state,
         phase: 'PlayerTurn',
         selectedItemIndex: undefined,
-        message: '',
       };
 
     case GameAction.SELECT_NEXT_ITEM:
@@ -102,56 +108,58 @@ export function handleInventoryAction(
       );
 
       if (!itemToUse || !itemToUse.effects || itemToUse.effects.length === 0) {
-        return {
-          ...state,
-          message: `You can't use the ${getDisplayName(itemToUse!)}.`, // eslint-disable-line @typescript-eslint/no-non-null-assertion
-          messageType: 'info',
-        };
+        return addLogMessage(
+          state,
+          `You can't use the ${getDisplayName(itemToUse!)}.`, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+          'info'
+        );
       }
 
       const effect = itemToUse.effects[0];
 
       if (effect.type === 'identify') {
+        const stateWithMessage = addLogMessage(
+          state,
+          'Select an item to identify.',
+          'info'
+        );
         return {
-          ...state,
+          ...stateWithMessage,
           phase: 'IdentifyMenu',
           pendingItem: itemToUse,
           selectedItemIndex: 0,
-          message: 'Select an item to identify.',
-          messageType: 'info',
         };
       }
 
       if (effect.requiresTarget) {
+        const stateWithMessage = addLogMessage(
+          state,
+          'Which direction?',
+          'info'
+        );
         return {
-          ...state,
+          ...stateWithMessage,
           phase: 'Targeting',
           pendingItem: itemToUse,
-          message: 'Which direction?',
-          messageType: 'info',
         };
       }
 
-      const { state: stateAfterEffect, message: effectMessage } = applyEffect(
-        player,
-        state,
-        effect
-      );
+      const stateAfterEffect = applyEffect(player, state, effect);
 
-      const { finalActors, finalMessage } = processItemConsumption(
-        stateAfterEffect,
-        itemToUse,
-        effectMessage
-      );
+      const { stateWithConsumption, message: consumptionMessage } =
+        processItemConsumption(stateAfterEffect, itemToUse);
 
-      return {
-        ...stateAfterEffect,
-        actors: finalActors,
+      let finalState: GameState = {
+        ...stateWithConsumption,
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
-        message: finalMessage,
-        messageType: 'info',
       };
+
+      if (consumptionMessage) {
+        finalState = addLogMessage(finalState, consumptionMessage, 'info');
+      }
+
+      return finalState;
     }
 
     case GameAction.DROP_ITEM: {
@@ -182,15 +190,19 @@ export function handleInventoryAction(
 
       const droppedItem = { ...itemToDrop, position: player.position };
 
-      return {
+      const finalState: GameState = {
         ...state,
         actors: finalActorsDropping,
         items: [...state.items, droppedItem],
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
-        message: `You drop the ${getDisplayName(itemToDrop)}.`, 
-        messageType: 'info',
       };
+
+      return addLogMessage(
+        finalState,
+        `You drop the ${getDisplayName(itemToDrop)}.`,
+        'info'
+      );
     }
 
     case GameAction.EQUIP_ITEM: {
@@ -201,11 +213,11 @@ export function handleInventoryAction(
         (item) => getDisplayName(item) === selectedDisplayName
       );
       if (!itemToEquip || !itemToEquip.equipment) {
-        return {
-          ...state,
-          message: `You can't equip the ${getDisplayName(itemToEquip!)}.`,// eslint-disable-line @typescript-eslint/no-non-null-assertion
-          messageType: 'info',
-        };
+        return addLogMessage(
+          state,
+          `You can't equip the ${getDisplayName(itemToEquip!)}.`, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+          'info'
+        );
       }
 
       const stateAfterEquip = equip(state, player.id, itemToEquip.id);

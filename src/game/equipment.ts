@@ -1,4 +1,5 @@
 import type { Actor, EquipmentSlot, GameState, Item } from '../engine/state.js';
+import { addLogMessage } from './logger.js';
 
 /**
  * Calculates the total stats of an actor, including bonuses from equipped items.
@@ -80,12 +81,16 @@ export const equip = (
   };
 
   // Update the game state
-  return {
+  const stateAfterEquip = {
     ...state,
     actors: state.actors.map(a => (a.id === actorId ? newActor : a)),
-    message: `You equipped the ${itemToEquip.name}.`,
-    messageType: 'info',
   };
+
+  return addLogMessage(
+    stateAfterEquip,
+    `You equipped the ${itemToEquip.name}.`,
+    'info'
+  );
 };
 
 /**
@@ -122,10 +127,14 @@ export const unequip = (
   };
 
   // Update the game state
-  return {
+  const stateAfterUnequip = {
     ...state,
     actors: state.actors.map(a => (a.id === actorId ? newActor : a)),
-    message: `You unequipped the ${itemToUnequip.name}.`,
-    messageType: 'info',
   };
+
+  return addLogMessage(
+    stateAfterUnequip,
+    `You unequipped the ${itemToUnequip.name}.`,
+    'info'
+  );
 };

@@ -4,14 +4,20 @@ import { handleInventoryAction } from './inventoryActions.js';
 import { handleTargeting } from './targetingActions.js';
 import { handleCombatMenuAction } from './combatMenuActions.js';
 import { handleIdentifyMenuAction } from './identifyActions.js';
+import { handleMessageLogAction } from './messageLogActions.js';
 import { handlePlayerAction } from './playerActions.js';
+import { addLogMessage } from './logger.js';
 
 export function applyActionToState(
   state: GameState,
   action: GameAction
 ): GameState {
   if (action === GameAction.QUIT) {
-    return { ...state, message: 'Press Ctrl+C to exit the simulation.' };
+    return addLogMessage(
+      state,
+      'Press Ctrl+C to exit the simulation.',
+      'info'
+    );
   }
 
   if (state.phase === 'Win' || state.phase === 'Loss') {
@@ -36,6 +42,10 @@ export function applyActionToState(
 
   if (state.phase === 'IdentifyMenu') {
     return handleIdentifyMenuAction(state, action);
+  }
+
+  if (state.phase === 'MessageLog') {
+    return handleMessageLogAction(state, action);
   }
 
   return state;

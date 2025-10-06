@@ -38,4 +38,10 @@ export enum GameAction {
   // System
   QUIT,
   OPEN_MENU,
+
+  // Message Log
+  OPEN_MESSAGE_LOG,
+  CLOSE_MESSAGE_LOG,
+  SCROLL_LOG_UP,
+  SCROLL_LOG_DOWN,
 }

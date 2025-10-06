@@ -34,7 +34,6 @@ export function handleCombatMenuAction(
         ...state,
         phase: 'PlayerTurn',
         combatTargetId: undefined,
-        message: '',
       };
     }
     case GameAction.CONFIRM_COMBAT_ACTION: {
@@ -52,7 +51,6 @@ export function handleCombatMenuAction(
           ...state,
           phase: 'PlayerTurn',
           combatTargetId: undefined,
-          message: '',
         };
       }
     }
