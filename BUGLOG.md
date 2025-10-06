@@ -2,6 +2,24 @@
 
 This document tracks interesting bugs encountered during the development of "He Walks Unseen".
 
+## Flawed Deep Copy in Narrative Engine
+
+-   **Date:** October 2025
+-   **Status:** Fixed
+
+### Symptoms
+
+The `commit` function in `src/engine/narrativeEngine.ts` used `JSON.parse(JSON.stringify(state))` to create a deep copy of the game state for the history map. The `GameState` interface contains `Set` and `Map` objects (`visibleTiles`, `exploredTiles`, `floorStates`). Standard `JSON.stringify` does not correctly serialize these data structures (e.g., a `Set` becomes an empty object `{}`). As a result, every time a state was committed, these crucial properties were corrupted in the historical record. This broke the narrative engine's ability to correctly store and restore past game states.
+
+### Fix
+
+The `persistence.ts` module already contained the correct logic for serializing and deserializing `Map` and `Set` objects using a custom `replacer` and `reviver`. The fix involved:
+1. Exporting the `replacer` and `reviver` functions from `src/engine/persistence.ts`.
+2. Importing them into `src/engine/narrativeEngine.ts`.
+3. Modifying the `commit` function in `src/engine/narrativeEngine.ts` to use `JSON.parse(JSON.stringify(state, replacer), reviver)` for a robust deep copy.
+
+This ensures that all data structures are correctly preserved in the narrative engine's history.
+
 ## The Intermittent Door Bug
 
 -   **Date:** October 2025

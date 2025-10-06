@@ -16,7 +16,7 @@ const SAVE_FILE = path.join(SAVE_DIR, 'savegame.json');
  * - Converts Map to an array of [key, value] pairs.
  * - Converts Set to an array of values.
  */
-function replacer(key: any, value: any) {
+export function replacer(key: any, value: any) {
   if (value instanceof Map) {
     return {
       _type: 'Map',
@@ -37,7 +37,7 @@ function replacer(key: any, value: any) {
  * - Converts an object with _type: 'Map' back to a Map.
  * - Converts an object with _type: 'Set' back to a Set.
  */
-function reviver(key: any, value: any) {
+export function reviver(key: any, value: any) {
   if (typeof value === 'object' && value !== null) {
     if (value._type === 'Map') {
       return new Map(value.value);
