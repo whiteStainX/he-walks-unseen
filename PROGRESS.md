@@ -164,3 +164,11 @@ This milestone enhances the user interface by replacing the single-line message 
 -   **Message History:** The game now stores a history of all messages, allowing players to review past events.
 -   **Scrollable Log View:** A new full-screen message log can be opened and scrolled through, providing a detailed view of combat results, item interactions, and other game events.
 -   **UI Integration:** The log is accessible via a dedicated key ('l'), and the main game UI has been updated to show the most recent messages in the sidebar.
+
+## Milestone 15: Prefab System (October 2025)
+
+This milestone introduced a prefab system to streamline content creation and reduce data duplication.
+
+-   **Prefab System:** Implemented a system for creating entity templates (prefabs) in `data/prefabs.json`.
+-   **Instantiation:** Created an `instantiate` function to create new entities from prefabs.
+-   **Integration:** Refactored the map generation logic to use the new prefab system.

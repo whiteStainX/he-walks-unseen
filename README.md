@@ -30,6 +30,7 @@ This project implements several classic roguelike mechanics to create a challeng
 *   **Advanced Enemy AI:** Enemies are driven by a state-based AI system, allowing for complex behaviors. They can intelligently chase the player, patrol predefined routes, and even flee from combat when low on health.
 *   **Equipment System:** Find and equip weapons and armor to boost your stats. Equipped items provide passive bonuses to your attack and defense, which are automatically factored into combat.
 *   **Status Effects:** Some weapons can inflict debilitating status effects like poison on your enemies. These effects are displayed on the UI and tick down each turn.
+*   **Prefab System:** A data-driven prefab system allows for the easy creation and management of entity templates.
 *   **Persistent Save/Load:** Your game progress is automatically saved after every action and loaded when you restart, allowing you to continue your adventure seamlessly.
 
 ## 3. Controls

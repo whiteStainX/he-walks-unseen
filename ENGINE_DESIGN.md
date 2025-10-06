@@ -26,6 +26,7 @@
 - **Status Effects System**: A framework for applying temporary conditions to actors, such as `Poisoned`. The system processes effects each turn, applying damage and decrementing duration. Effects can be applied via combat hits and are displayed on the UI.
 - **Expanded Item & Magic System**: A flexible item system that supports a variety of effects, including healing, damage, area-of-effect spells, and utility magic. Items can have multiple effects and can require targeting, which transitions the game to a dedicated `Targeting` phase.
 - **Item Identification System**: A classic roguelike mechanic where magical items can be unidentified. The system supports identification through use (e.g., drinking a potion) or via a "Scroll of Identify". This is managed through `identified` and `unidentifiedName` properties on the `Item` object and a dedicated `IdentifyMenu` game phase.
+- **Prefab System**: A data-driven system for creating entity templates (prefabs). This simplifies content creation by allowing for the definition of base entities that can be instantiated and placed in the world.
 - **Persistent Save/Load**: The entire game state, including the narrative engine's commit history, is automatically saved to disk after every action and loaded on startup. This is handled by a dedicated `persistence.ts` module that serializes and deserializes complex data structures like `Map` and `Set` objects.[src/engine/persistence.ts](./src/engine/persistence.ts)
 - **Detailed Message Log**: A scrollable, in-game message log allows players to review a history of events, from combat results to item interactions. The log is accessible via a dedicated key and UI phase.
 
@@ -123,7 +124,39 @@
 - **Gameplay Systems**: Introduce collision detection or combat by enriching `GameState` with additional structures and wiring new events or FSM states to orchestrate transitions.[src/engine/state.ts:L7-L22](./src/engine/state.ts#L7-L22)[src/engine/fsm.ts:L3-L26](./src/engine/fsm.ts#L3-L26)
 - **UI Enhancements**: Expand the Ink presentation with panels reacting to `dialogue`, `inventoryUpdate`, and custom events triggered by scripts and timeline operations.[src/main.tsx:L21-L37](./src/main.tsx#L21-L37)[src/engine/scriptProcessor.ts:L13-L26](./src/engine/scriptProcessor.ts#L13-L26)
 
-### 3.9 Code Hygiene
+### 3.9 Using the Prefab System
+
+The engine includes a prefab system to simplify the creation of entities. Prefabs are templates for actors and items, defined in `data/prefabs.json`.
+
+**Defining Prefabs:**
+
+Prefabs are defined in `data/prefabs.json`. Each prefab is a JSON object with a unique key. For example:
+```json
+{
+  "goblin": {
+    "name": "Goblin",
+    "char": "g",
+    "hp": { "current": 8, "max": 8 },
+    ...
+  }
+}
+```
+
+**Instantiating Prefabs:**
+
+To create a new entity from a prefab, use the `instantiate` function:
+```typescript
+import { instantiate } from '../engine/prefab.js';
+
+const newGoblin = instantiate('goblin');
+```
+The `instantiate` function will create a deep copy of the prefab and assign it a new, unique ID.
+
+**Integration with Map Generation:**
+
+The map generation logic in `src/game/initialState.ts` uses the prefab system to populate the world with enemies and items based on the current theme.
+
+### 3.10 Code Hygiene
 
 To maintain a clean codebase, the project is configured to detect unused variables and imports. This is enforced by the TypeScript compiler via the `noUnusedLocals` option in `tsconfig.json`.
 
