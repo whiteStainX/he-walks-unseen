@@ -27,6 +27,7 @@
 - **Expanded Item & Magic System**: A flexible item system that supports a variety of effects, including healing, damage, area-of-effect spells, and utility magic. Items can have multiple effects and can require targeting, which transitions the game to a dedicated `Targeting` phase.
 - **Item Identification System**: A classic roguelike mechanic where magical items can be unidentified. The system supports identification through use (e.g., drinking a potion) or via a "Scroll of Identify". This is managed through `identified` and `unidentifiedName` properties on the `Item` object and a dedicated `IdentifyMenu` game phase.
 - **Persistent Save/Load**: The entire game state, including the narrative engine's commit history, is automatically saved to disk after every action and loaded on startup. This is handled by a dedicated `persistence.ts` module that serializes and deserializes complex data structures like `Map` and `Set` objects.[src/engine/persistence.ts](./src/engine/persistence.ts)
+- **Detailed Message Log**: A scrollable, in-game message log allows players to review a history of events, from combat results to item interactions. The log is accessible via a dedicated key and UI phase.
 
 ### 1.3 Current Limitations
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.[src/engine/scriptProcessor.ts:L9-L26](./src/engine/scriptProcessor.ts#L9-L26)
@@ -141,5 +142,3 @@ This will report any unused local variables or imports without generating any Ja
 ## 5. Future Enhancements
 
 This section outlines potential features that would round out the roguelike engine fundamentals before focusing on narrative content.
-
--   **Detailed Message Log**: Expand the UI to include a scrollable history of game messages, allowing the player to review past events and understand the flow of combat.

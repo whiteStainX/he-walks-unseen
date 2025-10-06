@@ -20,6 +20,7 @@ This project implements several classic roguelike mechanics to create a challeng
     *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
     *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
     *   **Enemy Status Panel:** A dedicated panel displays the health of all visible enemies, aiding in tactical decision-making.
+    *   **Detailed Message Log:** A scrollable message log allows you to review the history of combat, interactions, and other events.
 *   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions for healing, or powerful scrolls to cast area-of-effect spells and reveal the map.
 *   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you delve deeper into the dungeon.
 *   **Environmental Interactions:** The dungeon is not just a static backdrop. Interact with doors to open them and loot chests to find valuable items.
@@ -38,6 +39,7 @@ This project implements several classic roguelike mechanics to create a challeng
 | `w`, `a`, `s`, `d` / `↑`, `←`, `↓`, `→` | Move Player           |
 | `g`             | Pick up Item          |
 | `i`             | Open/Close Inventory  |
+| `l`             | Open/Close Message Log|
 | `e`             | Interact with objects |
 | `q`             | Quit Game             |
 
@@ -72,6 +74,13 @@ This project implements several classic roguelike mechanics to create a challeng
 | `s` / `↓`         | Select Next Item      |
 | `Enter`         | Confirm Selection     |
 | `Escape`        | Cancel Identification |
+
+### Message Log Mode
+| Key(s)          | Action                |
+| --------------- | --------------------- |
+| `w` / `↑`         | Scroll Log Up         |
+| `s` / `↓`         | Scroll Log Down       |
+| `l` / `Escape`  | Close Message Log     |
 
 
 ## 4. Architecture

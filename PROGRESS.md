@@ -156,3 +156,11 @@ This milestone introduced a persistent save/load system, allowing players to res
 -   **Modular Persistence Logic:** A new `persistence.ts` module was created to handle all file I/O and serialization, keeping the save/load logic decoupled from the core game engine.
 -   **Automatic Saving:** The game state, including the entire narrative history, is automatically saved to disk after every action, ensuring no progress is lost.
 -   **Seamless Loading:** The system automatically loads the saved game state on startup, allowing players to seamlessly continue their adventure.
+
+## Milestone 14: Detailed Message Log (October 2025)
+
+This milestone enhances the user interface by replacing the single-line message display with a comprehensive, scrollable message log.
+
+-   **Message History:** The game now stores a history of all messages, allowing players to review past events.
+-   **Scrollable Log View:** A new full-screen message log can be opened and scrolled through, providing a detailed view of combat results, item interactions, and other game events.
+-   **UI Integration:** The log is accessible via a dedicated key ('l'), and the main game UI has been updated to show the most recent messages in the sidebar.
