@@ -11,7 +11,8 @@ export type GamePhase =
   | 'Inventory'
   | 'Targeting'
   | 'CombatMenu'
-  | 'IdentifyMenu';
+  | 'IdentifyMenu'
+  | 'MessageLog';
 
 export class FiniteStateMachine {
   private currentState: GamePhase;

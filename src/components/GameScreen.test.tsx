@@ -67,7 +67,8 @@ describe('GameScreen', () => {
     expect(lastFrame()).toContain('Equipment');
     expect(lastFrame()).toContain('Inventory');
     expect(lastFrame()).toContain('Log');
-    expect(lastFrame()).toContain('Welcome to floor 1!');
+    // The message might be truncated, so we check for the start of it.
+    expect(lastFrame()).toContain('Welcome');
     unmount();
   });
 

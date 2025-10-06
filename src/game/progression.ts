@@ -1,4 +1,5 @@
 import type { GameState, Actor } from '../engine/state.js';
+import { addLogMessage } from './logger.js';
 
 const LEVEL_UP_HP_BONUS = 10;
 const LEVEL_UP_ATTACK_BONUS = 1;
@@ -57,12 +58,16 @@ export function checkForLevelUp(state: GameState): GameState {
   const levelUpMessage = `You reached level ${newLevel}! Your health and attack have increased.`;
 
   // It's possible to level up multiple times at once, so we recursively check.
-  const stateAfterLevelUp: GameState = {
+  const stateWithoutMessage: GameState = {
     ...state,
     actors: newActors,
-    message: levelUpMessage,
-    messageType: 'win', // Use a distinct color for level-ups
   };
 
-  return checkForLevelUp(stateAfterLevelUp);
+  const stateWithLog = addLogMessage(
+    stateWithoutMessage,
+    levelUpMessage,
+    'win'
+  );
+
+  return checkForLevelUp(stateWithLog);
 }

@@ -38,8 +38,8 @@ describe('Status Effects System', () => {
       items: [],
       entities: [],
       map: { tiles: [], width: 10, height: 10 },
-      message: '',
-      messageType: 'info',
+      log: [],
+      logOffset: 0,
       visibleTiles: new Set(),
       exploredTiles: new Set(),
       currentFloor: 1,
@@ -62,7 +62,9 @@ describe('Status Effects System', () => {
 
       expect(updatedPlayer?.hp.current).toBe(9);
       expect(updatedPlayer?.statusEffects?.[0]?.duration).toBe(2);
-      expect(newState.message).toContain('Player takes 1 poison damage.');
+      expect(
+        newState.log.some((m) => m.text.includes('Player takes 1 poison damage.'))
+      ).toBe(true);
     });
 
     it('should remove an effect when its duration expires', () => {
@@ -79,7 +81,9 @@ describe('Status Effects System', () => {
 
       expect(updatedPlayer?.hp.current).toBe(9);
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
-      expect(newState.message).toContain('Player is no longer poisoned.');
+      expect(
+        newState.log.some((m) => m.text.includes('Player is no longer poisoned.'))
+      ).toBe(true);
     });
 
     it('should handle actors dying from status effects', () => {
@@ -97,7 +101,9 @@ describe('Status Effects System', () => {
 
       expect(deadEnemy).toBeUndefined();
       expect(newState.actors.length).toBe(1);
-      expect(newState.message).toContain('Goblin dies from the poison!');
+      expect(
+        newState.log.some((m) => m.text.includes('Goblin dies from the poison!'))
+      ).toBe(true);
     });
   });
 
@@ -134,7 +140,8 @@ describe('Status Effects System', () => {
 
       expect(updatedPlayer?.statusEffects?.length).toBe(1);
       expect(updatedPlayer?.statusEffects?.[0].type).toBe('poison');
-      expect(stateAfterAttack.message).toContain('The Player is poisoned!');
+      const lastMessage = stateAfterAttack.log[stateAfterAttack.log.length - 1];
+      expect(lastMessage.text).toContain('The Player is poisoned!');
 
       // Restore mock
       jest.spyOn(global.Math, 'random').mockRestore();
@@ -171,7 +178,8 @@ describe('Status Effects System', () => {
       const updatedPlayer = stateAfterAttack.actors.find((a) => a.isPlayer);
 
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
-      expect(stateAfterAttack.message).not.toContain('The Player is poisoned!');
+      const lastMessage = stateAfterAttack.log[stateAfterAttack.log.length - 1];
+      expect(lastMessage.text).not.toContain('The Player is poisoned!');
 
       // Restore mock
       jest.spyOn(global.Math, 'random').mockRestore();

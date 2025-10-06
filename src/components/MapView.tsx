@@ -1,26 +1,11 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { GameState, MessageType, Entity, Actor, Item } from '../engine/state.js';
+import type { GameState, Entity, Actor, Item } from '../engine/state.js';
 
 interface Props {
   state: GameState;
   isDimmed?: boolean;
 }
-
-// Helper to determine the color for a message based on its type
-const getMessageColor = (messageType: MessageType) => {
-  switch (messageType) {
-    case 'damage':
-    case 'death':
-      return 'red';
-    case 'heal':
-      return 'green';
-    case 'win':
-      return 'yellow'; // A bright color for a major event
-    default:
-      return 'white'; // For 'info'
-  }
-};
 
 interface DisplayTile {
   char: string;
@@ -84,7 +69,7 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
 };
 
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
-  const { actors, message, messageType, visibleTiles } = state;
+  const { actors, visibleTiles } = state;
   const player = actors.find((a) => a.isPlayer);
   const displayGrid = createDisplayGrid(state);
   const visibleEnemies = actors.filter(
@@ -158,11 +143,6 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
         )}
       </Box>
 
-      <Box marginTop={1} paddingX={2} borderStyle="round">
-        <Text color={getMessageColor(messageType)} dimColor={isDimmed}>
-          {message}
-        </Text>
-      </Box>
     </Box>
   );
 };

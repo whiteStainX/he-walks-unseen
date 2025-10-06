@@ -158,6 +158,12 @@ export interface Skill {
 
 export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';
 
+export interface Message {
+  id: string;
+  text: string;
+  type: MessageType;
+}
+
 export interface GameState {
   phase: GamePhase;
   actors: Actor[];
@@ -168,8 +174,8 @@ export interface GameState {
     width: number;
     height: number;
   };
-  message: string;
-  messageType: MessageType;
+  log: Message[];
+  logOffset: number;
   visibleTiles: Set<string>; // "x,y" format for quick lookups
   exploredTiles: Set<string>; // "x,y" format for quick lookups
   selectedItemIndex?: number;

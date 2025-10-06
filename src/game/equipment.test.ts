@@ -20,8 +20,8 @@ const mockGameState: GameState = {
   items: [],
   entities: [],
   map: { tiles: [], width: 10, height: 10 },
-  message: '',
-  messageType: 'info',
+  log: [],
+  logOffset: 0,
   visibleTiles: new Set(),
   exploredTiles: new Set(),
   currentFloor: 1,
@@ -104,7 +104,8 @@ describe('equip', () => {
 
     expect(newPlayer.inventory).toHaveLength(0);
     expect(newPlayer.equipment?.weapon).toBe(mockDagger);
-    expect(newState.message).toBe('You equipped the Dagger.');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toBe('You equipped the Dagger.');
   });
 
   it('should swap an equipped item back to inventory', () => {
@@ -145,6 +146,7 @@ describe('unequip', () => {
     expect(newPlayer.equipment?.weapon).toBeUndefined();
     expect(newPlayer.inventory).toHaveLength(1);
     expect(newPlayer.inventory?.[0]).toBe(mockDagger);
-    expect(newState.message).toBe('You unequipped the Dagger.');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toBe('You unequipped the Dagger.');
   });
 });

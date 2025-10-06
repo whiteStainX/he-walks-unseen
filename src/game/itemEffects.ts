@@ -7,18 +7,13 @@ import type {
   FireballEffect,
   Point,
 } from '../engine/state.js';
-
-
-export interface EffectResult {
-  state: GameState;
-  message: string;
-}
+import { addLogMessage } from './logger.js';
 
 function resolveHeal(
   target: Actor,
   state: GameState,
   effect: HealEffect
-): EffectResult {
+): GameState {
   const amountHealed = Math.min(
     target.hp.max - target.hp.current,
     effect.potency
@@ -35,17 +30,15 @@ function resolveHeal(
       ? `The ${target.name} heals for ${amountHealed} HP.`
       : `The ${target.name} is already at full health.`;
 
-  return {
-    state: { ...state, actors: newActors },
-    message,
-  };
+  const stateWithActors = { ...state, actors: newActors };
+  return addLogMessage(stateWithActors, message, 'heal');
 }
 
 function resolveDamage(
   target: Actor,
   state: GameState,
   effect: DamageEffect
-): EffectResult {
+): GameState {
   // This will be expanded later to include combat calculations
   const newHp = target.hp.current - effect.potency;
   const newTarget = { ...target, hp: { ...target.hp, current: newHp } };
@@ -54,17 +47,15 @@ function resolveDamage(
   );
   const message = `The ${target.name} takes ${effect.potency} damage.`;
 
-  return {
-    state: { ...state, actors: newActors },
-    message,
-  };
+  const stateWithActors = { ...state, actors: newActors };
+  return addLogMessage(stateWithActors, message, 'damage');
 }
 
 function resolveFireball(
   targetPosition: Point,
   state: GameState,
   effect: FireballEffect
-): EffectResult {
+): GameState {
   let newActors = [...state.actors];
   const affectedActors: Actor[] = [];
   const { radius, potency } = effect;
@@ -84,10 +75,11 @@ function resolveFireball(
   }
 
   const message = `A fireball explodes, engulfing the area in flames!`;
-  return { state: { ...state, actors: newActors }, message };
+  const stateWithActors = { ...state, actors: newActors };
+  return addLogMessage(stateWithActors, message, 'damage');
 }
 
-function resolveRevealMap(state: GameState): EffectResult {
+function resolveRevealMap(state: GameState): GameState {
   const newExploredTiles = new Set(state.exploredTiles);
   for (let y = 0; y < state.map.height; y++) {
     for (let x = 0; x < state.map.width; x++) {
@@ -99,10 +91,8 @@ function resolveRevealMap(state: GameState): EffectResult {
     }
   }
   const message = 'The scroll reveals the entire map!';
-  return {
-    state: { ...state, exploredTiles: newExploredTiles },
-    message,
-  };
+  const stateWithTiles = { ...state, exploredTiles: newExploredTiles };
+  return addLogMessage(stateWithTiles, message, 'info');
 }
 
 export function applyEffect(
@@ -110,7 +100,7 @@ export function applyEffect(
   state: GameState,
   effect: ItemEffect,
   target?: Point
-): EffectResult {
+): GameState {
   switch (effect.type) {
     case 'heal':
       return resolveHeal(user, state, effect);
@@ -125,16 +115,16 @@ export function applyEffect(
       if (damageTarget) {
         return resolveDamage(damageTarget, state, effect);
       }
-      return { state, message: 'Invalid target.' };
+      return addLogMessage(state, 'Invalid target.', 'info');
     case 'fireball':
       if (target) {
         return resolveFireball(target, state, effect);
       }
-      return { state, message: 'A target is required for the fireball.' };
+      return addLogMessage(state, 'A target is required for the fireball.', 'info');
     case 'revealMap':
       return resolveRevealMap(state);
     // Other effects like applyStatus will be added here
     default:
-      return { state, message: 'Unknown effect.' };
+      return addLogMessage(state, 'Unknown effect.', 'info');
   }
 }

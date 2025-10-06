@@ -81,8 +81,8 @@ const mockGameState: GameState = {
     width: 10,
     height: 10,
   },
-  message: '',
-  messageType: 'info',
+  log: [],
+  logOffset: 0,
   currentFloor: 1,
   floorStates: new Map(),
   visibleTiles: new Set<string>(),
@@ -133,7 +133,8 @@ describe('resolveAttack', () => {
     const updatedEnemy = newState.actors.find((a) => a.id === 'enemy-1');
 
     expect(updatedEnemy?.hp.current).toBe(1); // 5 (base) - (5 (player attack) - 1 (enemy defense)) = 1
-    expect(newState.message).toContain('Player attacks Goblin for 4 damage.');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('Player attacks Goblin for 4 damage.');
   });
 
   it('should reduce player HP when enemy attacks player', () => {
@@ -141,19 +142,28 @@ describe('resolveAttack', () => {
     const updatedPlayer = newState.actors.find((a) => a.isPlayer);
 
     expect(updatedPlayer?.hp.current).toBe(9); // 10 (base) - (3 (enemy attack) - 2 (player defense)) = 9
-    expect(newState.message).toContain('Goblin attacks Player for 1 damage.');
-    expect(newState.messageType).toBe('damage');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('Goblin attacks Player for 1 damage.');
+    expect(lastMessage.type).toBe('damage');
   });
 
   it('should handle a killing blow, remove the actor, and grant XP', () => {
     const strongPlayer = { ...mockPlayer, attack: 10 };
-    const stateWithStrongPlayer = { ...mockGameState, actors: [strongPlayer, mockEnemy] };
+    const stateWithStrongPlayer = {
+      ...mockGameState,
+      actors: [strongPlayer, mockEnemy],
+    };
 
-    const newState = resolveAttack(strongPlayer, mockEnemy, stateWithStrongPlayer);
+    const newState = resolveAttack(
+      strongPlayer,
+      mockEnemy,
+      stateWithStrongPlayer
+    );
 
     expect(newState.actors.find((a) => a.id === 'enemy-1')).toBeUndefined();
-    expect(newState.message).toContain('Goblin dies!');
-    expect(newState.message).toContain('You gain 10 XP.');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('Goblin dies!');
+    expect(lastMessage.text).toContain('You gain 10 XP.');
 
     const updatedPlayer = newState.actors.find((a) => a.isPlayer);
     expect(updatedPlayer?.xp).toBe(10);
@@ -161,25 +171,37 @@ describe('resolveAttack', () => {
 
   it('should drop loot when an enemy is defeated', () => {
     const strongPlayer = { ...mockPlayer, attack: 10 };
-    const stateWithStrongPlayer = { ...mockGameState, actors: [strongPlayer, mockEnemy] };
+    const stateWithStrongPlayer = {
+      ...mockGameState,
+      actors: [strongPlayer, mockEnemy],
+    };
 
-    const newState = resolveAttack(strongPlayer, mockEnemy, stateWithStrongPlayer);
+    const newState = resolveAttack(
+      strongPlayer,
+      mockEnemy,
+      stateWithStrongPlayer
+    );
 
     expect(newState.items.length).toBe(1);
     const droppedItem = newState.items[0];
     expect(droppedItem.position).toEqual(mockEnemy.position);
-    expect(newState.message).toContain('The Goblin drops a');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('The Goblin drops a');
   });
 
   it('should handle attacks that deal no damage', () => {
     const weakPlayer = { ...mockPlayer, attack: 1 };
-    const stateWithWeakPlayer = { ...mockGameState, actors: [weakPlayer, mockEnemy] };
+    const stateWithWeakPlayer = {
+      ...mockGameState,
+      actors: [weakPlayer, mockEnemy],
+    };
 
     const newState = resolveAttack(weakPlayer, mockEnemy, stateWithWeakPlayer);
     const updatedEnemy = newState.actors.find((a) => a.id === 'enemy-1');
 
     expect(updatedEnemy?.hp.current).toBe(5);
-    expect(newState.message).toContain('but it has no effect.');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('but it has no effect.');
   });
 
   it('should factor in equipment when resolving an attack', () => {
@@ -187,8 +209,15 @@ describe('resolveAttack', () => {
       ...mockPlayer,
       equipment: { weapon: mockDagger },
     };
-    const stateWithEquippedPlayer = { ...mockGameState, actors: [playerWithDagger, mockEnemy] };
-    const newState = resolveAttack(playerWithDagger, mockEnemy, stateWithEquippedPlayer);
+    const stateWithEquippedPlayer = {
+      ...mockGameState,
+      actors: [playerWithDagger, mockEnemy],
+    };
+    const newState = resolveAttack(
+      playerWithDagger,
+      mockEnemy,
+      stateWithEquippedPlayer
+    );
 
     // Player attack: 5 + 2 = 7
     // Enemy defense: 1
@@ -196,7 +225,8 @@ describe('resolveAttack', () => {
     // Enemy HP: 5 - 6 = -1
     const updatedEnemy = newState.actors.find((a) => a.id === 'enemy-1');
     expect(updatedEnemy).toBeUndefined(); // Enemy should be defeated
-    expect(newState.message).toContain('Player attacks Goblin for 6 damage.');
-    expect(newState.message).toContain('Goblin dies!');
+    const lastMessage = newState.log[newState.log.length - 1];
+    expect(lastMessage.text).toContain('Player attacks Goblin for 6 damage.');
+    expect(lastMessage.text).toContain('Goblin dies!');
   });
 });

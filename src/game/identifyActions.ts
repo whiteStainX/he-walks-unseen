@@ -1,6 +1,7 @@
 import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { getDisplayName } from './inventoryActions.js';
+import { addLogMessage } from './logger.js';
 
 export function handleIdentifyMenuAction(
   state: GameState,
@@ -11,14 +12,17 @@ export function handleIdentifyMenuAction(
 
   // Safeguards
   if (!player || !player.inventory || player.inventory.length === 0 || !scroll) {
-    return {
+    const stateWithoutMessage: GameState = {
       ...state,
       phase: 'PlayerTurn',
       selectedItemIndex: undefined,
       pendingItem: undefined,
-      message: 'Identification failed: invalid state.',
-      messageType: 'info',
     };
+    return addLogMessage(
+      stateWithoutMessage,
+      'Identification failed: invalid state.',
+      'info'
+    );
   }
 
   // The inventory list for identification is flat, so index maps directly.
@@ -27,15 +31,19 @@ export function handleIdentifyMenuAction(
 
   switch (action) {
     case GameAction.CANCEL_TARGETING: // Re-using this action
-    case GameAction.CLOSE_INVENTORY:
-      return {
+    case GameAction.CLOSE_INVENTORY: {
+      const stateWithoutMessage: GameState = {
         ...state,
         phase: 'PlayerTurn',
         selectedItemIndex: undefined,
         pendingItem: undefined,
-        message: 'You decide not to identify anything.',
-        messageType: 'info',
       };
+      return addLogMessage(
+        stateWithoutMessage,
+        'You decide not to identify anything.',
+        'info'
+      );
+    }
 
     case GameAction.SELECT_NEXT_ITEM:
       newIndex = (newIndex + 1) % inventorySize;
@@ -50,21 +58,19 @@ export function handleIdentifyMenuAction(
       if (!itemToIdentify) return state;
 
       if (itemToIdentify.id === scroll.id) {
-        return {
-          ...state,
-          message: 'You cannot identify the scroll you are using.',
-          messageType: 'info',
-        };
+        return addLogMessage(
+          state,
+          'You cannot identify the scroll you are using.',
+          'info'
+        );
       }
 
       if (itemToIdentify.identified !== false) {
-        return {
-          ...state,
-          message: `The ${getDisplayName(
-            itemToIdentify
-          )} is already identified.`,
-          messageType: 'info',
-        };
+        return addLogMessage(
+          state,
+          `The ${getDisplayName(itemToIdentify)} is already identified.`,
+          'info'
+        );
       }
 
       const newInventory = player.inventory.map((item, index) => {
@@ -85,15 +91,15 @@ export function handleIdentifyMenuAction(
         itemToIdentify
       )} is revealed to be a ${itemToIdentify.name}.`;
 
-      return {
+      const finalState: GameState = {
         ...state,
         actors: newActors,
         phase: 'EnemyTurn',
         selectedItemIndex: undefined,
         pendingItem: undefined,
-        message,
-        messageType: 'info',
       };
+
+      return addLogMessage(finalState, message, 'info');
     }
 
     default:

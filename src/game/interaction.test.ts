@@ -25,8 +25,8 @@ const createInitialState = (door: Entity): GameState => ({
       Array.from({ length: 10 }, () => ({ char: '.', walkable: true, transparent: true }))
     ),
   },
-  message: '',
-  messageType: 'info',
+  log: [],
+  logOffset: 0,
   currentFloor: 1,
   floorStates: new Map(),
   visibleTiles: new Set<string>(),
