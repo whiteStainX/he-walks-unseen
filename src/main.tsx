@@ -5,6 +5,8 @@ import { eventBus } from './engine/events.js';
 import type { GameState } from './engine/state.js';
 import GameScreen from './components/GameScreen.js';
 import { createInitialGameState } from './game/initialState.js';
+import { loadGame } from './engine/persistence.js';
+import { getCurrentState } from './engine/narrativeEngine.js';
 
 const App = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -13,6 +15,7 @@ const App = () => {
   useEffect(() => {
     const initializeEngine = async () => {
       try {
+        await loadGame(); // Attempt to load a saved game first
         await loadResources('./data');
         eventBus.emit('engineReady');
       } catch (err) {
@@ -22,7 +25,8 @@ const App = () => {
     };
 
     const handleEngineReady = () => {
-      setGameState(createInitialGameState());
+      const loadedState = getCurrentState();
+      setGameState(loadedState || createInitialGameState());
     };
 
     const handleEngineError = (errorMessage: string) => {
