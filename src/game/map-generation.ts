@@ -22,7 +22,9 @@ function generateDiggerMap(
 
   const wallTile: Tile = { char: theme.wall, walkable: false, transparent: false };
 
-  const map = Array.from({ length: height }, () => Array.from({ length: width }, () => wallTile));
+  const map = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => ({ ...wallTile }))
+  );
 
   // Use fixed parameters for stable map generation
   const diggerOptions = {
