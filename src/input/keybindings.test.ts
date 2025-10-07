@@ -71,9 +71,9 @@ describe('resolveAction', () => {
     });
   });
 
-  it('returns QUIT action for q input regardless of phase', () => {
-    expect(resolveAction('q', createKey(), 'PlayerTurn')).toBe(GameAction.QUIT);
-    expect(resolveAction('q', createKey(), 'Inventory')).toBe(GameAction.QUIT);
-    expect(resolveAction('q', createKey(), 'Win')).toBe(GameAction.QUIT);
+  it('returns SAVE_AND_QUIT action for q input regardless of phase', () => {
+    expect(resolveAction('q', createKey(), 'PlayerTurn')).toBe(GameAction.SAVE_AND_QUIT);
+    expect(resolveAction('q', createKey(), 'Inventory')).toBe(GameAction.SAVE_AND_QUIT);
+    expect(resolveAction('q', createKey(), 'Win')).toBe(GameAction.SAVE_AND_QUIT);
   });
 });

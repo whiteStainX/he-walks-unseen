@@ -73,7 +73,8 @@ export function resolveAction(
     const normalizedInput = input.toLowerCase();
 
     // Global actions
-    if (normalizedInput === 'q') return GameAction.QUIT;
+    if (normalizedInput === 'n') return GameAction.NEW_GAME;
+    if (normalizedInput === 'q') return GameAction.SAVE_AND_QUIT;
 
     // Phase-specific actions
     if (phase === 'PlayerTurn') {

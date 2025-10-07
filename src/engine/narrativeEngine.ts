@@ -1,6 +1,5 @@
 import { GameState } from './state.js';
 import { customAlphabet } from 'nanoid';
-import { saveGame } from './persistence.js';
 import { eventBus } from './events.js';
 
 const nanoid = customAlphabet('1234567890abcdef', 7);
@@ -13,10 +12,6 @@ function commit(state: GameState): string {
   const commitId = nanoid();
   commitHistory.set(commitId, state);
   branches.set(activeBranch, commitId);
-
-  saveGame().catch(err => {
-    console.error('Failed to save game state:', err);
-  });
 
   return commitId;
 }

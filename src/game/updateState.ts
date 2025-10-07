@@ -22,12 +22,30 @@ export function updateState(action: GameAction): void {
   eventBus.emit('stateChanged', nextState);
 }
 
+import { deleteSaveGame, saveGame } from '../engine/persistence.js';
+import { initializeEngine } from '../engine/narrativeEngine.js';
+import { createInitialGameState } from './initialState.js';
+
 export function applyActionToState(
   state: GameState,
   action: GameAction
 ): void {
   if (action === GameAction.QUIT) {
     addLogMessage(state, 'Press Ctrl+C to exit the simulation.', 'info');
+    return;
+  }
+
+  if (action === GameAction.NEW_GAME) {
+    deleteSaveGame().then(() => {
+        initializeEngine(createInitialGameState());
+    });
+    return;
+  }
+
+  if (action === GameAction.SAVE_AND_QUIT) {
+    saveGame().then(() => {
+        process.exit(0);
+    });
     return;
   }
 

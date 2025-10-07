@@ -59,3 +59,14 @@ export async function loadGame(): Promise<GameState | null> {
     return null;
   }
 }
+
+export async function deleteSaveGame(): Promise<void> {
+  try {
+    await fs.unlink(SAVE_FILE);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      return; // Save file doesn't exist, which is fine.
+    }
+    console.error('Error deleting save game:', error);
+  }
+}
