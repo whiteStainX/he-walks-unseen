@@ -3,7 +3,7 @@ import type {
   GameState,
   DoorInteraction,
   ChestInteraction,
-  StairsInteraction,
+  PortalInteraction,
   Item,
 } from '../engine/state.js';
 import { updateVisibility } from './visibility.js';
@@ -133,28 +133,37 @@ export function handleInteraction(
       break;
     }
 
-    case 'stairs': {
-      const interaction = entity.interaction as StairsInteraction;
-      const currentFloor = state.currentFloor;
-      const floorStates = state.floorStates;
+    case 'portal': {
+      const interaction = entity.interaction as PortalInteraction;
+      const { targetMapId, targetPosition } = interaction;
+      const { currentMapId, mapStates } = state;
 
-      // Save current floor state
-      floorStates.set(currentFloor, state);
+      // Save current map state
+      mapStates.set(currentMapId, state);
 
-      const direction = interaction.direction;
-      const nextFloor =
-        direction === 'down' ? currentFloor + 1 : currentFloor - 1;
+      if (mapStates.has(targetMapId)) {
+        newState = mapStates.get(targetMapId)!;
+        const playerIndex = newState.actors.findIndex((a) => a.isPlayer);
 
-      if (floorStates.has(nextFloor)) {
-        // Recalculate visibility upon returning to a floor
-        newState = updateVisibility(floorStates.get(nextFloor)!);
+        // carry over the player from the previous state
+        if (playerIndex !== -1) {
+          newState.actors[playerIndex] = { ...player, position: targetPosition };
+        }
       } else {
         newState = createInitialGameState({
           player,
-          floor: nextFloor,
-          floorStates,
+          mapId: targetMapId,
+          mapStates,
         });
+        // The player in the new state is already a copy of our current player,
+        // but we need to set their position to the portal's target.
+        const newPlayer = newState.actors.find((a) => a.isPlayer);
+        if (newPlayer) {
+          newPlayer.position = targetPosition;
+        }
       }
+
+      newState = updateVisibility(newState);
       break;
     }
   }

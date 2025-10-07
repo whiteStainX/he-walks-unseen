@@ -1,21 +1,39 @@
 {
-  "welcomeMessage": "The engine is alive.",
-  "map": {
-    "default": {
+  "startMapId": "town",
+  "maps": [
+    {
+      "id": "town",
       "width": 20,
-      "height": 10,
-      "tiles": [
-        "####################",
-        "#..................#",
-        "#...@..............#",
-        "#..................#",
-        "#..................#",
-        "#..................#",
-        "#..................#",
-        "#..................#",
-        "#..................#",
-        "####################"
+      "height": 20,
+      "theme": "town",
+      "generator": { "type": "digger" },
+      "connections": [
+        {
+          "targetMapId": "forest",
+          "targetPosition": { "x": 1, "y": 5 },
+          "position": { "x": 19, "y": 10 }
+        }
+      ]
+    },
+    {
+      "id": "forest",
+      "width": 50,
+      "height": 50,
+      "theme": "forest",
+      "generator": { "type": "digger" },
+      "connections": [
+        {
+          "targetMapId": "town",
+          "targetPosition": { "x": 18, "y": 10 },
+          "position": { "x": 0, "y": 5 }
+        }
+      ],
+      "prefabs": [
+        {
+          "id": "goblin_camp",
+          "position": { "x": 25, "y": 25 }
+        }
       ]
     }
-  }
+  ]
 }

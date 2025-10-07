@@ -1,5 +1,6 @@
 import { RNG, Map } from 'rot-js';
 import type { Tile } from '../engine/state.js';
+import type { MapDefinition } from '../engine/worldManager.js';
 
 export const WALL_TILE: Tile = { char: '#', walkable: false, transparent: false };
 export const FLOOR_TILE: Tile = { char: '.', walkable: true, transparent: true };
@@ -12,7 +13,11 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function generateMap(width: number, height: number, theme: any): { map: TileMap, playerStart: { x: number, y: number }, exitPosition: { x: number, y: number }, rooms: any[] } {
+function generateDiggerMap(
+  width: number,
+  height: number,
+  theme: any
+): { map: TileMap; playerStart: { x: number; y: number }; exitPosition: { x: number; y: number }; rooms: any[] } {
   // Each time a map is generated, we reset the RNG with a new random seed.
   RNG.setSeed(Date.now() + randomInt(1, 10000));
 
@@ -42,9 +47,10 @@ export function generateMap(width: number, height: number, theme: any): { map: T
 
   const createdRooms = digger.getRooms();
 
-  // If no rooms were created (can happen with restrictive options), retry with default options.
+  // If no rooms were created, we can't place the player or exit.
+  // Instead of retrying, we'll throw an error to be handled by the caller.
   if (createdRooms.length === 0) {
-    return generateMap(width, height, theme); // Recursive call to retry
+    throw new Error('Map generation failed: No rooms were created.');
   }
 
   for (const room of createdRooms) {
@@ -73,4 +79,18 @@ export function generateMap(width: number, height: number, theme: any): { map: T
   map[exitPosition.y][exitPosition.x] = EXIT_TILE;
 
   return { map, playerStart, exitPosition, rooms: createdRooms };
+}
+
+export function generateMap(
+  mapDefinition: MapDefinition,
+  theme: any
+): { map: TileMap; playerStart: { x: number; y: number }; exitPosition: { x: number; y: number }; rooms: any[] } {
+  const { width, height, generator } = mapDefinition;
+
+  switch (generator.type) {
+    case 'digger':
+      return generateDiggerMap(width, height, theme);
+    default:
+      throw new Error(`Unknown map generator type: ${generator.type}`);
+  }
 }

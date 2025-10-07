@@ -27,8 +27,8 @@ const createInitialState = (door: Entity): GameState => ({
   },
   log: [],
   logOffset: 0,
-  currentFloor: 1,
-  floorStates: new Map(),
+  currentMapId: 'testMap',
+  mapStates: new Map(),
   visibleTiles: new Set<string>(),
   exploredTiles: new Set<string>(),
 });

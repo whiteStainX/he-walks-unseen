@@ -39,5 +39,16 @@
       "type": "stairs",
       "direction": "down"
     }
+  },
+  {
+    "id": "portal",
+    "name": "Portal",
+    "char": "O",
+    "color": "purple",
+    "interaction": {
+      "type": "portal",
+      "targetMapId": "",
+      "targetPosition": { "x": 0, "y": 0 }
+    }
   }
 ]

@@ -24,8 +24,8 @@ const mockGameState: GameState = {
   logOffset: 0,
   visibleTiles: new Set(),
   exploredTiles: new Set(),
-  currentFloor: 1,
-  floorStates: new Map(),
+  currentMapId: 'testMap',
+  mapStates: new Map(),
 };
 
 const mockDagger: Item = {

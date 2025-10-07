@@ -45,8 +45,8 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => {
         logOffset: 0,
         visibleTiles: new Set<string>(),
         exploredTiles: new Set<string>(),
-        currentFloor: 1,
-        floorStates: new Map(),
+        currentMapId: 'testMap',
+        mapStates: new Map(),
         ...overrides,
     };
 };
