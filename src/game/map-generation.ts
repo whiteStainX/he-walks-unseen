@@ -4,7 +4,6 @@ import type { MapDefinition } from '../engine/worldManager.js';
 
 export const WALL_TILE: Tile = { char: '#', walkable: false, transparent: false };
 export const FLOOR_TILE: Tile = { char: '.', walkable: true, transparent: true };
-export const EXIT_TILE: Tile = { char: '>', walkable: true, transparent: true };
 
 export type TileMap = Tile[][];
 
@@ -17,7 +16,7 @@ function generateDiggerMap(
   width: number,
   height: number,
   theme: any
-): { map: TileMap; playerStart: { x: number; y: number }; exitPosition: { x: number; y: number }; rooms: any[] } {
+): { map: TileMap; playerStart: { x: number; y: number }; rooms: any[] } {
   // Each time a map is generated, we reset the RNG with a new random seed.
   RNG.setSeed(Date.now() + randomInt(1, 10000));
 
@@ -34,9 +33,7 @@ function generateDiggerMap(
   };
 
   const digger = new Map.Digger(width, height, diggerOptions);
-  const rooms: any[] = [];
   let playerStart = { x: 0, y: 0 };
-  let exitPosition = { x: 0, y: 0 };
 
   digger.create((x, y, value) => {
     if (value) {
@@ -47,44 +44,29 @@ function generateDiggerMap(
 
   const createdRooms = digger.getRooms();
 
-  // If no rooms were created, we can't place the player or exit.
-  // Instead of retrying, we'll throw an error to be handled by the caller.
   if (createdRooms.length === 0) {
     throw new Error('Map generation failed: No rooms were created.');
   }
 
   for (const room of createdRooms) {
-    rooms.push(room);
     room.getDoors((x, y) => {
       map[y][x] = { char: theme.floor, walkable: true, transparent: true };
     });
   }
 
-  // Shuffle rooms to get random start and end points
-  const shuffledRooms = RNG.shuffle(rooms);
-  const firstRoom = shuffledRooms[0];
-  const lastRoom = shuffledRooms[shuffledRooms.length - 1];
-
+  const firstRoom = createdRooms[0];
   playerStart = { x: firstRoom.getCenter()[0], y: firstRoom.getCenter()[1] };
-  exitPosition = { x: lastRoom.getCenter()[0], y: lastRoom.getCenter()[1] };
 
-  // Ensure start and end are not the same if there's only one room
-  if (shuffledRooms.length === 1) {
-    const corners = firstRoom.getCorners();
-    playerStart = { x: corners[0][0] + 1, y: corners[0][1] + 1 };
-    exitPosition = { x: corners[2][0] - 1, y: corners[2][1] - 1 };
-  }
 
   map[playerStart.y][playerStart.x] = { char: theme.floor, walkable: true, transparent: true }; // Ensure player start is walkable
-  map[exitPosition.y][exitPosition.x] = EXIT_TILE;
 
-  return { map, playerStart, exitPosition, rooms: createdRooms };
+  return { map, playerStart, rooms: createdRooms };
 }
 
 export function generateMap(
   mapDefinition: MapDefinition,
   theme: any
-): { map: TileMap; playerStart: { x: number; y: number }; exitPosition: { x: number; y: number }; rooms: any[] } {
+): { map: TileMap; playerStart: { x: number; y: number }; rooms: any[] } {
   const { width, height, generator } = mapDefinition;
 
   switch (generator.type) {

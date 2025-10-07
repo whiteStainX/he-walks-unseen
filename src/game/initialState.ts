@@ -55,7 +55,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const themes = getResource<any>('themes');
   const theme = themes[mapDefinition.theme];
 
-  const { map, playerStart, exitPosition, rooms } = generateMap(mapDefinition, theme.map);
+  const { map, playerStart, rooms } = generateMap(mapDefinition, theme.map);
 
   const player: Actor = existingPlayer
     ? { ...existingPlayer, position: playerStart }
@@ -77,7 +77,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const actors: Actor[] = [player];
   const entities: Entity[] = [];
   const items: Item[] = [];
-  const occupiedPoints: Point[] = [player.position, exitPosition];
+  const occupiedPoints: Point[] = [player.position];
 
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
   for (let i = 0; i < numberOfEnemies; i++) {

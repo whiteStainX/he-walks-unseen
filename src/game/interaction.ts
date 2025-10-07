@@ -164,6 +164,7 @@ export function handleInteraction(
       }
 
       newState = updateVisibility(newState);
+      newState.phase = 'EnemyTurn';
       break;
     }
   }
