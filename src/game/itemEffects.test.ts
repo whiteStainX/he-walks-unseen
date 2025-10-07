@@ -51,17 +51,21 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => {
     };
 };
 
+import { produce } from 'immer';
+
 describe('applyEffect', () => {
   it('should heal the user', () => {
     const player = createMockPlayer({ hp: { current: 5, max: 20 } });
     const state = createMockState({ actors: [player] });
     const healEffect = { type: 'heal' as const, potency: 10, requiresTarget: false };
 
-    const newState = applyEffect(player, state, healEffect);
-    const updatedPlayer = newState.actors.find((a) => a.isPlayer)!;
+    const nextState = produce(state, (draft) => {
+      applyEffect(player, draft, healEffect);
+    });
+    const updatedPlayer = nextState.actors.find((a) => a.isPlayer)!;
 
     expect(updatedPlayer.hp.current).toBe(15);
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('heals for 10 HP');
   });
 
@@ -70,11 +74,13 @@ describe('applyEffect', () => {
     const state = createMockState({ actors: [player] });
     const healEffect = { type: 'heal' as const, potency: 10, requiresTarget: false };
 
-    const newState = applyEffect(player, state, healEffect);
-    const updatedPlayer = newState.actors.find((a) => a.isPlayer)!;
+    const nextState = produce(state, (draft) => {
+      applyEffect(player, draft, healEffect);
+    });
+    const updatedPlayer = nextState.actors.find((a) => a.isPlayer)!;
 
     expect(updatedPlayer.hp.current).toBe(20);
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('heals for 2 HP');
   });
 
@@ -84,11 +90,13 @@ describe('applyEffect', () => {
     const state = createMockState({ actors: [player, enemy] });
     const damageEffect = { type: 'damage' as const, potency: 5, requiresTarget: true };
 
-    const newState = applyEffect(player, state, damageEffect, enemy.position);
-    const updatedEnemy = newState.actors.find((a) => a.id === 'enemy')!;
+    const nextState = produce(state, (draft) => {
+      applyEffect(player, draft, damageEffect, enemy.position);
+    });
+    const updatedEnemy = nextState.actors.find((a) => a.id === 'enemy')!;
 
     expect(updatedEnemy.hp.current).toBe(5);
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('takes 5 damage');
   });
 
@@ -101,16 +109,18 @@ describe('applyEffect', () => {
     const fireballEffect = { type: 'fireball' as const, potency: 8, radius: 3, requiresTarget: true };
     const targetPoint = { x: 2, y: 2 };
 
-    const newState = applyEffect(player, state, fireballEffect, targetPoint);
+    const nextState = produce(state, (draft) => {
+      applyEffect(player, draft, fireballEffect, targetPoint);
+    });
 
-    const updatedEnemy1 = newState.actors.find((a) => a.id === 'enemy1')!;
-    const updatedEnemy2 = newState.actors.find((a) => a.id === 'enemy2')!;
-    const updatedEnemy3 = newState.actors.find((a) => a.id === 'enemy3')!;
+    const updatedEnemy1 = nextState.actors.find((a) => a.id === 'enemy1')!;
+    const updatedEnemy2 = nextState.actors.find((a) => a.id === 'enemy2')!;
+    const updatedEnemy3 = nextState.actors.find((a) => a.id === 'enemy3')!;
 
     expect(updatedEnemy1.hp.current).toBe(2); // 10 - 8
     expect(updatedEnemy2.hp.current).toBe(2); // 10 - 8
     expect(updatedEnemy3.hp.current).toBe(10); // Unchanged
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('A fireball explodes');
   });
 
@@ -127,10 +137,12 @@ describe('applyEffect', () => {
     });
     const revealMapEffect = { type: 'revealMap' as const, requiresTarget: false };
 
-    const newState = applyEffect(player, state, revealMapEffect);
+    const nextState = produce(state, (draft) => {
+      applyEffect(player, draft, revealMapEffect);
+    });
 
-    expect(newState.exploredTiles.size).toBe(25); // 5x5 grid
-    const lastMessage = newState.log[newState.log.length - 1];
+    expect(nextState.exploredTiles.size).toBe(25); // 5x5 grid
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('reveals the entire map');
   });
 });

@@ -33,6 +33,8 @@ const createInitialState = (door: Entity): GameState => ({
   exploredTiles: new Set<string>(),
 });
 
+import { produce } from 'immer';
+
 describe('handleInteraction', () => {
   it('should open a closed door', () => {
     const closedDoor: Entity = {
@@ -45,16 +47,18 @@ describe('handleInteraction', () => {
 
     const initialState = createInitialState(closedDoor);
 
-    const newState = handleInteraction(initialState, 1, 0);
+    const nextState = produce(initialState, (draft) => {
+      handleInteraction(draft, 1, 0);
+    });
 
-    const door = newState.entities.find((e: Entity) => e.id === 'door-1');
+    const door = nextState.entities.find((e: Entity) => e.id === 'door-1');
     expect(door?.char).toBe('-');
     expect(door?.interaction?.type).toBe('door');
     if (door?.interaction?.type === 'door') {
       expect(door.interaction.isOpen).toBe(true);
     }
 
-    const tile = newState.map.tiles[0][1];
+    const tile = nextState.map.tiles[0][1];
     expect(tile.walkable).toBe(true);
     expect(tile.transparent).toBe(true);
   });
@@ -70,16 +74,18 @@ describe('handleInteraction', () => {
 
     const initialState = createInitialState(openDoor);
 
-    const newState = handleInteraction(initialState, 1, 0);
+    const nextState = produce(initialState, (draft) => {
+      handleInteraction(draft, 1, 0);
+    });
 
-    const door = newState.entities.find((e: Entity) => e.id === 'door-1');
+    const door = nextState.entities.find((e: Entity) => e.id === 'door-1');
     expect(door?.char).toBe('+');
     expect(door?.interaction?.type).toBe('door');
     if (door?.interaction?.type === 'door') {
       expect(door.interaction.isOpen).toBe(false);
     }
 
-    const tile = newState.map.tiles[0][1];
+    const tile = nextState.map.tiles[0][1];
     expect(tile.walkable).toBe(false);
     expect(tile.transparent).toBe(false);
   });

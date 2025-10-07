@@ -44,6 +44,8 @@ const mockGameState: GameState = {
   exploredTiles: new Set<string>(),
 };
 
+import { produce } from 'immer';
+
 describe('Combat Menu Logic', () => {
   beforeAll(() => {
     // Mock resources if combat actions require them (e.g., loot drops)
@@ -55,11 +57,10 @@ describe('Combat Menu Logic', () => {
   });
 
   it('should navigate down the menu options', () => {
-    const newState = applyActionToState(
-      mockGameState,
-      GameAction.SELECT_NEXT_COMBAT_OPTION
-    );
-    expect(newState.selectedCombatMenuIndex).toBe(1);
+    const nextState = produce(mockGameState, (draft) => {
+      applyActionToState(draft, GameAction.SELECT_NEXT_COMBAT_OPTION);
+    });
+    expect(nextState.selectedCombatMenuIndex).toBe(1);
   });
 
   it('should navigate up the menu options', () => {
@@ -67,28 +68,25 @@ describe('Combat Menu Logic', () => {
       ...mockGameState,
       selectedCombatMenuIndex: 1,
     };
-    const newState = applyActionToState(
-      stateWithSecondOptionSelected,
-      GameAction.SELECT_PREVIOUS_COMBAT_OPTION
-    );
-    expect(newState.selectedCombatMenuIndex).toBe(0);
+    const nextState = produce(stateWithSecondOptionSelected, (draft) => {
+      applyActionToState(draft, GameAction.SELECT_PREVIOUS_COMBAT_OPTION);
+    });
+    expect(nextState.selectedCombatMenuIndex).toBe(0);
   });
 
   it('should wrap navigation from top to bottom', () => {
-    const newState = applyActionToState(
-      mockGameState,
-      GameAction.SELECT_PREVIOUS_COMBAT_OPTION
-    );
-    expect(newState.selectedCombatMenuIndex).toBe(1); // Assumes 2 options
+    const nextState = produce(mockGameState, (draft) => {
+      applyActionToState(draft, GameAction.SELECT_PREVIOUS_COMBAT_OPTION);
+    });
+    expect(nextState.selectedCombatMenuIndex).toBe(1); // Assumes 2 options
   });
 
   it('should transition to EnemyTurn when "Attack" is confirmed', () => {
-    const newState = applyActionToState(
-      mockGameState,
-      GameAction.CONFIRM_COMBAT_ACTION
-    );
-    expect(newState.phase).toBe('EnemyTurn');
-    const updatedEnemy = newState.actors.find((a: Actor) => a.id === 'enemy-1');
+    const nextState = produce(mockGameState, (draft) => {
+      applyActionToState(draft, GameAction.CONFIRM_COMBAT_ACTION);
+    });
+    expect(nextState.phase).toBe('EnemyTurn');
+    const updatedEnemy = nextState.actors.find((a: Actor) => a.id === 'enemy-1');
     expect(updatedEnemy?.hp.current).toBeLessThan(mockEnemy.hp.current);
   });
 
@@ -97,17 +95,18 @@ describe('Combat Menu Logic', () => {
       ...mockGameState,
       selectedCombatMenuIndex: 1,
     };
-    const newState = applyActionToState(
-      stateWithCancelSelected,
-      GameAction.CONFIRM_COMBAT_ACTION
-    );
-    expect(newState.phase).toBe('PlayerTurn');
-    expect(newState.combatTargetId).toBeUndefined();
+    const nextState = produce(stateWithCancelSelected, (draft) => {
+      applyActionToState(draft, GameAction.CONFIRM_COMBAT_ACTION);
+    });
+    expect(nextState.phase).toBe('PlayerTurn');
+    expect(nextState.combatTargetId).toBeUndefined();
   });
 
   it('should transition to PlayerTurn when combat is canceled directly', () => {
-    const newState = applyActionToState(mockGameState, GameAction.CANCEL_COMBAT);
-    expect(newState.phase).toBe('PlayerTurn');
-    expect(newState.combatTargetId).toBeUndefined();
+    const nextState = produce(mockGameState, (draft) => {
+      applyActionToState(draft, GameAction.CANCEL_COMBAT);
+    });
+    expect(nextState.phase).toBe('PlayerTurn');
+    expect(nextState.combatTargetId).toBeUndefined();
   });
 });

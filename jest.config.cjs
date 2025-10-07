@@ -11,4 +11,5 @@ module.exports = {
   transformIgnorePatterns: [
     '/node_modules/(?!rot-js)',
   ],
+  setupFilesAfterEnv: ['./jest.setup.js'],
 };

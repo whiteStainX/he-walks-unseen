@@ -195,11 +195,12 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     mapStates,
   };
 
-  const stateWithLog = addLogMessage(
+  addLogMessage(
     baseState,
     message ?? `Welcome! Use the arrow keys or WASD to move.`,
     'info'
   );
 
-  return updateVisibility(stateWithLog);
+  updateVisibility(baseState);
+  return baseState;
 }

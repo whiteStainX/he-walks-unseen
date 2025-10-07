@@ -105,7 +105,7 @@ describe('GameScreen', () => {
   it('should render the game screen without crashing', () => {
     const initialState = createInitialGameState();
     const { lastFrame, unmount } = render(
-      <GameScreen initialState={initialState} />
+      <GameScreen gameState={initialState} />
     );
     expect(lastFrame()).toContain('Status');
     expect(lastFrame()).toContain('Equipment');

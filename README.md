@@ -42,7 +42,8 @@ This project implements several classic roguelike mechanics to create a challeng
 | `i`             | Open/Close Inventory  |
 | `l`             | Open/Close Message Log|
 | `e`             | Interact with objects |
-| `q`             | Quit Game             |
+| `n`             | New Game              |
+| `q`             | Save and Quit         |
 
 ### Inventory Mode
 | Key(s)          | Action                |

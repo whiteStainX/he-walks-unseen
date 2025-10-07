@@ -6,23 +6,17 @@ import { addLogMessage } from './logger.js';
 export function handleIdentifyMenuAction(
   state: GameState,
   action: GameAction
-): GameState {
+): void {
   const player = state.actors.find((a) => a.isPlayer);
   const scroll = state.pendingItem;
 
   // Safeguards
   if (!player || !player.inventory || player.inventory.length === 0 || !scroll) {
-    const stateWithoutMessage: GameState = {
-      ...state,
-      phase: 'PlayerTurn',
-      selectedItemIndex: undefined,
-      pendingItem: undefined,
-    };
-    return addLogMessage(
-      stateWithoutMessage,
-      'Identification failed: invalid state.',
-      'info'
-    );
+    addLogMessage(state, 'Identification failed: invalid state.', 'info');
+    state.phase = 'PlayerTurn';
+    state.selectedItemIndex = undefined;
+    state.pendingItem = undefined;
+    return;
   }
 
   // The inventory list for identification is flat, so index maps directly.
@@ -32,77 +26,64 @@ export function handleIdentifyMenuAction(
   switch (action) {
     case GameAction.CANCEL_TARGETING: // Re-using this action
     case GameAction.CLOSE_INVENTORY: {
-      const stateWithoutMessage: GameState = {
-        ...state,
-        phase: 'PlayerTurn',
-        selectedItemIndex: undefined,
-        pendingItem: undefined,
-      };
-      return addLogMessage(
-        stateWithoutMessage,
-        'You decide not to identify anything.',
-        'info'
-      );
+      addLogMessage(state, 'You decide not to identify anything.', 'info');
+      state.phase = 'PlayerTurn';
+      state.selectedItemIndex = undefined;
+      state.pendingItem = undefined;
+      return;
     }
 
     case GameAction.SELECT_NEXT_ITEM:
       newIndex = (newIndex + 1) % inventorySize;
-      return { ...state, selectedItemIndex: newIndex };
+      state.selectedItemIndex = newIndex;
+      return;
 
     case GameAction.SELECT_PREVIOUS_ITEM:
       newIndex = (newIndex - 1 + inventorySize) % inventorySize;
-      return { ...state, selectedItemIndex: newIndex };
+      state.selectedItemIndex = newIndex;
+      return;
 
     case GameAction.CONFIRM_SELECTION: {
       const itemToIdentify = player.inventory[newIndex];
-      if (!itemToIdentify) return state;
+      if (!itemToIdentify) return;
 
       if (itemToIdentify.id === scroll.id) {
-        return addLogMessage(
+        addLogMessage(
           state,
           'You cannot identify the scroll you are using.',
           'info'
         );
+        return;
       }
 
       if (itemToIdentify.identified !== false) {
-        return addLogMessage(
+        addLogMessage(
           state,
           `The ${getDisplayName(itemToIdentify)} is already identified.`,
           'info'
         );
+        return;
       }
 
-      const newInventory = player.inventory.map((item, index) => {
-        if (index === newIndex) {
-          return { ...item, identified: true };
-        }
-        return item;
-      });
+      const itemInInventory = player.inventory.find(item => item.id === itemToIdentify.id);
+      if (itemInInventory) {
+        itemInInventory.identified = true;
+      }
 
-      const finalInventory = newInventory.filter((s) => s.id !== scroll.id);
-
-      const updatedPlayer = { ...player, inventory: finalInventory };
-      const newActors = state.actors.map((a) =>
-        a.id === player.id ? updatedPlayer : a
-      );
+      const scrollIndex = player.inventory.findIndex(s => s.id === scroll.id);
+      if (scrollIndex !== -1) {
+        player.inventory.splice(scrollIndex, 1);
+      }
 
       const message = `The scroll flares! The ${getDisplayName(
         itemToIdentify
       )} is revealed to be a ${itemToIdentify.name}.`;
 
-      const finalState: GameState = {
-        ...state,
-        actors: newActors,
-        phase: 'EnemyTurn',
-        selectedItemIndex: undefined,
-        pendingItem: undefined,
-      };
-
-      return addLogMessage(finalState, message, 'info');
+      addLogMessage(state, message, 'info');
+      state.phase = 'EnemyTurn';
+      state.selectedItemIndex = undefined;
+      state.pendingItem = undefined;
+      return;
     }
-
-    default:
-      return state;
   }
 }

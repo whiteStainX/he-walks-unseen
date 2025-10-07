@@ -19,22 +19,20 @@ const MOVEMENT_DELTAS: Partial<Record<GameAction, MovementDelta>> = {
   [GameAction.MOVE_WEST]: { dx: -1, dy: 0, successMessage: 'You move west.' },
 };
 
-export function handleTargeting(state: GameState, action: GameAction): GameState {
+export function handleTargeting(state: GameState, action: GameAction): void {
   const player = state.actors.find((a) => a.isPlayer);
-  if (!player) return state;
+  if (!player) return;
 
   if (action === GameAction.CANCEL_TARGETING) {
-    return {
-      ...state,
-      phase: 'PlayerTurn',
-      pendingItem: undefined,
-      target: undefined,
-    };
+    state.phase = 'PlayerTurn';
+    state.pendingItem = undefined;
+    state.target = undefined;
+    return;
   }
 
   const delta = MOVEMENT_DELTAS[action];
   if (!delta) {
-    return state;
+    return;
   }
 
   const targetX = player.position.x + delta.dx;
@@ -46,32 +44,29 @@ export function handleTargeting(state: GameState, action: GameAction): GameState
     const effect = itemToUse.effects?.[0];
 
     if (!effect) {
-      const stateWithoutItem: GameState = {
-        ...state,
-        phase: 'PlayerTurn',
-        pendingItem: undefined,
-      };
-      return addLogMessage(stateWithoutItem, 'Invalid item effect.', 'info');
+      addLogMessage(state, 'Invalid item effect.', 'info');
+      state.phase = 'PlayerTurn';
+      state.pendingItem = undefined;
+      return;
     }
 
-    const stateAfterEffect = applyEffect(player, state, effect, targetPoint);
+    applyEffect(player, state, effect, targetPoint);
 
-    const { stateWithConsumption, message: consumptionMessage } =
-      processItemConsumption(stateAfterEffect, itemToUse);
+    const { message: consumptionMessage } = processItemConsumption(
+      state,
+      itemToUse
+    );
 
-    let finalState: GameState = {
-      ...stateWithConsumption,
-      phase: 'EnemyTurn',
-      pendingItem: undefined,
-      target: undefined,
-    };
+    state.phase = 'EnemyTurn';
+    state.pendingItem = undefined;
+    state.target = undefined;
 
     if (consumptionMessage) {
-      finalState = addLogMessage(finalState, consumptionMessage, 'info');
+      addLogMessage(state, consumptionMessage, 'info');
     }
 
-    return finalState;
+    return;
   }
 
-  return handleInteraction(state, targetX, targetY);
+  handleInteraction(state, targetX, targetY);
 }
