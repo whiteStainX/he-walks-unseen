@@ -21,7 +21,7 @@ function canSeePlayer(
   return playerVisible;
 }
 
-function chasePlayer(enemy: Actor, player: Actor, state: GameState): GameState {
+function chasePlayer(enemy: Actor, player: Actor, state: GameState): void {
   const astar = new Path.AStar(
     player.position.x,
     player.position.y,
@@ -45,35 +45,26 @@ function chasePlayer(enemy: Actor, player: Actor, state: GameState): GameState {
   if (path.length > 1) {
     const nextStep = path[1];
     if (nextStep.x === player.position.x && nextStep.y === player.position.y) {
-      return resolveAttack(enemy, player, state);
+      resolveAttack(enemy, player, state);
     } else {
-      const newActors = state.actors.map((actor) =>
-        actor.id === enemy.id ? { ...actor, position: nextStep } : actor
-      );
-      return { ...state, actors: newActors };
+      const enemyInState = state.actors.find(e => e.id === enemy.id);
+      if (enemyInState) {
+        enemyInState.position = nextStep;
+      }
     }
   }
-
-  return state;
 }
 
-function flee(enemy: Actor, player: Actor, state: GameState): GameState {
+function flee(enemy: Actor, player: Actor, state: GameState): void {
   const dx = enemy.position.x - player.position.x;
   const dy = enemy.position.y - player.position.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
 
   if (distance > 10) {
-    const newActors = state.actors.map((actor) => {
-      if (actor.id === enemy.id && actor.ai) {
-        const newAi: Ai = {
-          ...actor.ai,
-          state: actor.ai.patrolPoints ? 'patrol' : 'wander',
-        };
-        return { ...actor, ai: newAi };
-      }
-      return actor;
-    });
-    return { ...state, actors: newActors };
+    if (enemy.ai) {
+      enemy.ai.state = enemy.ai.patrolPoints ? 'patrol' : 'wander';
+    }
+    return;
   }
 
   const moveX = enemy.position.x + Math.sign(dx);
@@ -87,23 +78,21 @@ function flee(enemy: Actor, player: Actor, state: GameState): GameState {
     state.map.tiles[moveY]?.[moveX]?.walkable &&
     !state.actors.some((a) => a.position.x === moveX && a.position.y === moveY)
   ) {
-    const newActors = state.actors.map((actor) =>
-      actor.id === enemy.id
-        ? { ...actor, position: { x: moveX, y: moveY } }
-        : actor
-    );
-    return { ...state, actors: newActors };
+    const enemyInState = state.actors.find(e => e.id === enemy.id);
+    if (enemyInState) {
+      enemyInState.position = { x: moveX, y: moveY };
+    }
+  } else {
+    wander(enemy, state);
   }
-
-  return wander(enemy, state);
 }
 
-function wander(enemy: Actor, state: GameState): GameState {
+function wander(enemy: Actor, state: GameState): void {
   const dx = Math.floor(Math.random() * 3) - 1;
   const dy = Math.floor(Math.random() * 3) - 1;
 
   if (dx === 0 && dy === 0) {
-    return state;
+    return;
   }
 
   const targetX = enemy.position.x + dx;
@@ -119,22 +108,20 @@ function wander(enemy: Actor, state: GameState): GameState {
       (a) => a.id !== enemy.id && a.position.x === targetX && a.position.y === targetY
     )
   ) {
-    return state;
+    return;
   }
 
-  const newActors = state.actors.map((actor) =>
-    actor.id === enemy.id
-      ? { ...actor, position: { x: targetX, y: targetY } }
-      : actor
-  );
-
-  return { ...state, actors: newActors };
+  const enemyInState = state.actors.find(e => e.id === enemy.id);
+  if (enemyInState) {
+    enemyInState.position = { x: targetX, y: targetY };
+  }
 }
 
-function patrol(enemy: Actor, state: GameState): GameState {
+function patrol(enemy: Actor, state: GameState): void {
   const ai = enemy.ai;
   if (!ai?.patrolPoints || ai.patrolPoints.length === 0) {
-    return wander(enemy, state);
+    wander(enemy, state);
+    return;
   }
 
   let currentIndex = ai.currentPatrolIndex ?? 0;
@@ -169,62 +156,47 @@ function patrol(enemy: Actor, state: GameState): GameState {
 
   const nextStep = path.length > 1 ? path[1] : enemy.position;
 
-  const newActors = state.actors.map((actor) => {
-    if (actor.id === enemy.id) {
-      const newAi: Ai = { ...actor.ai!, currentPatrolIndex: currentIndex };
-      return { ...actor, position: nextStep, ai: newAi };
+  const enemyInState = state.actors.find(e => e.id === enemy.id);
+  if (enemyInState) {
+    enemyInState.position = nextStep;
+    if (enemyInState.ai) {
+      enemyInState.ai.currentPatrolIndex = currentIndex;
     }
-    return actor;
-  });
-
-  return { ...state, actors: newActors };
+  }
 }
 
-export function runEnemyTurn(enemy: Actor, state: GameState): GameState {
+export function runEnemyTurn(enemy: Actor, state: GameState): void {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player || !enemy.ai) {
-    return state;
+    return;
   }
 
-  const currentAi = enemy.ai;
   const seesPlayer = canSeePlayer(enemy, player, state);
 
-  let nextState: AiState = currentAi.state;
+  let nextState: AiState = enemy.ai.state;
 
-  if (currentAi.state !== 'flee' && seesPlayer) {
+  if (enemy.ai.state !== 'flee' && seesPlayer) {
     nextState = 'chase';
-  } else if (currentAi.state === 'chase' && !seesPlayer) {
-    nextState = currentAi.patrolPoints ? 'patrol' : 'wander';
+  } else if (enemy.ai.state === 'chase' && !seesPlayer) {
+    nextState = enemy.ai.patrolPoints ? 'patrol' : 'wander';
   }
 
-  // If the state changed, update the actor in the state
-  let updatedEnemy: Actor = enemy;
-  if (nextState !== currentAi.state) {
-    const newAi: Ai = { ...currentAi, state: nextState };
-    updatedEnemy = { ...enemy, ai: newAi };
+  if (nextState !== enemy.ai.state) {
+    enemy.ai.state = nextState;
   }
 
-  const newState: GameState = {
-    ...state,
-    actors: state.actors.map((a) => (a.id === updatedEnemy.id ? updatedEnemy : a)),
-  };
-
-  if (!updatedEnemy.ai) {
-    return newState;
-  }
-
-  switch (updatedEnemy.ai.state) {
+  switch (enemy.ai.state) {
     case 'chase':
-      return chasePlayer(updatedEnemy, player, newState);
+      chasePlayer(enemy, player, state);
+      break;
     case 'flee':
-      return flee(updatedEnemy, player, newState);
+      flee(enemy, player, state);
+      break;
     case 'wander':
-      return wander(updatedEnemy, newState);
+      wander(enemy, state);
+      break;
     case 'patrol':
-      return patrol(updatedEnemy, newState);
-    case 'idle':
-      return newState;
-    default:
-      return newState;
+      patrol(enemy, state);
+      break;
   }
 }

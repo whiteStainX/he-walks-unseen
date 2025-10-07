@@ -1,4 +1,4 @@
-import type { GameState, Actor } from '../engine/state.js';
+import type { GameState } from '../engine/state.js';
 import { addLogMessage } from './logger.js';
 
 const LEVEL_UP_HP_BONUS = 10;
@@ -10,26 +10,27 @@ const XP_TO_NEXT_LEVEL_MULTIPLIER = 1.5;
  * @param state The current game state.
  * @returns The new game state, potentially with an updated player actor and a level-up message.
  */
-export function checkForLevelUp(state: GameState): GameState {
+export function checkForLevelUp(state: GameState): void {
   const player = state.actors.find((a) => a.isPlayer);
 
   // Ensure the player and their progression stats exist
   if (!player || player.xp === undefined || player.xpToNextLevel === undefined || player.level === undefined) {
-    return state;
+    return;
   }
 
   if (player.xp < player.xpToNextLevel) {
-    return state;
+    return;
   }
 
   // Player has leveled up!
-  const newLevel = player.level + 1;
-  const newXp = player.xp - player.xpToNextLevel;
-  const newXpToNextLevel = Math.floor(player.xpToNextLevel * XP_TO_NEXT_LEVEL_MULTIPLIER);
-  const newMaxHp = player.hp.max + LEVEL_UP_HP_BONUS;
-  const newAttack = player.attack + LEVEL_UP_ATTACK_BONUS;
+  player.level += 1;
+  player.xp -= player.xpToNextLevel;
+  player.xpToNextLevel = Math.floor(player.xpToNextLevel * XP_TO_NEXT_LEVEL_MULTIPLIER);
+  player.hp.max += LEVEL_UP_HP_BONUS;
+  player.hp.current = player.hp.max; // Fully heal on level up
+  player.attack += LEVEL_UP_ATTACK_BONUS;
 
-  const newSkills = [
+  player.skills = [
     ...(player.skills || []),
     {
       id: 'power-strike',
@@ -38,36 +39,10 @@ export function checkForLevelUp(state: GameState): GameState {
     },
   ];
 
-  const leveledUpPlayer: Actor = {
-    ...player,
-    level: newLevel,
-    xp: newXp,
-    xpToNextLevel: newXpToNextLevel,
-    hp: {
-      max: newMaxHp,
-      current: newMaxHp, // Fully heal on level up
-    },
-    attack: newAttack,
-    skills: newSkills,
-  };
+  const levelUpMessage = `You reached level ${player.level}! Your health and attack have increased.`;
 
-  const newActors = state.actors.map((actor) =>
-    actor.id === player.id ? leveledUpPlayer : actor
-  );
-
-  const levelUpMessage = `You reached level ${newLevel}! Your health and attack have increased.`;
+  addLogMessage(state, levelUpMessage, 'win');
 
   // It's possible to level up multiple times at once, so we recursively check.
-  const stateWithoutMessage: GameState = {
-    ...state,
-    actors: newActors,
-  };
-
-  const stateWithLog = addLogMessage(
-    stateWithoutMessage,
-    levelUpMessage,
-    'win'
-  );
-
-  return checkForLevelUp(stateWithLog);
+  checkForLevelUp(state);
 }

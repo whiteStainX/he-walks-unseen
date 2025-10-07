@@ -8,15 +8,14 @@ import { addLogMessage } from './logger.js';
  * @param state The current game state.
  * @returns The new game state after processing status effects.
  */
-export function processStatusEffects(state: GameState): GameState {
-  let stateWithLogs = { ...state };
+export function processStatusEffects(state: GameState): void {
+  const actorsToRemove: string[] = [];
 
-  const actorsWithUpdatedEffects = state.actors.map((actor) => {
+  state.actors.forEach((actor) => {
     if (!actor.statusEffects || actor.statusEffects.length === 0) {
-      return actor;
+      return;
     }
 
-    let currentHp = actor.hp.current;
     const activeEffects: Actor['statusEffects'] = [];
 
     actor.statusEffects.forEach((effect) => {
@@ -25,9 +24,9 @@ export function processStatusEffects(state: GameState): GameState {
 
       switch (effect.type) {
         case 'poison':
-          currentHp -= effect.potency;
-          stateWithLogs = addLogMessage(
-            stateWithLogs,
+          actor.hp.current -= effect.potency;
+          addLogMessage(
+            state,
             `${actor.name} takes ${effect.potency} poison damage.`,
             'damage'
           );
@@ -38,47 +37,25 @@ export function processStatusEffects(state: GameState): GameState {
       if (effectIsActive) {
         activeEffects.push({ ...effect, duration: newDuration });
       } else {
-        stateWithLogs = addLogMessage(
-          stateWithLogs,
-          `${actor.name} is no longer poisoned.`,
-          'info'
-        );
+        addLogMessage(state, `${actor.name} is no longer poisoned.`, 'info');
       }
     });
 
-    // Check for death from status effects
-    if (currentHp <= 0) {
-      stateWithLogs = addLogMessage(
-        stateWithLogs,
-        `${actor.name} dies from the poison!`,
-        'death'
-      );
-    }
+    actor.statusEffects = activeEffects;
 
-    return {
-      ...actor,
-      hp: { ...actor.hp, current: currentHp },
-      statusEffects: activeEffects,
-    };
+    // Check for death from status effects
+    if (actor.hp.current <= 0) {
+      addLogMessage(state, `${actor.name} dies from the poison!`, 'death');
+      actorsToRemove.push(actor.id);
+    }
   });
 
   // Filter out any actors that died from status effects
-  const aliveActors = actorsWithUpdatedEffects.filter(
-    (actor) => actor.hp.current > 0
-  );
+  state.actors = state.actors.filter((actor) => !actorsToRemove.includes(actor.id));
 
   // If the player died, handle game over
-  const player = aliveActors.find((a) => a.isPlayer);
+  const player = state.actors.find((a) => a.isPlayer);
   if (!player) {
-    return {
-      ...stateWithLogs,
-      actors: aliveActors,
-      phase: 'Loss',
-    };
+    state.phase = 'Loss';
   }
-
-  return {
-    ...stateWithLogs,
-    actors: aliveActors,
-  };
 }

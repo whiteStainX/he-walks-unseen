@@ -88,23 +88,29 @@ describe('getActorStats', () => {
   });
 });
 
+import { produce } from 'immer';
+
 describe('equip', () => {
   it('should move an item from inventory to an equipment slot', () => {
     const playerWithDaggerInInv: Actor = {
       ...mockPlayer,
       inventory: [mockDagger],
     };
-    const stateWithItem = {
+    const stateWithItem: GameState = {
       ...mockGameState,
       actors: [playerWithDaggerInInv],
+      log: [],
     };
 
-    const newState = equip(stateWithItem, 'player', 'dagger-1');
-    const newPlayer = newState.actors[0];
+    const nextState = produce(stateWithItem, (draft) => {
+      equip(draft, 'player', 'dagger-1');
+    });
+
+    const newPlayer = nextState.actors[0];
 
     expect(newPlayer.inventory).toHaveLength(0);
     expect(newPlayer.equipment?.weapon).toBe(mockDagger);
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toBe('You equipped the Dagger.');
   });
 
@@ -115,13 +121,15 @@ describe('equip', () => {
       inventory: [mockDagger],
       equipment: { weapon: oldDagger },
     };
-    const stateWithItem = {
+    const stateWithItem: GameState = {
       ...mockGameState,
       actors: [playerWithOldDaggerEquipped],
     };
 
-    const newState = equip(stateWithItem, 'player', 'dagger-1');
-    const newPlayer = newState.actors[0];
+    const nextState = produce(stateWithItem, (draft) => {
+      equip(draft, 'player', 'dagger-1');
+    });
+    const newPlayer = nextState.actors[0];
 
     expect(newPlayer.equipment?.weapon).toBe(mockDagger);
     expect(newPlayer.inventory).toHaveLength(1);
@@ -134,19 +142,23 @@ describe('unequip', () => {
     const playerWithDaggerEquipped: Actor = {
       ...mockPlayer,
       equipment: { weapon: mockDagger },
+      inventory: [],
     };
-    const stateWithEquippedItem = {
+    const stateWithEquippedItem: GameState = {
       ...mockGameState,
       actors: [playerWithDaggerEquipped],
+      log: [],
     };
 
-    const newState = unequip(stateWithEquippedItem, 'player', 'weapon');
-    const newPlayer = newState.actors[0];
+    const nextState = produce(stateWithEquippedItem, (draft) => {
+      unequip(draft, 'player', 'weapon');
+    });
+    const newPlayer = nextState.actors[0];
 
     expect(newPlayer.equipment?.weapon).toBeUndefined();
     expect(newPlayer.inventory).toHaveLength(1);
     expect(newPlayer.inventory?.[0]).toBe(mockDagger);
-    const lastMessage = newState.log[newState.log.length - 1];
+    const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toBe('You unequipped the Dagger.');
   });
 });

@@ -13,86 +13,60 @@ function resolveHeal(
   target: Actor,
   state: GameState,
   effect: HealEffect
-): GameState {
+): void {
   const amountHealed = Math.min(
     target.hp.max - target.hp.current,
     effect.potency
   );
-  const newHp = target.hp.current + amountHealed;
-
-  const newTarget = { ...target, hp: { ...target.hp, current: newHp } };
-  const newActors = state.actors.map((a) =>
-    a.id === newTarget.id ? newTarget : a
-  );
+  target.hp.current += amountHealed;
 
   const message =
     amountHealed > 0
       ? `The ${target.name} heals for ${amountHealed} HP.`
       : `The ${target.name} is already at full health.`;
 
-  const stateWithActors = { ...state, actors: newActors };
-  return addLogMessage(stateWithActors, message, 'heal');
+  addLogMessage(state, message, 'heal');
 }
 
 function resolveDamage(
   target: Actor,
   state: GameState,
   effect: DamageEffect
-): GameState {
+): void {
   // This will be expanded later to include combat calculations
-  const newHp = target.hp.current - effect.potency;
-  const newTarget = { ...target, hp: { ...target.hp, current: newHp } };
-  const newActors = state.actors.map((a) =>
-    a.id === newTarget.id ? newTarget : a
-  );
+  target.hp.current -= effect.potency;
   const message = `The ${target.name} takes ${effect.potency} damage.`;
 
-  const stateWithActors = { ...state, actors: newActors };
-  return addLogMessage(stateWithActors, message, 'damage');
+  addLogMessage(state, message, 'damage');
 }
 
 function resolveFireball(
   targetPosition: Point,
   state: GameState,
   effect: FireballEffect
-): GameState {
-  let newActors = [...state.actors];
-  const affectedActors: Actor[] = [];
+): void {
   const { radius, potency } = effect;
 
   for (const actor of state.actors) {
     const dx = actor.position.x - targetPosition.x;
     const dy = actor.position.y - targetPosition.y;
     if (dx * dx + dy * dy <= radius * radius) {
-      affectedActors.push(actor);
+      actor.hp.current -= potency;
     }
-  }
-
-  for (const target of affectedActors) {
-    const newHp = target.hp.current - potency;
-    const newTarget = { ...target, hp: { ...target.hp, current: newHp } };
-    newActors = newActors.map((a) => (a.id === newTarget.id ? newTarget : a));
   }
 
   const message = `A fireball explodes, engulfing the area in flames!`;
-  const stateWithActors = { ...state, actors: newActors };
-  return addLogMessage(stateWithActors, message, 'damage');
+  addLogMessage(state, message, 'damage');
 }
 
-function resolveRevealMap(state: GameState): GameState {
-  const newExploredTiles = new Set(state.exploredTiles);
+function resolveRevealMap(state: GameState): void {
   for (let y = 0; y < state.map.height; y++) {
     for (let x = 0; x < state.map.width; x++) {
-      if (!state.map.tiles[y][x].walkable) {
-        // You can choose to reveal walls or not
-        // For now, let's reveal everything
-      }
-      newExploredTiles.add(`${x},${y}`);
+      state.exploredTiles.add(`${x},${y}`);
     }
   }
   const message = 'The scroll reveals the entire map!';
-  const stateWithTiles = { ...state, exploredTiles: newExploredTiles };
-  return addLogMessage(stateWithTiles, message, 'info');
+  addLogMessage(state, message, 'info');
 }
 
 export function applyEffect(
@@ -100,10 +74,11 @@ export function applyEffect(
   state: GameState,
   effect: ItemEffect,
   target?: Point
-): GameState {
+): void {
   switch (effect.type) {
     case 'heal':
-      return resolveHeal(user, state, effect);
+      resolveHeal(user, state, effect);
+      return;
     case 'damage':
       // For now, damage effects target the user unless a target is specified.
       // This could be changed based on game design.
@@ -113,18 +88,23 @@ export function applyEffect(
           )
         : user;
       if (damageTarget) {
-        return resolveDamage(damageTarget, state, effect);
+        resolveDamage(damageTarget, state, effect);
+        return;
       }
-      return addLogMessage(state, 'Invalid target.', 'info');
+      addLogMessage(state, 'Invalid target.', 'info');
+      return;
     case 'fireball':
       if (target) {
-        return resolveFireball(target, state, effect);
+        resolveFireball(target, state, effect);
+        return;
       }
-      return addLogMessage(state, 'A target is required for the fireball.', 'info');
+      addLogMessage(state, 'A target is required for the fireball.', 'info');
+      return;
     case 'revealMap':
-      return resolveRevealMap(state);
+      resolveRevealMap(state);
+      return;
     // Other effects like applyStatus will be added here
     default:
-      return addLogMessage(state, 'Unknown effect.', 'info');
+      addLogMessage(state, 'Unknown effect.', 'info');
   }
 }

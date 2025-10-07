@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, Ai, GameState, MessageType, Item } from '../engine/state.js';
+import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from './logger.js';
@@ -34,9 +34,10 @@ export function resolveAttack(
   attacker: Actor,
   defender: Actor,
   state: GameState
-): GameState {
+): void {
   const damage = calculateDamage(attacker, defender);
-  const newDefenderHp = defender.hp.current - damage;
+  const defenderInState = state.actors.find(a => a.id === defender.id)!;
+  defenderInState.hp.current -= damage;
 
   let message = `${attacker.name} attacks ${defender.name}`;
   if (damage > 0) {
@@ -46,55 +47,35 @@ export function resolveAttack(
   }
 
   let messageType: MessageType = 'info';
-  let newItems = [...state.items];
 
-  // Update the defender's HP and check for AI state changes
-  let newActors = state.actors.map((actor) => {
-    if (actor.id === defender.id) {
-      let updatedDefender = {
-        ...actor,
-        hp: { ...actor.hp, current: newDefenderHp },
-      };
-
-      // Apply on-hit status effects from the attacker's weapon
-      const weapon = attacker.equipment?.weapon;
-      if (weapon?.equipment?.onHit && damage > 0) {
-        const { type, duration, potency, chance } = weapon.equipment.onHit;
-        if (Math.random() < chance) {
-          const newStatusEffect = { id: nanoid(), type, duration, potency };
-          const existingEffects = updatedDefender.statusEffects ?? [];
-          updatedDefender = {
-            ...updatedDefender,
-            statusEffects: [...existingEffects, newStatusEffect],
-          };
-          message += ` The ${defender.name} is poisoned!`;
-        }
-      }
-
-      // If the defender is an enemy and is still alive, check for flee condition
-      if (
-        !updatedDefender.isPlayer &&
-        updatedDefender.ai?.fleeThreshold &&
-        newDefenderHp > 0
-      ) {
-        const hpPercentage = newDefenderHp / updatedDefender.hp.max;
-        if (hpPercentage <= updatedDefender.ai.fleeThreshold) {
-          // Switch to flee state
-          const newAi: Ai = { ...updatedDefender.ai, state: 'flee' };
-          return {
-            ...updatedDefender,
-            ai: newAi,
-          };
-        }
-      }
-
-      return updatedDefender;
+  // Apply on-hit status effects from the attacker's weapon
+  const weapon = attacker.equipment?.weapon;
+  if (weapon?.equipment?.onHit && damage > 0) {
+    const { type, duration, potency, chance } = weapon.equipment.onHit;
+    if (Math.random() < chance) {
+      const newStatusEffect = { id: nanoid(), type, duration, potency };
+      defenderInState.statusEffects = defenderInState.statusEffects ?? [];
+      defenderInState.statusEffects.push(newStatusEffect);
+      message += ` The ${defender.name} is poisoned!`;
     }
-    return actor;
-  });
+  }
+
+  // If the defender is an enemy and is still alive, check for flee condition
+  if (
+    !defenderInState.isPlayer &&
+    defenderInState.ai?.fleeThreshold &&
+    defenderInState.hp.current > 0
+  ) {
+    const hpPercentage = defenderInState.hp.current / defenderInState.hp.max;
+    if (hpPercentage <= defenderInState.ai.fleeThreshold) {
+      if (defenderInState.ai) {
+        defenderInState.ai.state = 'flee';
+      }
+    }
+  }
 
   // Check if the defender was defeated
-  if (newDefenderHp <= 0) {
+  if (defenderInState.hp.current <= 0) {
     message += ` ${defender.name} dies!`;
     messageType = 'death';
 
@@ -102,13 +83,8 @@ export function resolveAttack(
     if (attacker.isPlayer && defender.xpValue && defender.xpValue > 0) {
       const xpGained = defender.xpValue;
       message += ` You gain ${xpGained} XP.`;
-
-      newActors = newActors.map((actor) => {
-        if (actor.id === attacker.id) {
-          return { ...actor, xp: (actor.xp ?? 0) + xpGained };
-        }
-        return actor;
-      });
+      const attackerInState = state.actors.find(a => a.id === attacker.id)!;
+      attackerInState.xp = (attackerInState.xp ?? 0) + xpGained;
     }
 
     // Handle loot drops
@@ -121,36 +97,28 @@ export function resolveAttack(
           id: nanoid(),
           position: defender.position,
         };
-        newItems.push(newItem);
+        state.items.push(newItem);
         message += ` The ${defender.name} drops a ${lootTemplate.name}.`;
       }
     }
 
     // Remove defeated actor
-    newActors = newActors.filter((actor) => actor.id !== defender.id);
+    const defenderIndex = state.actors.findIndex(a => a.id === defender.id);
+    if (defenderIndex !== -1) {
+      state.actors.splice(defenderIndex, 1);
+    }
   } else {
     // Add remaining HP to the message if the defender survived
-    const defenderData = newActors.find((a) => a.id === defender.id);
-    if (defenderData) {
-      message += ` (${defenderData.hp.current}/${defenderData.hp.max} HP left).`;
-    }
+    message += ` (${defenderInState.hp.current}/${defenderInState.hp.max} HP left).`;
     // Set message type based on who was hit
     if (damage > 0 && defender.isPlayer) {
       messageType = 'damage';
     }
   }
 
-  const stateAfterCombat = {
-    ...state,
-    actors: newActors,
-    items: newItems,
-  };
+  addLogMessage(state, message, messageType);
 
-  const stateWithLog = addLogMessage(stateAfterCombat, message, messageType);
-
-  if (newDefenderHp <= 0 && attacker.isPlayer) {
-    return checkForLevelUp(stateWithLog);
+  if (defenderInState.hp.current <= 0 && attacker.isPlayer) {
+    checkForLevelUp(state);
   }
-
-  return stateWithLog;
 }

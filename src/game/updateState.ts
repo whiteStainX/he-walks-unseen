@@ -1,4 +1,4 @@
-import type { GameState } from '../engine/state.js';
+import { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { handleInventoryAction } from './inventoryActions.js';
 import { handleTargeting } from './targetingActions.js';
@@ -7,46 +7,61 @@ import { handleIdentifyMenuAction } from './identifyActions.js';
 import { handleMessageLogAction } from './messageLogActions.js';
 import { handlePlayerAction } from './playerActions.js';
 import { addLogMessage } from './logger.js';
+import { eventBus } from '../engine/events.js';
+import { getCurrentState } from '../engine/narrativeEngine.js';
+import { produce } from 'immer';
+
+export function updateState(action: GameAction): void {
+  const currentState = getCurrentState();
+  if (!currentState) return;
+
+  const nextState = produce(currentState, (draftState) => {
+    applyActionToState(draftState, action);
+  });
+
+  eventBus.emit('stateChanged', nextState);
+}
 
 export function applyActionToState(
   state: GameState,
   action: GameAction
-): GameState {
+): void {
   if (action === GameAction.QUIT) {
-    return addLogMessage(
-      state,
-      'Press Ctrl+C to exit the simulation.',
-      'info'
-    );
+    addLogMessage(state, 'Press Ctrl+C to exit the simulation.', 'info');
+    return;
   }
 
   if (state.phase === 'Win' || state.phase === 'Loss') {
-    return state;
+    return;
   }
 
   if (state.phase === 'PlayerTurn') {
-    return handlePlayerAction(state, action);
+    handlePlayerAction(state, action);
+    return;
   }
 
   if (state.phase === 'Inventory') {
-    return handleInventoryAction(state, action);
+    handleInventoryAction(state, action);
+    return;
   }
 
   if (state.phase === 'Targeting') {
-    return handleTargeting(state, action);
+    handleTargeting(state, action);
+    return;
   }
 
   if (state.phase === 'CombatMenu') {
-    return handleCombatMenuAction(state, action);
+    handleCombatMenuAction(state, action);
+    return;
   }
 
   if (state.phase === 'IdentifyMenu') {
-    return handleIdentifyMenuAction(state, action);
+    handleIdentifyMenuAction(state, action);
+    return;
   }
 
   if (state.phase === 'MessageLog') {
-    return handleMessageLogAction(state, action);
+    handleMessageLogAction(state, action);
+    return;
   }
-
-  return state;
 }

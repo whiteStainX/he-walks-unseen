@@ -7,22 +7,18 @@ export function addLogMessage(
   state: GameState,
   text: string,
   type: MessageType
-): GameState {
+): void {
   const newMessage: Message = {
     id: nanoid(),
     text,
     type,
   };
 
-  const newLog = [...state.log, newMessage];
+  state.log.push(newMessage);
 
-  if (newLog.length > MAX_LOG_MESSAGES) {
-    newLog.shift(); // Remove the oldest message
+  if (state.log.length > MAX_LOG_MESSAGES) {
+    state.log.shift(); // Remove the oldest message
   }
 
-  return {
-    ...state,
-    log: newLog,
-    logOffset: 0, // Reset scroll to show the latest message
-  };
+  state.logOffset = 0; // Reset scroll to show the latest message
 }

@@ -3,6 +3,8 @@ import type { GameState, Actor, StatusEffect } from '../engine/state.js';
 import { processStatusEffects } from './statusEffects.js';
 import { resolveAttack } from './combat.js';
 
+import { produce } from 'immer';
+
 describe('Status Effects System', () => {
   let mockState: GameState;
   const player: Actor = {
@@ -57,13 +59,15 @@ describe('Status Effects System', () => {
       };
       mockState.actors[0].statusEffects = [poisonEffect];
 
-      const newState = processStatusEffects(mockState);
-      const updatedPlayer = newState.actors.find((a) => a.id === 'player');
+      const nextState = produce(mockState, (draft) => {
+        processStatusEffects(draft);
+      });
+      const updatedPlayer = nextState.actors.find((a) => a.id === 'player');
 
       expect(updatedPlayer?.hp.current).toBe(9);
       expect(updatedPlayer?.statusEffects?.[0]?.duration).toBe(2);
       expect(
-        newState.log.some((m) => m.text.includes('Player takes 1 poison damage.'))
+        nextState.log.some((m) => m.text.includes('Player takes 1 poison damage.'))
       ).toBe(true);
     });
 
@@ -76,13 +80,15 @@ describe('Status Effects System', () => {
       };
       mockState.actors[0].statusEffects = [poisonEffect];
 
-      const newState = processStatusEffects(mockState);
-      const updatedPlayer = newState.actors.find((a) => a.id === 'player');
+      const nextState = produce(mockState, (draft) => {
+        processStatusEffects(draft);
+      });
+      const updatedPlayer = nextState.actors.find((a) => a.id === 'player');
 
       expect(updatedPlayer?.hp.current).toBe(9);
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
       expect(
-        newState.log.some((m) => m.text.includes('Player is no longer poisoned.'))
+        nextState.log.some((m) => m.text.includes('Player is no longer poisoned.'))
       ).toBe(true);
     });
 
@@ -96,13 +102,15 @@ describe('Status Effects System', () => {
       mockState.actors[1].hp.current = 1; // Enemy has 1 HP left
       mockState.actors[1].statusEffects = [poisonEffect];
 
-      const newState = processStatusEffects(mockState);
-      const deadEnemy = newState.actors.find((a) => a.id === 'enemy-1');
+      const nextState = produce(mockState, (draft) => {
+        processStatusEffects(draft);
+      });
+      const deadEnemy = nextState.actors.find((a) => a.id === 'enemy-1');
 
       expect(deadEnemy).toBeUndefined();
-      expect(newState.actors.length).toBe(1);
+      expect(nextState.actors.length).toBe(1);
       expect(
-        newState.log.some((m) => m.text.includes('Goblin dies from the poison!'))
+        nextState.log.some((m) => m.text.includes('Goblin dies from the poison!'))
       ).toBe(true);
     });
   });
@@ -135,12 +143,14 @@ describe('Status Effects System', () => {
       };
 
       mockState.actors[1] = attackerWithPoisonWeapon;
-      const stateAfterAttack = resolveAttack(attackerWithPoisonWeapon, player, mockState);
-      const updatedPlayer = stateAfterAttack.actors.find((a) => a.isPlayer);
+      const nextState = produce(mockState, (draft) => {
+        resolveAttack(attackerWithPoisonWeapon, player, draft);
+      });
+      const updatedPlayer = nextState.actors.find((a) => a.isPlayer);
 
       expect(updatedPlayer?.statusEffects?.length).toBe(1);
       expect(updatedPlayer?.statusEffects?.[0].type).toBe('poison');
-      const lastMessage = stateAfterAttack.log[stateAfterAttack.log.length - 1];
+      const lastMessage = nextState.log[nextState.log.length - 1];
       expect(lastMessage.text).toContain('The Player is poisoned!');
 
       // Restore mock
@@ -174,11 +184,13 @@ describe('Status Effects System', () => {
       };
 
       mockState.actors[1] = attackerWithPoisonWeapon;
-      const stateAfterAttack = resolveAttack(attackerWithPoisonWeapon, player, mockState);
-      const updatedPlayer = stateAfterAttack.actors.find((a) => a.isPlayer);
+      const nextState = produce(mockState, (draft) => {
+        resolveAttack(attackerWithPoisonWeapon, player, draft);
+      });
+      const updatedPlayer = nextState.actors.find((a) => a.isPlayer);
 
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
-      const lastMessage = stateAfterAttack.log[stateAfterAttack.log.length - 1];
+      const lastMessage = nextState.log[nextState.log.length - 1];
       expect(lastMessage.text).not.toContain('The Player is poisoned!');
 
       // Restore mock

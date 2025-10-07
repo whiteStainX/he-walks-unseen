@@ -27,72 +27,56 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
 export function handlePlayerAction(
   state: GameState,
   action: GameAction
-): GameState {
+): void {
   const player = state.actors.find((a) => a.isPlayer);
-  if (!player) return state;
+  if (!player) return;
 
   if (action === GameAction.OPEN_INVENTORY) {
     const hasItems = player.inventory && player.inventory.length > 0;
     const message = hasItems
       ? 'Select an item to use.'
       : 'Your inventory is empty.';
-    const stateWithMessage = addLogMessage(state, message, 'info');
-    return {
-      ...stateWithMessage,
-      phase: 'Inventory',
-      selectedItemIndex: hasItems ? 0 : undefined,
-    };
+    addLogMessage(state, message, 'info');
+    state.phase = 'Inventory';
+    state.selectedItemIndex = hasItems ? 0 : undefined;
+    return;
   }
 
   if (action === GameAction.PICKUP_ITEM) {
-    const item = state.items.find(
+    const itemIndex = state.items.findIndex(
       (i) =>
         i.position.x === player.position.x && i.position.y === player.position.y
     );
 
-    if (!item) {
-      return addLogMessage(state, 'There is nothing here to pick up.', 'info');
+    if (itemIndex === -1) {
+      addLogMessage(state, 'There is nothing here to pick up.', 'info');
+      return;
     }
 
-    const playerInventory = player.inventory || [];
-    const updatedInventory = [...playerInventory, item];
-    const updatedPlayer = { ...player, inventory: updatedInventory };
+    const item = state.items[itemIndex];
+    player.inventory = player.inventory || [];
+    player.inventory.push(item);
+    state.items.splice(itemIndex, 1);
+    state.phase = 'PlayerTurn';
 
-    const updatedItems = state.items.filter((i) => i.id !== item.id);
-
-    const updatedActors = state.actors.map((a) =>
-      a.id === player.id ? updatedPlayer : a
-    );
-
-    const stateWithItem: GameState = {
-      ...state,
-      actors: updatedActors,
-      items: updatedItems,
-      phase: 'PlayerTurn',
-    };
-
-    return addLogMessage(
-      stateWithItem,
-      `You picked up the ${item.name}.`,
-      'info'
-    );
+    addLogMessage(state, `You picked up the ${item.name}.`, 'info');
+    return;
   }
 
   if (action === GameAction.START_INTERACTION) {
-    const stateWithMessage = addLogMessage(state, 'Which direction?', 'info');
-    return {
-      ...stateWithMessage,
-      phase: 'Targeting',
-    };
+    addLogMessage(state, 'Which direction?', 'info');
+    state.phase = 'Targeting';
+    return;
   }
 
   if (action === GameAction.OPEN_MESSAGE_LOG) {
-    return { ...state, phase: 'MessageLog' };
+    state.phase = 'MessageLog';
+    return;
   }
 
   const delta = MOVEMENT_DELTAS[action];
   if (!delta) {
-    return state;
+    return;
   }
 
   const targetX = player.position.x + delta.dx;
@@ -103,7 +87,8 @@ export function handlePlayerAction(
   );
 
   if (targetEntity && targetEntity.interaction?.type === 'stairs') {
-    return handleInteraction(state, targetX, targetY);
+    handleInteraction(state, targetX, targetY);
+    return;
   }
 
   const targetEnemy = state.actors.find(
@@ -111,17 +96,11 @@ export function handlePlayerAction(
   );
 
   if (targetEnemy) {
-    const stateWithMessage = addLogMessage(
-      state,
-      `You engage the ${targetEnemy.name}.`,
-      'info'
-    );
-    return {
-      ...stateWithMessage,
-      phase: 'CombatMenu',
-      combatTargetId: targetEnemy.id,
-      selectedCombatMenuIndex: 0,
-    };
+    addLogMessage(state, `You engage the ${targetEnemy.name}.`, 'info');
+    state.phase = 'CombatMenu';
+    state.combatTargetId = targetEnemy.id;
+    state.selectedCombatMenuIndex = 0;
+    return;
   }
 
   if (isBlocked(state, targetX, targetY)) {
@@ -132,23 +111,15 @@ export function handlePlayerAction(
       targetY >= state.map.height
         ? "You can't step beyond the treeline."
         : 'A wall blocks your way.';
-    return addLogMessage(state, boundaryMessage, 'info');
+    addLogMessage(state, boundaryMessage, 'info');
+    return;
   }
 
-  const actorsAfterPlayerMove = state.actors.map((actor) =>
-    actor.id === player.id
-      ? { ...actor, position: { x: targetX, y: targetY } }
-      : actor
-  );
+  player.position.x = targetX;
+  player.position.y = targetY;
+  state.phase = 'EnemyTurn';
 
-  const stateAfterMove: GameState = {
-    ...state,
-    actors: actorsAfterPlayerMove,
-    items: state.items,
-    phase: 'EnemyTurn',
-  };
+  updateVisibility(state);
 
-  const stateWithVisibility = updateVisibility(stateAfterMove);
-
-  return addLogMessage(stateWithVisibility, delta.successMessage, 'info');
+  addLogMessage(state, delta.successMessage, 'info');
 }
