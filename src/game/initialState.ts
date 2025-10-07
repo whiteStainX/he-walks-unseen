@@ -12,9 +12,7 @@ import { getResource } from '../engine/resourceManager.js';
 import { updateVisibility } from './visibility.js';
 import { addLogMessage } from './logger.js';
 import { instantiate } from '../engine/prefab.js';
-
-const MAP_WIDTH = 80;
-const MAP_HEIGHT = 24;
+import { getMapDefinition, getStartMapId } from '../engine/worldManager.js';
 
 function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null {
   const walkableTiles: Point[] = [];
@@ -40,17 +38,24 @@ function findRandomWalkableTile(map: Tile[][], occupied: Point[]): Point | null 
 interface InitialStateOptions {
   message?: string;
   player?: Actor;
-  floor?: number;
-  floorStates?: Map<number, GameState>;
+  mapId?: string;
+  mapStates?: Map<string, GameState>;
 }
 
 export function createInitialGameState(options: InitialStateOptions = {}): GameState {
-  const { message, player: existingPlayer, floor = 1, floorStates = new Map() } = options;
+  const { message, player: existingPlayer, mapId, mapStates = new Map() } = options;
+
+  const currentMapId = mapId || getStartMapId();
+  const mapDefinition = getMapDefinition(currentMapId);
+
+  if (!mapDefinition) {
+    throw new Error(`Map with id "${currentMapId}" not found in world data.`);
+  }
 
   const themes = getResource<any>('themes');
-  const theme = Object.values(themes).find((t: any) => t.floors.includes(floor)) || themes['overgrown-keep'];
+  const theme = themes[mapDefinition.theme];
 
-  const { map, playerStart, exitPosition, rooms } = generateMap(MAP_WIDTH, MAP_HEIGHT, theme.map);
+  const { map, playerStart, rooms } = generateMap(mapDefinition, theme.map);
 
   const player: Actor = existingPlayer
     ? { ...existingPlayer, position: playerStart }
@@ -72,7 +77,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   const actors: Actor[] = [player];
   const entities: Entity[] = [];
   const items: Item[] = [];
-  const occupiedPoints: Point[] = [player.position, exitPosition];
+  const occupiedPoints: Point[] = [player.position];
 
   const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
   for (let i = 0; i < numberOfEnemies; i++) {
@@ -119,6 +124,24 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     });
   }
 
+  const portalTemplate = entityTemplates.find((e) => e.id === 'portal');
+  if (portalTemplate && mapDefinition.connections) {
+    mapDefinition.connections.forEach((connection) => {
+      const portal: Entity = {
+        ...portalTemplate,
+        id: nanoid(),
+        position: connection.position,
+        interaction: {
+          type: 'portal',
+          targetMapId: connection.targetMapId,
+          targetPosition: connection.targetPosition,
+        },
+      };
+      entities.push(portal);
+      occupiedPoints.push(connection.position);
+    });
+  }
+
   const chestTemplate = entityTemplates.find((e) => e.id === 'chest');
   if (chestTemplate) {
     const numberOfChests = Math.floor(Math.random() * 2) + 1;
@@ -136,28 +159,22 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     }
   }
 
-  const downstairsTemplate = entityTemplates.find((e) => e.id === 'downstairs');
-  if (downstairsTemplate && floor < 5) { // Don't spawn downstairs on the last floor
-    const downstairs: Entity = {
-      ...downstairsTemplate,
-      id: nanoid(),
-      position: exitPosition,
-    };
-    entities.push(downstairs);
-    occupiedPoints.push(exitPosition);
-  }
+  if (mapDefinition.prefabs) {
+    mapDefinition.prefabs.forEach((prefabInfo) => {
+      const newEntity = instantiate(prefabInfo.id);
+      if (newEntity) {
+        (newEntity as Entity).position = prefabInfo.position;
 
-  if (floor > 1) {
-    const upstairsTemplate = entityTemplates.find((e) => e.id === 'upstairs');
-    if (upstairsTemplate) {
-      const upstairs: Entity = {
-        ...upstairsTemplate,
-        id: nanoid(),
-        position: playerStart, // Player starts at the upstairs
-      };
-      entities.push(upstairs);
-      occupiedPoints.push(playerStart);
-    }
+        if ('hp' in newEntity) {
+          actors.push(newEntity as Actor);
+        } else if ('effects' in newEntity || 'equipment' in newEntity) {
+          items.push(newEntity as Item);
+        } else {
+          entities.push(newEntity as Entity);
+        }
+        occupiedPoints.push(prefabInfo.position);
+      }
+    });
   }
 
   const baseState: GameState = {
@@ -167,21 +184,20 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     entities,
     map: {
       tiles: map,
-      width: MAP_WIDTH,
-      height: MAP_HEIGHT,
+      width: mapDefinition.width,
+      height: mapDefinition.height,
     },
     log: [],
     logOffset: 0,
-    currentFloor: floor,
-    floorStates,
     visibleTiles: new Set<string>(),
     exploredTiles: new Set<string>(),
+    currentMapId: currentMapId,
+    mapStates,
   };
 
   const stateWithLog = addLogMessage(
     baseState,
-    message ??
-      `Welcome to floor ${floor}! Use the arrow keys or WASD to move. Find the > to exit.`,
+    message ?? `Welcome! Use the arrow keys or WASD to move.`,
     'info'
   );
 

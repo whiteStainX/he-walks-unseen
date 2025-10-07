@@ -42,8 +42,8 @@ describe('Status Effects System', () => {
       logOffset: 0,
       visibleTiles: new Set(),
       exploredTiles: new Set(),
-      currentFloor: 1,
-      floorStates: new Map(),
+      currentMapId: 'testMap',
+      mapStates: new Map(),
     };
   });
 

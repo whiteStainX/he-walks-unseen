@@ -4,6 +4,7 @@ import { GameAction } from '../input/actions.js';
 import GameScreen, { isActionDefined } from './GameScreen.js';
 import { createInitialGameState } from '../game/initialState.js';
 import { setResource, clearResources } from '../engine/resourceManager.js';
+import { loadWorldData } from '../engine/worldManager.js';
 
 describe('isActionDefined', () => {
   it('treats MOVE_NORTH as a valid action', () => {
@@ -18,10 +19,27 @@ describe('isActionDefined', () => {
 describe('GameScreen', () => {
   beforeEach(() => {
     // Mock resources needed by createInitialGameState
+    setResource('world', {
+      startMapId: 'keep-1',
+      maps: [
+        {
+          id: 'keep-1',
+          width: 80,
+          height: 24,
+          theme: 'overgrown-keep',
+          generator: { type: 'digger' },
+          connections: [],
+        },
+      ],
+    });
+    loadWorldData();
     setResource('themes', {
       'overgrown-keep': {
         floors: [1],
-        map: { type: 'digger' },
+        map: {
+          wall: '#',
+          floor: '.',
+        },
         enemies: ['goblin'],
         items: ['health-potion', 'dagger'],
       },

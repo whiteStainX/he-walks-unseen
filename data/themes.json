@@ -18,5 +18,23 @@
       "wall": "#",
       "floor": ","
     }
+  },
+  "town": {
+    "name": "Town Center",
+    "enemies": ["guard"],
+    "items": ["key", "dagger"],
+    "map": {
+      "wall": "#",
+      "floor": "."
+    }
+  },
+  "forest": {
+    "name": "Whispering Woods",
+    "enemies": ["goblin", "goblin-ambusher"],
+    "items": ["health-potion", "scroll-fireball"],
+    "map": {
+      "wall": "T",
+      "floor": "."
+    }
   }
 }

@@ -7,6 +7,7 @@ import GameScreen from './components/GameScreen.js';
 import { createInitialGameState } from './game/initialState.js';
 import { loadGame } from './engine/persistence.js';
 import { getCurrentState } from './engine/narrativeEngine.js';
+import { loadWorldData } from './engine/worldManager.js';
 
 const App = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -17,6 +18,7 @@ const App = () => {
       try {
         await loadGame(); // Attempt to load a saved game first
         await loadResources('./data');
+        loadWorldData();
         eventBus.emit('engineReady');
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';

@@ -13,19 +13,19 @@ The core mechanic is a **"Git-like" narrative engine** that allows the player to
 This project implements several classic roguelike mechanics to create a challenging and replayable experience.
 
 *   **Turn-Based System:** The game operates on a strict "I-Go-You-Go" turn-based system. The world only advances when the player takes an action, allowing for careful, strategic thinking.
-*   **Permadeath & Replayability:** When the player is defeated, the game is over. Each new game generates a unique, procedurally-generated dungeon with randomized room layouts and enemy placements, ensuring no two runs are the same.
-*   **Risk vs. Reward:** The dungeon contains unidentified potions and scrolls. Their effects are unknown until they are used or identified, forcing players to weigh the potential benefits against the risks.
+*   **Permadeath & Replayability:** When the player is defeated, the game is over. Each new game generates a unique, procedurally-generated world with randomized room layouts and enemy placements, ensuring no two runs are the same.
+*   **Risk vs. Reward:** The world contains unidentified potions and scrolls. Their effects are unknown until they are used or identified, forcing players to weigh the potential benefits against the risks.
 *   **Item Identification:** A classic roguelike feature where magical items like potions and scrolls are initially unidentified. Discover their true properties through use or by finding a special "Scroll of Identify."
 *   **Enhanced UI Feedback:**
     *   **Color-Coded UI:** Actors, items, and messages are color-coded for at-a-glance clarity. Damage is red, healing is green, and important events are yellow.
     *   **Player Highlighting:** The player's character is always highlighted on the map, making it easy to track your position.
     *   **Enemy Status Panel:** A dedicated panel displays the health of all visible enemies, aiding in tactical decision-making.
     *   **Detailed Message Log:** A scrollable message log allows you to review the history of combat, interactions, and other events.
-*   **Items & Inventory:** Pick up items from the dungeon floor and manage them in a dedicated inventory screen. Use items like potions for healing, or powerful scrolls to cast area-of-effect spells and reveal the map.
-*   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you delve deeper into the dungeon.
-*   **Environmental Interactions:** The dungeon is not just a static backdrop. Interact with doors to open them and loot chests to find valuable items.
-*   **Multi-Level Dungeons:** Explore a persistent, multi-level dungeon with interconnected floors.
-*   **Dungeon Themes:** Each floor has a unique theme with different enemies, items, and visuals.
+*   **Items & Inventory:** Pick up items from the world and manage them in a dedicated inventory screen. Use items like potions for healing, or powerful scrolls to cast area-of-effect spells and reveal the map.
+*   **Skills & Progression:** Gain experience points by defeating enemies. Level up to increase your health and attack power, making you stronger as you explore the world.
+*   **Environmental Interactions:** The world is not just a static backdrop. Interact with doors to open them and loot chests to find valuable items.
+*   **Data-Driven World Map:** Explore a world composed of multiple interconnected maps. The entire structure of the world, from map layouts to the connections between them, is defined in data files, allowing for complex and interesting environments.
+*   **Map Themes:** Each map has a unique theme with different enemies, items, and visuals.
 *   **Field of View / Fog of War:** The player's view is limited to what their character can see. Explored areas are remembered and displayed in a dimmed "fog of war."
 *   **Advanced Enemy AI:** Enemies are driven by a state-based AI system, allowing for complex behaviors. They can intelligently chase the player, patrol predefined routes, and even flee from combat when low on health.
 *   **Equipment System:** Find and equip weapons and armor to boost your stats. Equipped items provide passive bonuses to your attack and defense, which are automatically factored into combat.
@@ -89,7 +89,7 @@ This project implements several classic roguelike mechanics to create a challeng
 This project is built with a strict **3-layer decoupled architecture** to ensure a clean separation of concerns.
 
 1.  **Data Layer (`/data`)**
-    *   **Responsibility:** Holds static game data, like map layouts, items, and dialogue, in JSON format.
+    *   **Responsibility:** Holds static game data, like the world structure (`world.json`), items, and dialogue, in JSON format.
     *   **Implementation:** Plain JSON files. Loaded on startup by the `ResourceManager`.
 
 2.  **Logic Layer (`/src/engine`)**
@@ -98,6 +98,7 @@ This project is built with a strict **3-layer decoupled architecture** to ensure
     *   **Core Modules:**
         *   **Event Bus (`events.ts`):** A global `EventEmitter` for decoupled communication between engine systems.
         *   **Resource Manager (`resourceManager.ts`):** Loads and caches all game data from the `/data` directory at startup.
+        *   **World Manager (`worldManager.ts`):** Loads and validates the world map structure from `data/world.json`.
         *   **Finite State Machine (`fsm.ts`):** Manages high-level game states (e.g., `MainMenu`, `Playing`, `Dialogue`).
         *   **Narrative Engine (`narrativeEngine.ts`):** Implements the Git-like history system for saving state (`commit`), creating alternate timelines (`branch`), and switching between them (`checkout`).
         *   **Script Processor (`scriptProcessor.ts`):** Executes simple, command-based scripts for in-game events (e.g., dialogue, cutscenes).
