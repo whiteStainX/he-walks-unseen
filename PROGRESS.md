@@ -172,3 +172,13 @@ This milestone introduced a prefab system to streamline content creation and red
 -   **Prefab System:** Implemented a system for creating entity templates (prefabs) in `data/prefabs.json`.
 -   **Instantiation:** Created an `instantiate` function to create new entities from prefabs.
 -   **Integration:** Refactored the map generation logic to use the new prefab system.
+
+## Milestone 16: Data-Driven World System (October 2025)
+
+This milestone represents a major architectural shift, replacing the linear, floor-based dungeon progression with a flexible, data-driven world map system.
+
+-   **World Map Architecture:** The concept of "floors" was replaced with a graph of interconnected "maps," defined in a new `data/world.json` file. This allows for the creation of complex, non-linear world layouts.
+-   **Data Validation:** Integrated the `zod` library to add schema validation for all world-related data files, significantly improving the engine's robustness against data errors.
+-   **Portal System:** The old "stairs" system was replaced with a generic "portal" entity, allowing for data-driven connections between any two points on any two maps.
+-   **State Management:** The core `GameState` was refactored to support the new world system, including caching the state of visited maps to create a persistent world.
+-   **Integration and Bug Fixes:** Ensured all existing systems, including map generation and entity placement, were integrated with the new world data. Fixed critical bugs related to engine startup and player movement after map transitions.

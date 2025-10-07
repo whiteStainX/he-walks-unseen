@@ -11,8 +11,9 @@
 - **Testing**: Jest with `ts-jest` for TypeScript-aware unit tests.[package.json:L1-L31](./package.json#L1-L31)[README.md:L59-L66](./README.md#L59-L66)
 
 ### 1.2 Engine Capabilities
-- **Resource Loading**: Discovers every JSON file in `/data`, parses them, and caches the result for fast lookup.[src/engine/resourceManager.ts:L1-L42](./src/engine/resourceManager.ts#L1-L42)
-- **Game State Modeling**: Centralized `GameState` snapshot includes a unified `Entity` system. `Actors`, `Items`, and other interactables are all extensions of the base `Entity` type. Interactions are handled through a component-based approach. The game state also tracks the `currentFloor` and caches the state of visited floors in `floorStates`.[src/engine/state.ts:L2-L55](./src/engine/state.ts#L2-L55)
+- **Resource Loading & Validation**: Discovers every JSON file in `/data`, parses them, validates their structure using `zod` schemas, and caches the result for fast lookup.
+- **World Map System**: A data-driven world system (`worldManager.ts`) loads and manages the world structure from `data/world.json`, including the graph of interconnected maps, their properties, and prefab placements.
+- **Game State Modeling**: Centralized `GameState` snapshot includes a unified `Entity` system. `Actors`, `Items`, and other interactables are all extensions of the base `Entity` type. Interactions are handled through a component-based approach. The game state tracks the `currentMapId` and caches the state of visited maps in `mapStates` for a persistent world experience.
 - **Event-Driven Core**: Global `EventEmitter` enables decoupled communication across systems and the UI.[src/engine/events.ts:L1-L6](./src/engine/events.ts#L1-L6)
 - **Finite State Machine**: Tracks high-level runtime phases (e.g., `MainMenu`, `PlayerTurn`, `EnemyTurn`, `Inventory`, `Targeting`, `CombatMenu`) and publishes transitions on the event bus.[src/engine/fsm.ts:L1-L26](./src/engine/fsm.ts#L1-L26)
 - **Git-Like Narrative History**: Supports committing deep-copied state snapshots, naming timeline branches, and checking out alternate histories.[src/engine/narrativeEngine.ts:L1-L82](./src/engine/narrativeEngine.ts#L1-L82)
@@ -33,7 +34,6 @@
 ### 1.3 Current Limitations
 - **Script Vocabulary**: Only `SAY` and `ADD_ITEM` verbs are implemented; additional opcodes require manual extension.[src/engine/scriptProcessor.ts:L9-L26](./src/engine/scriptProcessor.ts#L9-L26)
 - **UI Bootstrap**: The current Ink entry point demonstrates initialization feedback but does not yet host gameplay loops or player input wiring.[src/main.tsx:L1-L48](./src/main.tsx#L1-L48)
-- **Resource Schema**: JSON structures are lightly validated; malformed files will throw during load and halt startup.[src/engine/resourceManager.ts:L15-L29](./src/engine/resourceManager.ts#L15-L29)
 
 ## 2. Architecture Overview
 
@@ -51,6 +51,7 @@
 |         Logic Layer     |
 |  - FiniteStateMachine   |
 |  - Narrative Engine     |
+|  - World Manager        |
 |  - Script Processor     |
 |  - GameState model      |
 |  - Event Bus            |
@@ -61,6 +62,7 @@
 +------------+------------+
 |          Data Layer     |
 |   JSON under /data      |
+|   - world.json          |
 |   - themes.json         |
 |   - enemies.json        |
 |   - items.json          |
@@ -69,8 +71,8 @@
 ```
 
 ### 2.1 Data Layer
-- Maintains canonical definitions for dungeon themes, enemies, items, and interactable entities, serialized as JSON.[README.md:L15-L18](./README.md#L15-L18)[data/themes.json:L1-L21](./data/themes.json#L1-L21)[data/enemies.json:L1-L21](./data/enemies.json#L1-L21)[data/items.json:L1-L13](./data/items.json#L1-L13)[data/entities.json:L1-L13](./data/entities.json#L1-L13)
-- The `ResourceManager` ingests this directory during boot, populating an in-memory cache keyed by filename sans extension.[src/engine/resourceManager.ts:L15-L24](./src/engine/resourceManager.ts#L15-L24)
+- Maintains canonical definitions for the world structure, themes, enemies, items, and interactable entities, serialized as JSON. `world.json` is the entry point for the world's structure.
+- The `ResourceManager` ingests this directory during boot, populating an in-memory cache keyed by filename sans extension.
 
 ### 2.2 Logic Layer
 - **State Orchestration**: `FiniteStateMachine` emits `gameStateChanged` events whenever the UI or scripts switch top-level modes, enabling the presentation layer or other systems to respond.[src/engine/fsm.ts:L1-L26](./src/engine/fsm.ts#L1-L26)
@@ -92,9 +94,9 @@
 3. Execute tests during refactors with `npm test` to exercise the TypeScript-aware Jest suite.[README.md:L59-L66](./README.md#L59-L66)
 
 ### 3.2 Loading and Accessing Data
-- Place domain JSON under `/data`. Each file becomes accessible via its basename, e.g. `maps.json` → `getResource('maps')`.
-- Call `loadResources('./data')` during bootstrap (already done in `main.tsx`) to populate the cache. Any load failure is emitted as `engineError` on the bus for the UI to surface.[src/engine/resourceManager.ts:L15-L42](./src/engine/resourceManager.ts#L15-L42)[src/main.tsx:L10-L38](./src/main.tsx#L10-L38)
-- Example: after initialization, retrieve the default map with `const maps = getResource<MapDictionary>('maps');` and hydrate your `GameState` before committing.
+- Place domain JSON under `/data`. Each file becomes accessible via its basename, e.g. `enemies.json` → `getResource('enemies')`.
+- The startup sequence in `main.tsx` calls `loadResources('./data')` to populate the cache, and then `loadWorldData()` to process `world.json` and initialize the `worldManager`.
+- Example: after initialization, retrieve a map's definition with `const mapDef = getMapDefinition('town');` and hydrate your `GameState` before committing.
 
 ### 3.3 Managing Game State
 - Instantiate a `GameState` object conforming to `state.ts` before entering the gameplay loop. Populate `player`, `map`, and `message` fields to keep the renderer synchronized.[src/engine/state.ts:L13-L22](./src/engine/state.ts#L13-L22)[src/components/MapView.tsx:L9-L39](./src/components/MapView.tsx#L9-L39)
@@ -115,12 +117,12 @@
 - Expand `GameAction` whenever you introduce new verbs, and mirror them in `characterBindings` to provide keyboard access.
 
 ### 3.7 Rendering the World
-- Compose the active `GameState` into UI components such as `MapView`. The component already overlays the player's position and message buffer; augment it with additional panels (inventory, timeline) by passing derived props or listening to event bus updates.[src/components/MapView.tsx:L9-L39](./src/components/MapView.tsx#L9-L39)
-- When changing maps, update `state.map` and re-render; consider storing multiple map definitions in `/data` to swap contexts quickly.[data/maps.json:L1-L13](./data/maps.json#L1-L13)
+- The main `GameScreen` component consumes the active `GameState` to render the world. When the state changes (e.g., after a player action or map transition), React and Ink re-render the necessary UI components.
+- Map transitions are handled by updating the `GameState` to the new map's state, which triggers a full re-render of the `GameScreen` with the new map data.
 
 ### 3.8 Extending the Engine
 - **Persistence**: Wrap narrative commits in a serialization layer to persist `commitHistory` and `branches` between sessions.[src/engine/narrativeEngine.ts:L7-L82](./src/engine/narrativeEngine.ts#L7-L82)
-- **Validation**: Integrate JSON schema validation before caching resources to catch malformed data during development.[src/engine/resourceManager.ts:L15-L29](./src/engine/resourceManager.ts#L15-L29)
+- **Validation**: The engine now uses `zod` for robust schema validation of all data files, catching malformed data during development.
 - **Gameplay Systems**: Introduce collision detection or combat by enriching `GameState` with additional structures and wiring new events or FSM states to orchestrate transitions.[src/engine/state.ts:L7-L22](./src/engine/state.ts#L7-L22)[src/engine/fsm.ts:L3-L26](./src/engine/fsm.ts#L3-L26)
 - **UI Enhancements**: Expand the Ink presentation with panels reacting to `dialogue`, `inventoryUpdate`, and custom events triggered by scripts and timeline operations.[src/main.tsx:L21-L37](./src/main.tsx#L21-L37)[src/engine/scriptProcessor.ts:L13-L26](./src/engine/scriptProcessor.ts#L13-L26)
 
@@ -154,7 +156,7 @@ The `instantiate` function will create a deep copy of the prefab and assign it a
 
 **Integration with Map Generation:**
 
-The map generation logic in `src/game/initialState.ts` uses the prefab system to populate the world with enemies and items based on the current theme.
+The map generation logic in `src/game/initialState.ts` uses the prefab system to populate the world with enemies, items, and prefabs defined in the `world.json` data.
 
 ### 3.10 Code Hygiene
 
@@ -167,9 +169,9 @@ npx tsc --noEmit
 This will report any unused local variables or imports without generating any JavaScript files.
 
 ## 4. Reference Startup Sequence
-1. `main.tsx` mounts the Ink app and invokes `loadResources('./data')`.
+1. `main.tsx` mounts the Ink app, calls `loadResources('./data')`, and then `loadWorldData()`.
 2. Upon success, it emits `engineReady`; failures emit `engineError` for graceful degradation.[src/main.tsx:L10-L38](./src/main.tsx#L10-L38)
-3. Subscribers (e.g., UI components, dev tooling) listen on `eventBus` to react, then instantiate the FSM, load initial `GameState` from cached resources, render `MapView`, and start collecting input.
+3. Subscribers (e.g., UI components, dev tooling) listen on `eventBus` to react, then instantiate the FSM, load initial `GameState` (using the `startMapId` from the world data), render `GameScreen`, and start collecting input.
 4. As gameplay progresses, systems call into the narrative engine to checkpoint, branch, and retrieve alternate timelines, maintaining the Git-like storytelling loop.[src/engine/narrativeEngine.ts:L22-L82](./src/engine/narrativeEngine.ts#L22-L82)
 
 ## 5. Future Enhancements
