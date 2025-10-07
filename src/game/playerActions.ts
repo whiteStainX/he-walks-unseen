@@ -86,6 +86,11 @@ export function handlePlayerAction(
     (e) => e.position.x === targetX && e.position.y === targetY
   );
 
+  if (targetEntity && targetEntity.interaction?.type === 'portal') {
+    handleInteraction(state, targetX, targetY);
+    return;
+  }
+
   if (targetEntity && targetEntity.interaction?.type === 'stairs') {
     handleInteraction(state, targetX, targetY);
     return;

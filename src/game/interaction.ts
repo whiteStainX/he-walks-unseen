@@ -105,6 +105,11 @@ export function handleInteraction(
           player,
           mapId: targetMapId,
           mapStates,
+          entryPoint: {
+            position: targetPosition,
+            targetMapId: currentMapId,
+            targetPosition: player.position,
+          },
         });
         Object.assign(state, newState);
         // The player in the new state is already a copy of our current player,

@@ -40,10 +40,11 @@ interface InitialStateOptions {
   player?: Actor;
   mapId?: string;
   mapStates?: Map<string, GameState>;
+  entryPoint?: { position: Point; targetMapId: string; targetPosition: Point };
 }
 
 export function createInitialGameState(options: InitialStateOptions = {}): GameState {
-  const { message, player: existingPlayer, mapId, mapStates = new Map() } = options;
+  const { message, player: existingPlayer, mapId, mapStates = new Map(), entryPoint } = options;
 
   const currentMapId = mapId || getStartMapId();
   const mapDefinition = getMapDefinition(currentMapId);
@@ -139,8 +140,22 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
       };
       entities.push(portal);
       occupiedPoints.push(connection.position);
-      map[connection.position.y][connection.position.x].walkable = true;
     });
+  }
+
+  if (portalTemplate && entryPoint) {
+    const portal: Entity = {
+      ...portalTemplate,
+      id: nanoid(),
+      position: entryPoint.position,
+      interaction: {
+        type: 'portal',
+        targetMapId: entryPoint.targetMapId,
+        targetPosition: entryPoint.targetPosition,
+      },
+    };
+    entities.push(portal);
+    occupiedPoints.push(entryPoint.position);
   }
 
   const chestTemplate = entityTemplates.find((e) => e.id === 'chest');
