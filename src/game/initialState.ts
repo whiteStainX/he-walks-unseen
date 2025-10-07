@@ -139,6 +139,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
       };
       entities.push(portal);
       occupiedPoints.push(connection.position);
+      map[connection.position.y][connection.position.x].walkable = true;
     });
   }
 
