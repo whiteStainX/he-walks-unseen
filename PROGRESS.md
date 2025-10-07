@@ -182,3 +182,11 @@ This milestone represents a major architectural shift, replacing the linear, flo
 -   **Portal System:** The old "stairs" system was replaced with a generic "portal" entity, allowing for data-driven connections between any two points on any two maps.
 -   **State Management:** The core `GameState` was refactored to support the new world system, including caching the state of visited maps to create a persistent world.
 -   **Integration and Bug Fixes:** Ensured all existing systems, including map generation and entity placement, were integrated with the new world data. Fixed critical bugs related to engine startup and player movement after map transitions.
+
+## Milestone 17: State Management Overhaul (October 2025)
+
+This milestone represents a complete overhaul of the core state management system, moving to a more robust, predictable, and efficient architecture.
+
+-   **Immutable State with Immer:** The entire state management system was refactored to use `immer`, ensuring that all state updates are handled immutably. This eliminates a whole class of potential bugs related to direct state mutation.
+-   **Event-Driven Architecture:** A fully event-driven architecture was implemented for state changes. Game actions now trigger a centralized `updateState` function, which produces a new state and broadcasts it via a global event bus. This decouples the game logic from the narrative engine and other systems.
+-   **Manual Save/Load Control:** The automatic save-on-every-action system was replaced with explicit player-controlled actions. Players can now start a new game (deleting the old save) or explicitly save and quit, giving them more control over their progress.

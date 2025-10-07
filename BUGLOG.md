@@ -38,3 +38,22 @@ The next hypothesis was a subtle state mutation issue in the game logic. I refac
 ### Current Status
 
 The root cause of this bug is still under investigation. It is likely a subtle state management issue that is not being caught by the current test suite. Further investigation is required.
+
+## Main Menu Options Not Implemented
+
+-   **Date:** October 2025
+-   **Status:** Future Work
+
+### Symptoms
+
+The game does not present the player with a clear choice to start a new game or continue from a save. The game automatically loads a save if one exists. To start a new game, the player must know to press the 'n' key, which is not discoverable through the UI.
+
+### Plan
+
+A main menu screen should be implemented that appears on startup. This menu will present the player with clear options:
+
+- **Continue:** If a save file exists, this option will be available to load the saved game.
+- **New Game:** This option will start a fresh game, deleting any existing save file.
+- **Quit:** This option will exit the application.
+
+This will be implemented in a future milestone.
