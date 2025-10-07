@@ -25,12 +25,12 @@ function generateDiggerMap(
 
   const map = Array.from({ length: height }, () => Array.from({ length: width }, () => wallTile));
 
-  // Add some randomization to the dungeon generation
+  // Use fixed parameters for stable map generation
   const diggerOptions = {
-    roomWidth: [randomInt(3, 8), randomInt(9, 15)] as [number, number],
-    roomHeight: [randomInt(3, 6), randomInt(7, 12)] as [number, number],
-    corridorLength: [randomInt(2, 5), randomInt(6, 10)] as [number, number],
-    dugPercentage: Math.random() * 0.2 + 0.6, // 60% to 80%
+    roomWidth: [3, 9] as [number, number],
+    roomHeight: [3, 5] as [number, number],
+    corridorLength: [2, 5] as [number, number],
+    dugPercentage: 0.8,
   };
 
   const digger = new Map.Digger(width, height, diggerOptions);

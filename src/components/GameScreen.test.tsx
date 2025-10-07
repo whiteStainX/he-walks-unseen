@@ -36,7 +36,10 @@ describe('GameScreen', () => {
     setResource('themes', {
       'overgrown-keep': {
         floors: [1],
-        map: { type: 'digger' },
+        map: {
+          wall: '#',
+          floor: '.',
+        },
         enemies: ['goblin'],
         items: ['health-potion', 'dagger'],
       },
