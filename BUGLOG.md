@@ -2,6 +2,26 @@
 
 This document tracks interesting bugs encountered during the development of "He Walks Unseen".
 
+## Inconsistent Portal Destinations
+
+-   **Date:** October 2025
+-   **Status:** Fixed
+
+### Symptoms
+
+Portals that should have stable, bidirectional destinations (e.g., a portal from Map A to Map B should always lead to Map B, and the corresponding portal in Map B should always lead back to Map A) would behave inconsistently. After a first successful trip (A -> B -> A), a second attempt to use the portal in Map A would incorrectly lead to a different map (e.g., Map C) or fail.
+
+### Root Cause
+
+The issue was a subtle state management bug in `src/game/interaction.ts`. When a player entered a map that had been previously visited, the game would load that map's state from the `mapStates` cache. However, the loaded `GameState` object contained its own `mapStates` property, which was a snapshot from an earlier point in time. The `Object.assign(state, newState)` operation would overwrite the *current, master* `mapStates` with this older, incomplete version from the cache. This effectively erased the history of any maps visited after the cached state was saved, leading to the inconsistent portal behavior.
+
+### Fix
+
+The fix was to ensure the master `mapStates` object is never overwritten by a cached version. This was achieved by:
+1. In `src/game/interaction.ts`, before replacing the current state with the newly loaded state, the reference to the current `mapStates` object is preserved.
+2. After the new state is loaded (either from the cache or by new creation), the preserved `mapStates` object is assigned to the `newState.mapStates` property.
+3. This ensures that the single, authoritative `mapStates` cache is carried forward through all map transitions, maintaining a consistent history of all visited maps.
+
 ## Flawed Deep Copy in Narrative Engine
 
 -   **Date:** October 2025
