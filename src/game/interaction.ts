@@ -138,6 +138,10 @@ export function handleInteraction(
         }
       }
 
+      // Preserve the master mapStates object. The newState (whether from cache or
+      // new creation) might have an outdated copy.
+      newState.mapStates = mapStates;
+
       Object.keys(state).forEach((key) => delete (state as any)[key]);
       Object.assign(state, newState);
 
