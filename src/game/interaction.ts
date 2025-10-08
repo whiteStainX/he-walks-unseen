@@ -9,6 +9,7 @@ import type {
 import { updateVisibility } from './visibility.js';
 import { createInitialGameState } from './initialState.js';
 import { addLogMessage } from './logger.js';
+import { replacer, reviver } from '../engine/persistence.js';
 
 export function handleInteraction(
   state: GameState,
@@ -85,40 +86,64 @@ export function handleInteraction(
 
     case 'portal': {
       const interaction = entity.interaction as PortalInteraction;
-      const { targetMapId, targetPosition } = interaction;
+      const { targetMapId, targetPortalId } = interaction;
       const { currentMapId, mapStates } = state;
 
-      // Save current map state
-      mapStates.set(currentMapId, state);
+      mapStates.set(
+        currentMapId,
+        JSON.parse(JSON.stringify(state, replacer), reviver)
+      );
+
+      let newState: GameState;
+      let targetPosition: { x: number, y: number };
 
       if (mapStates.has(targetMapId)) {
-        const newState = mapStates.get(targetMapId)!;
-        Object.assign(state, newState);
-        const playerIndex = state.actors.findIndex((a) => a.isPlayer);
+        const cachedState = mapStates.get(targetMapId)!;
+        newState = JSON.parse(JSON.stringify(cachedState, replacer), reviver);
 
-        // carry over the player from the previous state
+        const targetPortal = newState.entities.find(
+          (e) => e.interaction?.type === 'portal' && (e.interaction as PortalInteraction).id === targetPortalId
+        );
+        if (!targetPortal) {
+          throw new Error(`Could not find target portal "${targetPortalId}" in map "${targetMapId}"`);
+        }
+        targetPosition = targetPortal.position;
+
+        const playerIndex = newState.actors.findIndex((a) => a.isPlayer);
+        const currentPlayer = JSON.parse(JSON.stringify(player, replacer), reviver);
+        currentPlayer.position = targetPosition;
+
         if (playerIndex !== -1) {
-          state.actors[playerIndex] = { ...player, position: targetPosition };
+          newState.actors[playerIndex] = currentPlayer;
+        } else {
+          newState.actors.push(currentPlayer);
         }
       } else {
-        const newState = createInitialGameState({
-          player,
+        const playerForNewState = JSON.parse(JSON.stringify(player, replacer), reviver);
+
+        newState = createInitialGameState({
+          player: playerForNewState,
           mapId: targetMapId,
           mapStates,
-          entryPoint: {
-            position: targetPosition,
-            targetMapId: currentMapId,
-            targetPosition: player.position,
-          },
         });
-        Object.assign(state, newState);
-        // The player in the new state is already a copy of our current player,
-        // but we need to set their position to the portal's target.
-        const newPlayer = state.actors.find((a) => a.isPlayer);
-        if (newPlayer) {
-          newPlayer.position = targetPosition;
+
+        const newPlayer = newState.actors.find((a) => a.isPlayer);
+        const targetPortal = newState.entities.find(
+          (e) => e.interaction?.type === 'portal' && (e.interaction as PortalInteraction).id === targetPortalId
+        );
+        if (newPlayer && targetPortal) {
+          newPlayer.position = targetPortal.position;
+        } else {
+          throw new Error(`Could not place player in new map "${targetMapId}" at portal "${targetPortalId}"`);
         }
       }
+
+      // Preserve the master mapStates object. The newState (whether from cache or
+      // new creation) might have an outdated copy.
+      newState.mapStates = mapStates;
+
+      Object.keys(state).forEach((key) => delete (state as any)[key]);
+      Object.assign(state, newState);
 
       updateVisibility(state);
       state.phase = 'EnemyTurn';

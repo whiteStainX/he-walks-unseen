@@ -7,6 +7,7 @@ import type {
   Item,
   Entity,
 } from '../engine/state.js';
+import { Path } from 'rot-js';
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
 import { updateVisibility } from './visibility.js';
@@ -40,11 +41,10 @@ interface InitialStateOptions {
   player?: Actor;
   mapId?: string;
   mapStates?: Map<string, GameState>;
-  entryPoint?: { position: Point; targetMapId: string; targetPosition: Point };
 }
 
 export function createInitialGameState(options: InitialStateOptions = {}): GameState {
-  const { message, player: existingPlayer, mapId, mapStates = new Map(), entryPoint } = options;
+  const { message, player: existingPlayer, mapId, mapStates = new Map() } = options;
 
   const currentMapId = mapId || getStartMapId();
   const mapDefinition = getMapDefinition(currentMapId);
@@ -127,35 +127,35 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
 
   const portalTemplate = entityTemplates.find((e) => e.id === 'portal');
   if (portalTemplate && mapDefinition.connections) {
+    const availableRooms = rooms.filter(room => {
+        const center = room.getCenter();
+        return !(center[0] === playerStart.x && center[1] === playerStart.y);
+    });
+
+    if (availableRooms.length < mapDefinition.connections.length) {
+        throw new Error(`Not enough rooms to place all portals for map "${currentMapId}"`);
+    }
+
     mapDefinition.connections.forEach((connection) => {
+      const roomIndex = Math.floor(Math.random() * availableRooms.length);
+      const room = availableRooms.splice(roomIndex, 1)[0];
+      const center = room.getCenter();
+      const position = { x: center[0], y: center[1] };
+
       const portal: Entity = {
         ...portalTemplate,
-        id: nanoid(),
-        position: connection.position,
+        id: nanoid(), // The entity ID itself
+        position,
         interaction: {
           type: 'portal',
+          id: connection.id, // The portal's functional ID
           targetMapId: connection.targetMapId,
-          targetPosition: connection.targetPosition,
+          targetPortalId: connection.targetPortalId,
         },
       };
       entities.push(portal);
-      occupiedPoints.push(connection.position);
+      occupiedPoints.push(position);
     });
-  }
-
-  if (portalTemplate && entryPoint) {
-    const portal: Entity = {
-      ...portalTemplate,
-      id: nanoid(),
-      position: entryPoint.position,
-      interaction: {
-        type: 'portal',
-        targetMapId: entryPoint.targetMapId,
-        targetPosition: entryPoint.targetPosition,
-      },
-    };
-    entities.push(portal);
-    occupiedPoints.push(entryPoint.position);
   }
 
   const chestTemplate = entityTemplates.find((e) => e.id === 'chest');
@@ -191,6 +191,45 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
         occupiedPoints.push(prefabInfo.position);
       }
     });
+  }
+
+  const portals = entities.filter(
+    (e) => e.interaction?.type === 'portal'
+  );
+
+  if (portals.length > 0) {
+    const isPassable = (x: number, y: number) => {
+      if (x < 0 || y < 0 || x >= mapDefinition.width || y >= mapDefinition.height) {
+        return false;
+      }
+      const entityAtPos = entities.find(e => e.position.x === x && e.position.y === y);
+      if (entityAtPos && entityAtPos.interaction?.type === 'door') {
+        return true;
+      }
+      return map[y][x].walkable;
+    };
+
+    const astar = new Path.AStar(player.position.x, player.position.y, isPassable, {
+      topology: 4,
+    });
+
+    let atLeastOnePortalReachable = false;
+    for (const portal of portals) {
+      let pathFound = false;
+      astar.compute(portal.position.x, portal.position.y, (x, y) => {
+        pathFound = true;
+      });
+      if (pathFound) {
+        atLeastOnePortalReachable = true;
+        break;
+      }
+    }
+
+    if (!atLeastOnePortalReachable) {
+      throw new Error(
+        `Map generation failed for map "${currentMapId}": No portals are reachable from the player's starting position.`
+      );
+    }
   }
 
   const baseState: GameState = {

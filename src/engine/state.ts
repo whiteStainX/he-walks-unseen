@@ -16,8 +16,9 @@ export interface Entity {
 
 export interface PortalInteraction {
   type: 'portal';
+  id: string;
   targetMapId: string;
-  targetPosition: Point;
+  targetPortalId: string;
 }
 
 export interface StairsInteraction {

@@ -6,8 +6,9 @@ export const PointSchema = z.object({
 });
 
 export const MapConnectionSchema = z.object({
+  id: z.string(),
   targetMapId: z.string(),
-  targetPosition: PointSchema,
+  targetPortalId: z.string(),
   position: PointSchema,
 });
 
