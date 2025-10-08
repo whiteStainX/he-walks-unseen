@@ -9,7 +9,7 @@ import MessageLogView from './MessageLogView.js';
 import { CombatMenuView } from './CombatMenuView.js';
 import DialogueView from './DialogueView.js';
 import type { GameState } from '../engine/state.js';
-import type { GameAction } from '../input/actions.js';
+import { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
 import { updateState } from '../game/updateState.js';
 
@@ -40,9 +40,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           updateState(action);
         }
       } else if (state.phase === 'Loss' && input.toLowerCase() === 'r') {
-        // This needs to be refactored to use the event system
-        // For now, it will just restart the game
-        // updateState(GameAction.RESTART); // TODO: Implement this action
+        updateState(GameAction.NEW_GAME);
       }
     },
     {
