@@ -190,3 +190,10 @@ This milestone represents a complete overhaul of the core state management syste
 -   **Immutable State with Immer:** The entire state management system was refactored to use `immer`, ensuring that all state updates are handled immutably. This eliminates a whole class of potential bugs related to direct state mutation.
 -   **Event-Driven Architecture:** A fully event-driven architecture was implemented for state changes. Game actions now trigger a centralized `updateState` function, which produces a new state and broadcasts it via a global event bus. This decouples the game logic from the narrative engine and other systems.
 -   **Manual Save/Load Control:** The automatic save-on-every-action system was replaced with explicit player-controlled actions. Players can now start a new game (deleting the old save) or explicitly save and quit, giving them more control over their progress.
+
+## Milestone 18: Engine Performance Optimization (October 2025)
+
+This milestone focused on improving the engine's performance by optimizing critical code paths.
+
+-   **Efficient Rendering:** The core `MapView` component was optimized by memoizing the display grid calculation. This prevents the expensive process of rebuilding the entire map view on every render, significantly improving UI responsiveness.
+-   **Optimized AI Visibility:** Enemy AI was made more efficient by replacing expensive, per-enemy Field of View (FOV) calculations with a single, fast check against the player's pre-calculated `visibleTiles` set. This dramatically reduces CPU load on turns with many enemies.

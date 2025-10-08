@@ -71,7 +71,17 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
   const { actors, visibleTiles } = state;
   const player = actors.find((a) => a.isPlayer);
-  const displayGrid = createDisplayGrid(state);
+  const displayGrid = React.useMemo(
+    () => createDisplayGrid(state),
+    [
+      state.map,
+      state.actors,
+      state.items,
+      state.entities,
+      state.visibleTiles,
+      state.exploredTiles,
+    ]
+  );
   const visibleEnemies = actors.filter(
     (a) => !a.isPlayer && visibleTiles.has(`${a.position.x},${a.position.y}`)
   );
