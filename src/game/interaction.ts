@@ -4,8 +4,10 @@ import type {
   DoorInteraction,
   ChestInteraction,
   PortalInteraction,
+  ConversationInteraction,
   Item,
 } from '../engine/state.js';
+import { executeScript } from '../engine/scriptProcessor.js';
 import { updateVisibility } from './visibility.js';
 import { createInitialGameState } from './initialState.js';
 import { addLogMessage } from './logger.js';
@@ -147,6 +149,12 @@ export function handleInteraction(
 
       updateVisibility(state);
       state.phase = 'EnemyTurn';
+      break;
+    }
+    case 'conversation': {
+      const interaction = entity.interaction as ConversationInteraction;
+      const { parcelId } = interaction;
+      executeScript([['START_CONVERSATION', parcelId]]);
       break;
     }
   }

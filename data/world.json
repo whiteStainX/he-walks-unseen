@@ -14,6 +14,12 @@
           "targetPortalId": "forest_to_town",
           "position": { "x": 19, "y": 10 }
         }
+      ],
+      "prefabs": [
+        {
+          "id": "friendly-npc",
+          "position": { "x": 10, "y": 10 }
+        }
       ]
     },
     {

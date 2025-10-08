@@ -19,6 +19,10 @@ export function executeScript(commands: ScriptCommand[]): void {
         // Placeholder for adding an item to player inventory
         eventBus.emit('inventoryUpdate', { action: 'add', itemId: args[0] });
         break;
+      case 'START_CONVERSATION':
+        // Starts a conversation from a parcel.
+        eventBus.emit('start-conversation', { parcelId: args[0] });
+        break;
       // Add other command handlers here
       default:
         console.warn(`Unknown script action: ${action}`);

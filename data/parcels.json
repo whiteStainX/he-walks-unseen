@@ -1,0 +1,28 @@
+{
+  "test-conversation": {
+    "title": "A Simple Conversation",
+    "nodes": {
+      "start": {
+        "text": "Hello, traveler. What brings you to these parts?",
+        "choices": [
+          {
+            "text": "I'm just passing through.",
+            "target": "passing_through"
+          },
+          {
+            "text": "I'm looking for someone.",
+            "target": "looking_for_someone"
+          }
+        ]
+      },
+      "passing_through": {
+        "text": "Well, be careful. The woods are dangerous at night.",
+        "choices": []
+      },
+      "looking_for_someone": {
+        "text": "I see. I hope you find them.",
+        "choices": []
+      }
+    }
+  }
+}

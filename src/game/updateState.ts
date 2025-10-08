@@ -6,6 +6,7 @@ import { handleCombatMenuAction } from './combatMenuActions.js';
 import { handleIdentifyMenuAction } from './identifyActions.js';
 import { handleMessageLogAction } from './messageLogActions.js';
 import { handlePlayerAction } from './playerActions.js';
+import { handleDialogueAction } from './dialogueActions.js';
 import { addLogMessage } from './logger.js';
 import { eventBus } from '../engine/events.js';
 import { getCurrentState } from '../engine/narrativeEngine.js';
@@ -80,6 +81,11 @@ export function applyActionToState(
 
   if (state.phase === 'MessageLog') {
     handleMessageLogAction(state, action);
+    return;
+  }
+
+  if (state.phase === 'Dialogue') {
+    handleDialogueAction(state, action);
     return;
   }
 }
