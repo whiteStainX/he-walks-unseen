@@ -85,18 +85,10 @@ This will be implemented in a future milestone.
 
 ### Symptoms
 
-When a player stands adjacent to an interactable entity (e.g., an NPC) and presses the interaction key ('e'), followed by a directional input towards the entity, the interaction fails to trigger. The game appears to hang because the player's turn does not resolve, and no conversation or other interaction is initiated.
+When a player stands adjacent to an interactable entity (e.g., an NPC) and presses the interaction key ('e'), followed by a directional input towards the entity, the interaction fails to trigger. 
 
 ### Root Cause Analysis
 
-The initial investigation pointed to a race condition in the game's state management. The interaction is initiated in the `Targeting` phase, which is handled by `src/game/targetingActions.ts`. This function would end the player's turn by setting the game phase to `EnemyTurn` before the asynchronous `start-conversation` event (handled in `src/main.tsx`) had a chance to switch the game to the `Dialogue` phase. This left the player stuck in a non-interactive state.
+checked interaction.ts, the handleInteraction function checks the status of entity.interaction.type, if it is 'conversation' then the START_CONVERSATION script will be triggered, which leads to eventBus emiting 'start-conversation' then triggered main.tsx handleStartConversation, which requires a parcelId as input, which is from the prefab npc definition, 'test-conversation'. 
 
-### Fix Attempt
-
-A fix was implemented to resolve this race condition.
-1.  The `handleInteraction` function in `src/game/interaction.ts` was refactored to return a boolean value. It returns `true` if the interaction it triggers is one that will take control of the game phase (like a conversation) and `false` otherwise.
-2.  The `handleTargeting` function was updated to check this boolean return value. It now only sets the phase to `EnemyTurn` if the `handleInteraction` function returns `false`, theoretically preventing the race condition.
-
-### Current Status
-
-Despite the implemented fix, the bug persists. The player is still unable to correctly interact with the adjacent NPC, and the game hangs in the `Targeting` phase. The root cause is not fully understood and requires a deeper investigation into the state transition logic between the `Targeting`, `Dialogue`, and `EnemyTurn` phases.
+And back to the point of entity.interaction.type, the function handleInteraction is being used in playerActions and targetingActions, in playerActions, when START_INTERACTION is triggered, the statge change to 'Targeting', then it seems breaking to connect to any meaningful actions.
