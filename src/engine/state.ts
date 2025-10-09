@@ -11,7 +11,12 @@ export interface Entity {
   char: string;
   color?: string;
   position: Point;
-  interaction?: DoorInteraction | ChestInteraction | StairsInteraction | PortalInteraction;
+  interaction?: DoorInteraction | ChestInteraction | StairsInteraction | PortalInteraction | ConversationInteraction;
+}
+
+export interface ConversationInteraction {
+  type: 'conversation';
+  parcelId: string;
 }
 
 export interface PortalInteraction {
@@ -192,6 +197,13 @@ export interface GameState {
   selectedCombatMenuIndex?: number;
   currentMapId: string;
   mapStates: Map<string, GameState>;
+  conversation?: ConversationState;
+}
+
+export interface ConversationState {
+  parcelId: string;
+  currentNodeId: string;
+  selectedChoiceIndex: number;
 }
 
 export type Prefab = Omit<Entity, 'id' | 'position'>;

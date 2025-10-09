@@ -68,6 +68,12 @@ export function resolveAction(
     if (key.escape) return GameAction.CLOSE_MESSAGE_LOG;
   }
 
+  if (phase === 'Dialogue') {
+    if (key.upArrow) return GameAction.SELECT_PREVIOUS_CHOICE;
+    if (key.downArrow) return GameAction.SELECT_NEXT_CHOICE;
+    if (key.return) return GameAction.CONFIRM_CHOICE;
+  }
+
   // Then, handle character-based input.
   if (input) {
     const normalizedInput = input.toLowerCase();
@@ -106,6 +112,13 @@ export function resolveAction(
         l: GameAction.CLOSE_MESSAGE_LOG,
       };
       return messageLogBindings[normalizedInput];
+    }
+    if (phase === 'Dialogue') {
+      const dialogueBindings: Record<string, GameAction> = {
+        w: GameAction.SELECT_PREVIOUS_CHOICE,
+        s: GameAction.SELECT_NEXT_CHOICE,
+      };
+      return dialogueBindings[normalizedInput];
     }
   }
 

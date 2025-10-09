@@ -68,5 +68,10 @@ export function handleTargeting(state: GameState, action: GameAction): void {
     return;
   }
 
-  handleInteraction(state, targetX, targetY);
+  const interactionTookControl = handleInteraction(state, targetX, targetY);
+
+  if (!interactionTookControl) {
+    state.phase = 'EnemyTurn';
+  }
+  state.target = undefined;
 }

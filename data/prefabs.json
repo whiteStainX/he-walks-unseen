@@ -22,5 +22,14 @@
         "requiresTarget": false
       }
     ]
+  },
+  "friendly-npc": {
+    "name": "Old Man",
+    "char": "@",
+    "color": "yellow",
+    "interaction": {
+      "type": "conversation",
+      "parcelId": "test-conversation"
+    }
   }
 }

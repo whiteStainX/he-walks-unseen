@@ -252,7 +252,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
 
   addLogMessage(
     baseState,
-    message ?? `Welcome! Use the arrow keys or WASD to move.`,
+    message ?? `Welcome! Use the arrow keys or WASD to move. Press 'e' to interact with objects and characters.`,
     'info'
   );
 

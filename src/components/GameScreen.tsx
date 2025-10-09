@@ -7,8 +7,9 @@ import InventoryView from './InventoryView.js';
 import SkillsView from './SkillsView.js';
 import MessageLogView from './MessageLogView.js';
 import { CombatMenuView } from './CombatMenuView.js';
+import DialogueView from './DialogueView.js';
 import type { GameState } from '../engine/state.js';
-import type { GameAction } from '../input/actions.js';
+import { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
 import { updateState } from '../game/updateState.js';
 
@@ -31,16 +32,15 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
         state.phase === 'Targeting' ||
         state.phase === 'CombatMenu' ||
         state.phase === 'IdentifyMenu' ||
-        state.phase === 'MessageLog'
+        state.phase === 'MessageLog' ||
+        state.phase === 'Dialogue'
       ) {
         const action = resolveAction(input, key, state.phase);
         if (isActionDefined(action)) {
           updateState(action);
         }
       } else if (state.phase === 'Loss' && input.toLowerCase() === 'r') {
-        // This needs to be refactored to use the event system
-        // For now, it will just restart the game
-        // updateState(GameAction.RESTART); // TODO: Implement this action
+        updateState(GameAction.NEW_GAME);
       }
     },
     {
@@ -51,6 +51,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
         state.phase === 'CombatMenu' ||
         state.phase === 'IdentifyMenu' ||
         state.phase === 'MessageLog' ||
+        state.phase === 'Dialogue' ||
         state.phase === 'Loss',
     }
   );
@@ -102,10 +103,12 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           state.phase === 'Inventory' ||
           state.phase === 'CombatMenu' ||
           state.phase === 'IdentifyMenu' ||
-          state.phase === 'MessageLog'
+          state.phase === 'MessageLog' ||
+          state.phase === 'Dialogue'
         }
       />
       <CombatMenuView state={state} />
+      <DialogueView state={state} />
       {state.phase === 'MessageLog' && (
         <MessageLogView
           log={state.log}
