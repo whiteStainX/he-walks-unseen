@@ -17,9 +17,9 @@ export function handleInteraction(
   state: GameState,
   x: number,
   y: number
-): void {
+): boolean {
   const player = state.actors.find((a) => a.isPlayer);
-  if (!player) return;
+  if (!player) return false;
 
   const entity = state.entities.find(
     (e) => e.position.x === x && e.position.y === y
@@ -27,7 +27,7 @@ export function handleInteraction(
 
   if (!entity || !entity.interaction) {
     addLogMessage(state, 'There is nothing to interact with here.', 'info');
-    return;
+    return false;
   }
 
   switch (entity.interaction.type) {
@@ -49,14 +49,14 @@ export function handleInteraction(
       state.phase = 'EnemyTurn';
 
       addLogMessage(state, newIsOpen ? 'You open the door.' : 'You close the door.', 'info');
-      break;
+      return false;
     }
 
     case 'chest': {
       const interaction = entity.interaction as ChestInteraction;
       if (interaction.isLooted) {
         addLogMessage(state, 'The chest is empty.', 'info');
-        break;
+        return false;
       }
 
       const lootItemTemplate = state.items.find(
@@ -83,7 +83,7 @@ export function handleInteraction(
       state.phase = 'EnemyTurn';
 
       addLogMessage(state, `You open the chest and find a ${lootItem.name}.`, 'info');
-      break;
+      return false;
     }
 
     case 'portal': {
@@ -149,13 +149,14 @@ export function handleInteraction(
 
       updateVisibility(state);
       state.phase = 'EnemyTurn';
-      break;
+      return false;
     }
     case 'conversation': {
       const interaction = entity.interaction as ConversationInteraction;
       const { parcelId } = interaction;
       executeScript([['START_CONVERSATION', parcelId]]);
-      break;
+      return true;
     }
   }
+  return false;
 }

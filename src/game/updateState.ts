@@ -13,6 +13,17 @@ import { getCurrentState } from '../engine/narrativeEngine.js';
 import { produce } from 'immer';
 
 export function updateState(action: GameAction): void {
+  if (action === GameAction.NEW_GAME) {
+    // This is a special case that replaces the entire state.
+    // It's handled outside the normal produce -> applyActionToState flow.
+    deleteSaveGame().then(() => {
+      const newGameState = createInitialGameState();
+      initializeEngine(newGameState);
+      eventBus.emit('stateChanged', newGameState);
+    });
+    return;
+  }
+
   const currentState = getCurrentState();
   if (!currentState) return;
 
@@ -33,13 +44,6 @@ export function applyActionToState(
 ): void {
   if (action === GameAction.QUIT) {
     addLogMessage(state, 'Press Ctrl+C to exit the simulation.', 'info');
-    return;
-  }
-
-  if (action === GameAction.NEW_GAME) {
-    deleteSaveGame().then(() => {
-        initializeEngine(createInitialGameState());
-    });
     return;
   }
 
