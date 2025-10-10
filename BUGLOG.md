@@ -78,17 +78,34 @@ A main menu screen should be implemented that appears on startup. This menu will
 
 This will be implemented in a future milestone.
 
-## Player Interaction with Adjacent NPCs Fails
+## Player Interaction with Adjacent NPCs Fails ("Good Hug")
 
 -   **Date:** October 2025
--   **Status:** Open
+-   **Status:** Fixed
 
 ### Symptoms
 
-When a player stands adjacent to an interactable entity (e.g., an NPC) and presses the interaction key ('e'), followed by a directional input towards the entity, the interaction fails to trigger. 
+This regression — nicknamed the "Good Hug" bug because the player had to stand nose-to-nose with an NPC to observe it — manifested in two distinct ways:
 
-### Root Cause Analysis
+1. After pressing the interaction key (`e`) the log prompted the player to pick a direction, but nudging the cursor toward the NPC left the prompt hanging and no conversation UI appeared.
+2. In builds that still listened for the legacy `start-conversation` event, the client emitted `Resource with key "test-conversation" not found` once the arrow key was pressed, immediately aborting the attempted interaction.
 
-checked interaction.ts, the handleInteraction function checks the status of entity.interaction.type, if it is 'conversation' then the START_CONVERSATION script will be triggered, which leads to eventBus emiting 'start-conversation' then triggered main.tsx handleStartConversation, which requires a parcelId as input, which is from the prefab npc definition, 'test-conversation'. 
+Both symptoms left the game in the `Targeting` phase, so subsequent directional inputs simply reported "There is nothing to interact with here." and advanced the turn.
 
-And back to the point of entity.interaction.type, the function handleInteraction is being used in playerActions and targetingActions, in playerActions, when START_INTERACTION is triggered, the statge change to 'Targeting', then it seems breaking to connect to any meaningful actions.
+### Root Cause
+
+Two coupled issues were at fault:
+
+1. **State hand-off when beginning dialogue:** `handleInteraction` delegated to the old event-bus path, which only emitted `start-conversation` without mutating the canonical `GameState`. When `playerActions` moved the player into the `Targeting` phase, no code ever transitioned the state into `Dialogue`, so the Ink UI never rendered the conversation view.
+2. **Parcel lookup brittleness:** Resource loading registers `parcels.json` under the single `parcels` key. Several subsystems — including automated tests and the hot-reload harness — still reached directly for `getResource(parcelId)`. Once the new `conversation.ts` helper started guarding state transitions, those callers triggered `Resource with key "<parcelId>" not found`, cancelling the interaction even though the JSON file was present.
+
+### Fix
+
+- Replaced the event-bus-only path with a dedicated `beginConversation` helper that sets `state.phase` to `Dialogue`, seeds `state.conversation`, and provides immediate log feedback to the player.
+- Introduced a local parcel cache that mirrors resolved conversations back into the resource manager via a `hasResource` guard. This makes `getResource('test-conversation')` succeed for legacy callers while keeping the canonical lookup behind the `parcels` aggregate file.
+- Hardened dialogue actions to validate parcel/node existence on every navigation step and to gracefully roll back to `PlayerTurn` if a conversation cannot be resolved.
+
+### Prevention / Follow-up
+
+- Added `hasResource` to the resource manager so future code can probe for optional data without triggering hard errors.
+- Documented the expectation that new dialogue features should consume the centralized helper instead of reaching directly into the resource cache.
