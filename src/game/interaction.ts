@@ -7,11 +7,11 @@ import type {
   ConversationInteraction,
   Item,
 } from '../engine/state.js';
-import { executeScript } from '../engine/scriptProcessor.js';
 import { updateVisibility } from './visibility.js';
 import { createInitialGameState } from './initialState.js';
 import { addLogMessage } from './logger.js';
 import { replacer, reviver } from '../engine/persistence.js';
+import { beginConversation } from './conversation.js';
 
 export function handleInteraction(
   state: GameState,
@@ -154,7 +154,7 @@ export function handleInteraction(
     case 'conversation': {
       const interaction = entity.interaction as ConversationInteraction;
       const { parcelId } = interaction;
-      executeScript([['START_CONVERSATION', parcelId]]);
+      beginConversation(state, parcelId, entity.name);
       return true;
     }
   }
