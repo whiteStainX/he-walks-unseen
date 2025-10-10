@@ -233,7 +233,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
   }
 
   const baseState: GameState = {
-    phase: 'PlayerTurn',
+    phase: 'Welcome',
     actors,
     items,
     entities,

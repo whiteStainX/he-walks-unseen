@@ -96,63 +96,58 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
   }
 
   return (
-    <Box flexDirection="row">
-      <MapView
-        state={state}
-        isDimmed={
-          state.phase === 'Inventory' ||
-          state.phase === 'CombatMenu' ||
-          state.phase === 'IdentifyMenu' ||
-          state.phase === 'MessageLog' ||
-          state.phase === 'Dialogue'
-        }
-      />
-      <CombatMenuView state={state} />
-      <DialogueView state={state} />
-      {state.phase === 'MessageLog' && (
-        <MessageLogView
-          log={state.log}
-          logOffset={state.logOffset}
-          phase={state.phase}
-          height={state.map.height}
+    <Box flexDirection="column">
+      <Box flexDirection="row">
+        <MapView
+          state={state}
+          isDimmed={
+            state.phase === 'Inventory' ||
+            state.phase === 'CombatMenu' ||
+            state.phase === 'IdentifyMenu' ||
+            state.phase === 'MessageLog' ||
+            state.phase === 'Dialogue'
+          }
         />
-      )}
-      <Box
-        flexDirection="column"
-        marginLeft={2}
-        paddingX={1}
-        borderStyle="round"
-        width={40}
-      >
-        <Box flexDirection="column" paddingBottom={1}>
+        <CombatMenuView state={state} />
+        <DialogueView state={state} />
+        {state.phase === 'MessageLog' && (
+          <MessageLogView
+            log={state.log}
+            logOffset={state.logOffset}
+            phase={state.phase}
+            height={state.map.height}
+          />
+        )}
+        <Box
+          flexDirection="column"
+          marginLeft={2}
+          paddingX={1}
+          borderStyle="round"
+          width={40}
+        >
+          {player && <StatusEffectsView statusEffects={player.statusEffects ?? []} />}
+          {player && <EquipmentView player={player} />}
+          <InventoryView
+            inventory={player?.inventory ?? []}
+            selectedItemIndex={state.selectedItemIndex}
+            phase={state.phase}
+          />
+          <SkillsView skills={player?.skills ?? []} />
+        </Box>
+      </Box>
+      <Box flexDirection="column" marginTop={1} borderStyle="round" paddingX={1}>
+        <Box flexDirection="column">
           <Text bold>Status</Text>
           {player ? (
-            <>
-              <Text>
-                HP: {player.hp.current}/{player.hp.max}
-              </Text>
-              <Text>Level: {player.level ?? 1}</Text>
-              <Text>
-                XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
-              </Text>
-            </>
+            <Box>
+              <Text>HP: {player.hp.current}/{player.hp.max} | </Text>
+              <Text>Level: {player.level ?? 1} | </Text>
+              <Text>XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}</Text>
+            </Box>
           ) : (
             <Text>N/A</Text>
           )}
         </Box>
-
-        {player && <StatusEffectsView statusEffects={player.statusEffects ?? []} />}
-
-        {player && <EquipmentView player={player} />}
-
-        <InventoryView
-          inventory={player?.inventory ?? []}
-          selectedItemIndex={state.selectedItemIndex}
-          phase={state.phase}
-        />
-
-        <SkillsView skills={player?.skills ?? []} />
-
         <MessageLogView
           log={state.log}
           logOffset={state.logOffset}

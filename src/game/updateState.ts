@@ -24,6 +24,24 @@ export function updateState(action: GameAction): void {
     return;
   }
 
+  if (action === GameAction.LOAD_GAME) {
+    loadGame().then((savedState: GameState | null) => {
+      if (savedState) {
+        initializeEngine(savedState);
+        eventBus.emit('stateChanged', savedState);
+      } else {
+        const currentState = getCurrentState();
+        if (currentState) {
+          const nextState = produce(currentState, (draft) => {
+            addLogMessage(draft, 'No saved game found.', 'info');
+          });
+          eventBus.emit('stateChanged', nextState);
+        }
+      }
+    });
+    return;
+  }
+
   const currentState = getCurrentState();
   if (!currentState) return;
 
@@ -34,7 +52,7 @@ export function updateState(action: GameAction): void {
   eventBus.emit('stateChanged', nextState);
 }
 
-import { deleteSaveGame, saveGame } from '../engine/persistence.js';
+import { deleteSaveGame, saveGame, loadGame } from '../engine/persistence.js';
 import { initializeEngine } from '../engine/narrativeEngine.js';
 import { createInitialGameState } from './initialState.js';
 
