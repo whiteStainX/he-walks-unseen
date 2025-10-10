@@ -49,24 +49,9 @@ const App = () => {
       setGameState(newState);
     };
 
-    const handleStartConversation = ({ parcelId }: { parcelId: string }) => {
-      setGameState((currentState) => {
-        if (!currentState) return null;
-        return produce(currentState, (draft) => {
-          draft.phase = 'Dialogue';
-          draft.conversation = {
-            parcelId,
-            currentNodeId: 'start',
-            selectedChoiceIndex: 0,
-          };
-        });
-      });
-    };
-
     eventBus.on('engineReady', handleEngineReady);
     eventBus.on('engineError', handleEngineError);
     eventBus.on('stateChanged', handleStateChanged);
-    eventBus.on('start-conversation', handleStartConversation);
 
     init();
 
@@ -74,7 +59,6 @@ const App = () => {
       eventBus.off('engineReady', handleEngineReady);
       eventBus.off('engineError', handleEngineError);
       eventBus.off('stateChanged', handleStateChanged);
-      eventBus.off('start-conversation', handleStartConversation);
     };
   }, []);
 

@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import { getResource } from '../engine/resourceManager.js';
 import type { GameState } from '../engine/state.js';
-import type { Parcel } from '../types/parcel.js';
+import { resolveConversationParcel } from '../game/conversation.js';
 
 interface DialogueViewProps {
   state: GameState;
@@ -14,7 +13,7 @@ const DialogueView: React.FC<DialogueViewProps> = ({ state }) => {
   }
 
   const { parcelId, currentNodeId } = state.conversation;
-  const conversationData = getResource(parcelId) as Parcel;
+  const conversationData = resolveConversationParcel(parcelId);
 
   if (!conversationData) {
     return (

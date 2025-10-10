@@ -42,6 +42,15 @@ export function getResource<T>(key: string): T {
 }
 
 /**
+ * Checks whether a resource exists in the cache without throwing.
+ * @param key The key of the resource (the original filename without extension).
+ * @returns True if the resource has been loaded into the cache.
+ */
+export function hasResource(key: string): boolean {
+  return resourceCache.has(key);
+}
+
+/**
  * Manually sets a resource in the cache. Intended for use in test environments.
  * @param key The key of the resource.
  * @param value The resource data.
