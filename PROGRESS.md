@@ -197,3 +197,11 @@ This milestone focused on improving the engine's performance by optimizing criti
 
 -   **Efficient Rendering:** The core `MapView` component was optimized by memoizing the display grid calculation. This prevents the expensive process of rebuilding the entire map view on every render, significantly improving UI responsiveness.
 -   **Optimized AI Visibility:** Enemy AI was made more efficient by replacing expensive, per-enemy Field of View (FOV) calculations with a single, fast check against the player's pre-calculated `visibleTiles` set. This dramatically reduces CPU load on turns with many enemies.
+
+## Milestone 19: Welcome Screen and UI Overhaul (October 2025)
+
+This milestone introduced a formal welcome screen and refactored the main game UI to better align with classic roguelike conventions, improving the new player experience and overall visual hierarchy.
+
+-   **Welcome Screen:** A new welcome screen is now the first thing the player sees, presenting clear options to "Start New Game" or "Load Game". This is managed by a new `Welcome` game phase.
+-   **Classic UI Layout:** The main game screen was refactored into a vertical layout. The top section contains the map view and a contextual sidebar, while the bottom section is dedicated to a persistent player status bar and the scrollable message log.
+-   **Future Work Placeholder:** The "Load Game" functionality is currently foundational. Full integration with the narrative engine's branching and state management capabilities is planned for a future milestone.
