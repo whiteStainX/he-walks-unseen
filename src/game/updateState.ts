@@ -17,7 +17,8 @@ export function updateState(action: GameAction): void {
     // This is a special case that replaces the entire state.
     // It's handled outside the normal produce -> applyActionToState flow.
     deleteSaveGame().then(() => {
-      const newGameState = createInitialGameState();
+      const baseState = createInitialGameState();
+      const newGameState: GameState = { ...baseState, phase: 'PlayerTurn' };
       initializeEngine(newGameState);
       eventBus.emit('stateChanged', newGameState);
     });
