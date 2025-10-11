@@ -14,55 +14,112 @@ interface DisplayTile {
   isDim: boolean;
 }
 
+const VIEWPORT_WIDTH = 40;
+const VIEWPORT_HEIGHT = 20;
+
 const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
   const { actors, items, entities, map, visibleTiles, exploredTiles } = state;
+  const player = actors.find((a) => a.isPlayer)!;
 
-  const displayGrid: (DisplayTile | null)[][] = map.tiles.map((row, y) =>
-    row.map((tile, x) => {
-      const coord = `${x},${y}`;
+  // Calculate the ideal top-left corner to center the player
+  let topLeftX = player.position.x - Math.floor(VIEWPORT_WIDTH / 2);
+  let topLeftY = player.position.y - Math.floor(VIEWPORT_HEIGHT / 2);
+
+  // If map is larger than viewport, clamp to map boundaries. Otherwise, topLeft is 0.
+  topLeftX =
+    map.width > VIEWPORT_WIDTH
+      ? Math.max(0, Math.min(topLeftX, map.width - VIEWPORT_WIDTH))
+      : 0;
+  topLeftY =
+    map.height > VIEWPORT_HEIGHT
+      ? Math.max(0, Math.min(topLeftY, map.height - VIEWPORT_HEIGHT))
+      : 0;
+
+  // Calculate padding required to center a small map inside the viewport
+  const padX =
+    map.width < VIEWPORT_WIDTH ? Math.floor((VIEWPORT_WIDTH - map.width) / 2) : 0;
+  const padY =
+    map.height < VIEWPORT_HEIGHT
+      ? Math.floor((VIEWPORT_HEIGHT - map.height) / 2)
+      : 0;
+
+  const displayGrid: (DisplayTile | null)[][] = [];
+
+  for (let y = 0; y < VIEWPORT_HEIGHT; y++) {
+    const row: (DisplayTile | null)[] = [];
+    for (let x = 0; x < VIEWPORT_WIDTH; x++) {
+      // Translate viewport coordinates to map coordinates, accounting for padding
+      const mapX = topLeftX + x - padX;
+      const mapY = topLeftY + y - padY;
+
+      // If the coordinate is outside the map boundaries, it's padding space
+      if (mapX < 0 || mapX >= map.width || mapY < 0 || mapY >= map.height) {
+        row.push(null);
+        continue;
+      }
+
+      const coord = `${mapX},${mapY}`;
       const isVisible = visibleTiles.has(coord);
       const isExplored = exploredTiles.has(coord);
 
       if (!isVisible && !isExplored) {
-        return null; // Unexplored tile
+        row.push(null);
+        continue;
       }
 
-      return {
+      const tile = map.tiles[mapY][mapX];
+      row.push({
         char: tile.char,
         color: tile.walkable ? 'grey' : 'white',
         isDim: !isVisible,
-      };
-    })
-  );
+      });
+    }
+    displayGrid.push(row);
+  }
 
-  const allEntities: (Entity | Actor | Item)[] = [...items, ...entities, ...actors];
+  const allEntities: (Entity | Actor | Item)[] = [
+    ...items,
+    ...entities,
+    ...actors,
+  ];
 
   for (const entity of allEntities) {
-    const { x, y } = entity.position;
-    const coord = `${x},${y}`;
+    const { x: entityX, y: entityY } = entity.position;
+    const coord = `${entityX},${entityY}`;
 
-    if (
-      visibleTiles.has(coord) &&
-      y >= 0 &&
-      y < map.height &&
-      x >= 0 &&
-      x < map.width &&
-      displayGrid[y][x] // Make sure we don't try to update a null tile (shouldn't happen)
-    ) {
-      displayGrid[y][x]!.char = entity.char;
-      displayGrid[y][x]!.color = entity.color || 'white';
-      displayGrid[y][x]!.isDim = false; // Entities are only drawn if visible
+    if (visibleTiles.has(coord)) {
+      // Translate map coordinates to viewport coordinates
+      const viewX = entityX - topLeftX + padX;
+      const viewY = entityY - topLeftY + padY;
+
+      if (
+        viewX >= 0 &&
+        viewX < VIEWPORT_WIDTH &&
+        viewY >= 0 &&
+        viewY < VIEWPORT_HEIGHT &&
+        displayGrid[viewY]?.[viewX]
+      ) {
+        displayGrid[viewY][viewX]!.char = entity.char;
+        displayGrid[viewY][viewX]!.color = entity.color || 'white';
+        displayGrid[viewY][viewX]!.isDim = false;
+      }
     }
   }
 
-  const player = actors.find((a) => a.isPlayer);
-  if (player) {
-    const { x, y } = player.position;
-    if (displayGrid[y]?.[x]) {
-      displayGrid[y][x]!.backgroundColor = 'yellow';
-      displayGrid[y][x]!.color = 'black';
-      displayGrid[y][x]!.isDim = false;
-    }
+  const { x: playerX, y: playerY } = player.position;
+  const viewX = playerX - topLeftX + padX;
+  const viewY = playerY - topLeftY + padY;
+
+  if (
+    viewX >= 0 &&
+    viewX < VIEWPORT_WIDTH &&
+    viewY >= 0 &&
+    viewY < VIEWPORT_HEIGHT &&
+    displayGrid[viewY]?.[viewX]
+  ) {
+    displayGrid[viewY][viewX]!.backgroundColor = 'yellow';
+    displayGrid[viewY][viewX]!.color = 'black';
+    displayGrid[viewY][viewX]!.isDim = false;
   }
 
   return displayGrid;
@@ -70,7 +127,6 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
 
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
   const { actors, visibleTiles } = state;
-  const player = actors.find((a) => a.isPlayer);
   const displayGrid = React.useMemo(
     () => createDisplayGrid(state),
     [
@@ -85,9 +141,10 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
   const visibleEnemies = actors.filter(
     (a) => !a.isPlayer && visibleTiles.has(`${a.position.x},${a.position.y}`)
   );
+  const player = actors.find((a) => a.isPlayer);
 
   return (
-    <Box flexDirection="column" paddingX={2}>
+    <Box flexDirection="column">
       <Box flexDirection="column" alignItems="center" marginBottom={1}>
         <Text bold dimColor={isDimmed}>
           He Walks Unseen
