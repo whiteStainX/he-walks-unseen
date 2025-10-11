@@ -17,9 +17,28 @@ export function updateState(action: GameAction): void {
     // This is a special case that replaces the entire state.
     // It's handled outside the normal produce -> applyActionToState flow.
     deleteSaveGame().then(() => {
-      const newGameState = createInitialGameState();
+      const baseState = createInitialGameState();
+      const newGameState: GameState = { ...baseState, phase: 'PlayerTurn' };
       initializeEngine(newGameState);
       eventBus.emit('stateChanged', newGameState);
+    });
+    return;
+  }
+
+  if (action === GameAction.LOAD_GAME) {
+    loadGame().then((savedState: GameState | null) => {
+      if (savedState) {
+        initializeEngine(savedState);
+        eventBus.emit('stateChanged', savedState);
+      } else {
+        const currentState = getCurrentState();
+        if (currentState) {
+          const nextState = produce(currentState, (draft) => {
+            addLogMessage(draft, 'No saved game found.', 'info');
+          });
+          eventBus.emit('stateChanged', nextState);
+        }
+      }
     });
     return;
   }
@@ -34,7 +53,7 @@ export function updateState(action: GameAction): void {
   eventBus.emit('stateChanged', nextState);
 }
 
-import { deleteSaveGame, saveGame } from '../engine/persistence.js';
+import { deleteSaveGame, saveGame, loadGame } from '../engine/persistence.js';
 import { initializeEngine } from '../engine/narrativeEngine.js';
 import { createInitialGameState } from './initialState.js';
 

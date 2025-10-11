@@ -1,6 +1,7 @@
 import { eventBus } from './events.js';
 
 export type GamePhase =
+  | 'Welcome'
   | 'MainMenu'
   | 'PlayerTurn'
   | 'EnemyTurn'

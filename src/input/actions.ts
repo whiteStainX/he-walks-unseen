@@ -39,6 +39,7 @@ export enum GameAction {
   QUIT,
   OPEN_MENU,
   NEW_GAME,
+  LOAD_GAME,
   SAVE_AND_QUIT,
 
   // Message Log

@@ -3,6 +3,7 @@ import { render, Box, Text } from 'ink';
 import { loadResources } from './engine/resourceManager.js';
 import { eventBus } from './engine/events.js';
 import type { GameState } from './engine/state.js';
+import WelcomeScreen from './components/WelcomeScreen.js';
 import GameScreen from './components/GameScreen.js';
 import { createInitialGameState } from './game/initialState.js';
 import { loadGame } from './engine/persistence.js';
@@ -88,6 +89,10 @@ const App = () => {
         <Text>Initializing engine...</Text>
       </Box>
     );
+  }
+
+  if (gameState.phase === 'Welcome') {
+    return <WelcomeScreen />;
   }
 
   return <GameScreen gameState={gameState} />;
