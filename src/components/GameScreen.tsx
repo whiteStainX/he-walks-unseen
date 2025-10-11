@@ -11,6 +11,7 @@ import DialogueView from './DialogueView.js';
 import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
+import { getMapDefinition } from '../engine/worldManager.js';
 import { updateState } from '../game/updateState.js';
 
 interface Props {
@@ -95,19 +96,32 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
     );
   }
 
+  const mapDefinition = getMapDefinition(state.currentMapId);
+  const mapName = mapDefinition?.id ?? 'Unknown Area';
+
   return (
     <Box flexDirection="column">
       <Box flexDirection="row">
-        <MapView
-          state={state}
-          isDimmed={
-            state.phase === 'Inventory' ||
-            state.phase === 'CombatMenu' ||
-            state.phase === 'IdentifyMenu' ||
-            state.phase === 'MessageLog' ||
-            state.phase === 'Dialogue'
-          }
-        />
+        <Box
+          flexDirection="column"
+          borderStyle="round"
+          borderColor="gray"
+          paddingX={1}
+        >
+          <Box justifyContent="center">
+            <Text bold>{mapName}</Text>
+          </Box>
+          <MapView
+            state={state}
+            isDimmed={
+              state.phase === 'Inventory' ||
+              state.phase === 'CombatMenu' ||
+              state.phase === 'IdentifyMenu' ||
+              state.phase === 'MessageLog' ||
+              state.phase === 'Dialogue'
+            }
+          />
+        </Box>
         <CombatMenuView state={state} />
         <DialogueView state={state} />
         {state.phase === 'MessageLog' && (

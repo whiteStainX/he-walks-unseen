@@ -33,6 +33,7 @@ describe('GameScreen', () => {
       ],
     });
     loadWorldData();
+    setResource('parcels', {}); // Mock parcels to prevent errors in initialState
     setResource('themes', {
       'overgrown-keep': {
         floors: [1],
