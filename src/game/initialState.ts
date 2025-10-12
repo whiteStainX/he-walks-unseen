@@ -63,7 +63,7 @@ export function createInitialGameState(
     throw new Error(`Map with id "${currentMapId}" not found in world data.`);
   }
 
-  const themes = getResource<any>('themes');
+  const themes = getResource<any>('environmentThemes');
   const theme = themes[mapDefinition.theme];
 
   const { map, playerStart, rooms } = generateMap(mapDefinition, theme.map);
