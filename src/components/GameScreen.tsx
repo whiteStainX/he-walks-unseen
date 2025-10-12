@@ -192,7 +192,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
                   selectedItemIndex={state.selectedItemIndex}
                   phase={state.phase}
                 />
-                <SkillsView skills={player?.skills ?? []} />
+                {player && <SkillsView player={player} />}
               </>
             )}
           </Box>

@@ -2,9 +2,6 @@ import { RNG, Map } from 'rot-js';
 import type { Tile } from '../engine/state.js';
 import type { MapDefinition } from '../engine/worldManager.js';
 
-export const WALL_TILE: Tile = { char: '#', walkable: false, transparent: false };
-export const FLOOR_TILE: Tile = { char: '.', walkable: true, transparent: true };
-
 export type TileMap = Tile[][];
 
 // Helper to get a random integer between min and max (inclusive)
@@ -20,10 +17,8 @@ function generateDiggerMap(
   // Each time a map is generated, we reset the RNG with a new random seed.
   RNG.setSeed(Date.now() + randomInt(1, 10000));
 
-  const wallTile: Tile = { char: theme.wall, walkable: false, transparent: false };
-
   const map = Array.from({ length: height }, () =>
-    Array.from({ length: width }, () => ({ ...wallTile }))
+    Array.from({ length: width }, () => ({ char: theme.wall, walkable: false, transparent: false }))
   );
 
   // Use fixed parameters for stable map generation

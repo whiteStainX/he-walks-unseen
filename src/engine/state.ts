@@ -11,6 +11,7 @@ export interface Entity {
   name: string;
   char: string;
   color?: string;
+  states?: Record<string, string>;
   position: Point;
   interaction?: DoorInteraction | ChestInteraction | StairsInteraction | PortalInteraction | ConversationInteraction;
 }
@@ -40,7 +41,7 @@ export interface DoorInteraction {
 export interface ChestInteraction {
   type: 'chest';
   isLooted: boolean;
-  loot: string; // For now, a simple string representing the item id
+  lootTableId: string;
 }
 
 export interface Actor extends Entity {
@@ -62,6 +63,9 @@ export interface Actor extends Entity {
   ai?: Ai;
   statusEffects?: StatusEffect[];
   profile?: string;
+  skillPoints?: number;
+  learnedSkills?: Record<string, boolean>;
+  actionPoints?: { current: number; max: number; };
 }
 
 export type StatusEffectType = 'poison';
@@ -168,6 +172,8 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  prerequisites?: string[];
+  cost?: number;
 }
 
 export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';

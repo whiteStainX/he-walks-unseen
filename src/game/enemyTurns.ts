@@ -31,5 +31,20 @@ export function processEnemyTurns(state: GameState): void {
     return;
   }
 
-  state.phase = 'PlayerTurn';
+  if (player) {
+    player.actionPoints = player.actionPoints ?? { current: 0, max: 0 };
+    player.actionPoints.current = player.actionPoints.max;
+  }
+
+  // Only transition to PlayerTurn if not in a UI-driven phase
+  if (
+    state.phase !== 'Inventory' &&
+    state.phase !== 'Targeting' &&
+    state.phase !== 'CombatMenu' &&
+    state.phase !== 'IdentifyMenu' &&
+    state.phase !== 'MessageLog' &&
+    state.phase !== 'Dialogue'
+  ) {
+    state.phase = 'PlayerTurn';
+  }
 }

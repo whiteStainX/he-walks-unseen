@@ -2,7 +2,10 @@
   {
     "id": "door",
     "name": "Door",
-    "char": "▕",
+    "states": {
+      "closed": "+",
+      "open": "-"
+    },
     "interaction": {
       "type": "door",
       "isOpen": false
@@ -11,17 +14,22 @@
   {
     "id": "chest",
     "name": "Chest",
-    "char": "⌸",
+    "states": {
+      "unlooted": "⌸",
+      "looted": " "
+    },
     "interaction": {
       "type": "chest",
       "isLooted": false,
-      "loot": "unidentified-potion"
+      "lootTableId": "basic_chest_loot"
     }
   },
   {
     "id": "upstairs",
     "name": "Upstairs",
-    "char": "⇡",
+    "states": {
+      "default": "⇡"
+    },
     "interaction": {
       "type": "stairs",
       "direction": "up"
@@ -30,7 +38,9 @@
   {
     "id": "downstairs",
     "name": "Downstairs",
-    "char": "⇣",
+    "states": {
+      "default": "⇣"
+    },
     "interaction": {
       "type": "stairs",
       "direction": "down"
@@ -39,7 +49,9 @@
   {
     "id": "portal",
     "name": "Portal",
-    "char": "◎",
+    "states": {
+      "default": "◎"
+    },
     "interaction": {
       "type": "portal",
       "targetMapId": "",

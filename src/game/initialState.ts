@@ -63,7 +63,7 @@ export function createInitialGameState(
     throw new Error(`Map with id "${currentMapId}" not found in world data.`);
   }
 
-  const themes = getResource<any>('themes');
+  const themes = getResource<any>('environmentThemes');
   const theme = themes[mapDefinition.theme];
 
   const { map, playerStart, rooms } = generateMap(mapDefinition, theme.map);
@@ -85,6 +85,9 @@ export function createInitialGameState(
         xpToNextLevel: 100,
         statusEffects: [],
         profile: 'player_default',
+        skillPoints: 0,
+        learnedSkills: {},
+        actionPoints: { current: 3, max: 3 },
       };
 
   const actors: Actor[] = [player];
