@@ -1,19 +1,23 @@
 import { z } from 'zod';
-import { PointSchema } from './common.js';
 
-const MapConnectionSchema = z.object({
+export const PointSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+});
+
+export const MapConnectionSchema = z.object({
   id: z.string(),
   targetMapId: z.string(),
   targetPortalId: z.string(),
   position: PointSchema,
 });
 
-const MapPrefabSchema = z.object({
+export const MapPrefabSchema = z.object({
   id: z.string(),
   position: PointSchema,
 });
 
-const GeneratorSchema = z.object({
+export const GeneratorSchema = z.object({
   type: z.enum(['digger']),
 });
 
@@ -23,7 +27,7 @@ export const MapDefinitionSchema = z.object({
   height: z.number(),
   theme: z.string(),
   generator: GeneratorSchema,
-  connections: z.array(MapConnectionSchema).default([]),
+  connections: z.array(MapConnectionSchema),
   prefabs: z.array(MapPrefabSchema).optional(),
 });
 

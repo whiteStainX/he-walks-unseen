@@ -1,59 +1,11 @@
 import * as fs from 'fs/promises';
 import path from 'path';
-import { DEFAULT_RESOURCE_DESCRIPTORS, type ResourceDescriptor } from './resourceDescriptors.js';
 
 /**
  * A cache for storing game data loaded from JSON files.
  * The key is the filename without the extension.
  */
 const resourceCache = new Map<string, any>();
-
-const resourceDescriptors = new Map<string, ResourceDescriptor<any>>(
-  Object.entries(DEFAULT_RESOURCE_DESCRIPTORS)
-);
-
-function describeZodIssue(pathSegments: (string | number)[], message: string): string {
-  const pathLabel = pathSegments.length > 0 ? pathSegments.join('.') : '(root)';
-  return `${pathLabel}: ${message}`;
-}
-
-function validateResource(key: string, data: unknown): unknown {
-  const descriptor = resourceDescriptors.get(key);
-
-  if (!descriptor) {
-    return data;
-  }
-
-  const result = descriptor.schema.safeParse(data);
-
-  if (!result.success) {
-    const issues = result.error.issues
-      .map((issue) => describeZodIssue(issue.path, issue.message))
-      .join('; ');
-    throw new Error(`Resource "${key}" failed validation: ${issues}`);
-  }
-
-  return descriptor.transform ? descriptor.transform(result.data) : result.data;
-}
-
-/**
- * Registers or overrides a resource descriptor used during validation.
- * Primarily intended for tests and tooling.
- */
-export function registerResourceDescriptor<T>(
-  key: string,
-  descriptor: ResourceDescriptor<T>
-): void {
-  resourceDescriptors.set(key, descriptor as ResourceDescriptor<any>);
-}
-
-/**
- * Removes a previously registered resource descriptor.
- * Primarily intended for tests.
- */
-export function unregisterResourceDescriptor(key: string): void {
-  resourceDescriptors.delete(key);
-}
 
 /**
  * Loads all .json files from the specified data directory,
@@ -68,9 +20,7 @@ export async function loadResources(dataDir: string): Promise<void> {
         const filePath = path.join(dataDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const resourceKey = path.basename(file, '.json');
-        const parsed = JSON.parse(content);
-        const validated = validateResource(resourceKey, parsed);
-        resourceCache.set(resourceKey, validated);
+        resourceCache.set(resourceKey, JSON.parse(content));
       }
     }
   } catch (error) {

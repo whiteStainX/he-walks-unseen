@@ -42,9 +42,8 @@
     "char": "◎",
     "interaction": {
       "type": "portal",
-      "id": "",
       "targetMapId": "",
-      "targetPortalId": ""
+      "targetPosition": { "x": 0, "y": 0 }
     }
   }
 ]

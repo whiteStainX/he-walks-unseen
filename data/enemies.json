@@ -37,7 +37,7 @@
     },
     "attack": 2,
     "defense": 1,
-    "xpValue": 10,
+    "xp": 10,
     "ai": {
       "state": "wander"
     },
@@ -54,7 +54,7 @@
     },
     "attack": 3,
     "defense": 0,
-    "xpValue": 15,
+    "xp": 15,
     "ai": {
       "state": "wander",
       "canPassThroughWalls": true
