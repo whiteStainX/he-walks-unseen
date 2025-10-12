@@ -41,7 +41,7 @@ export interface DoorInteraction {
 export interface ChestInteraction {
   type: 'chest';
   isLooted: boolean;
-  loot: string; // For now, a simple string representing the item id
+  lootTableId: string;
 }
 
 export interface Actor extends Entity {

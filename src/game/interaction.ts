@@ -12,6 +12,7 @@ import { createInitialGameState } from './initialState.js';
 import { addLogMessage } from './logger.js';
 import { replacer, reviver } from '../engine/persistence.js';
 import { beginConversation } from './conversation.js';
+import { generateLoot } from './loot.js';
 
 export function handleInteraction(
   state: GameState,
@@ -59,21 +60,19 @@ export function handleInteraction(
         return false;
       }
 
-      const lootItemTemplate = state.items.find(
-        (i) => i.id === interaction.loot
-      );
+      const generatedItems = generateLoot(interaction.lootTableId);
 
-      const lootItem: Item = {
-        id: nanoid(),
-        name: lootItemTemplate?.name || 'Unidentified Item',
-        char: lootItemTemplate?.char || '!',
-        color: lootItemTemplate?.color || 'magenta',
-        position: player.position,
-        effects: lootItemTemplate?.effects,
-      };
-
-      player.inventory = player.inventory || [];
-      player.inventory.push(lootItem);
+      if (generatedItems.length === 0) {
+        addLogMessage(state, 'The chest is empty.', 'info');
+      } else {
+        player.inventory = player.inventory || [];
+        let message = 'You open the chest and find:';
+        for (const item of generatedItems) {
+          player.inventory.push(item);
+          message += ` ${item.name},`;
+        }
+        addLogMessage(state, message.slice(0, -1) + '.', 'info'); // Remove trailing comma
+      }
 
       const chestEntity = state.entities.find(e => e.id === entity.id);
       if (chestEntity) {
@@ -82,8 +81,6 @@ export function handleInteraction(
       }
 
       state.phase = 'EnemyTurn';
-
-      addLogMessage(state, `You open the chest and find a ${lootItem.name}.`, 'info');
       return false;
     }
 

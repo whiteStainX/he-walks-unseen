@@ -21,7 +21,7 @@
     "interaction": {
       "type": "chest",
       "isLooted": false,
-      "loot": "unidentified-potion"
+      "lootTableId": "basic_chest_loot"
     }
   },
   {
