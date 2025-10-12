@@ -15,13 +15,13 @@ const WelcomeScreen = () => {
       label: 'Amber Pill',
       theme: 'amber',
       color: '#FFB000',
-      description: 'A warm, steady glow. The world you know, but clearer. The path of certainty.',
+      description: 'You will wake up in your bed, and cry.',
     },
     {
       label: 'Green Pill',
       theme: 'green',
       color: '#00FF41',
-      description: 'An electric hum. A reality rewritten in flickering code. The path of the unknown.',
+      description: 'You will stay in the rabbit hole, and I show you the wonderland.',
     },
   ];
 
