@@ -261,6 +261,7 @@ export function createInitialGameState(
     currentMapId: currentMapId,
     mapStates,
     activeTheme: chosenTheme,
+    playerExpression: 'player_idle',
   };
 
   addLogMessage(

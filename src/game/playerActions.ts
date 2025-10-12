@@ -3,6 +3,7 @@ import { GameAction } from '../input/actions.js';
 import { updateVisibility } from './visibility.js';
 import { handleInteraction } from './interaction.js';
 import { addLogMessage } from './logger.js';
+import { updateState } from './updateState.js';
 
 interface MovementDelta {
   dx: number;
@@ -24,54 +25,55 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
   return !state.map.tiles[y][x].walkable;
 }
 
-export function handlePlayerAction(
-  state: GameState,
-  action: GameAction
-): void {
+export function handlePlayerAction(state: GameState, action: GameAction): void {
+  updateState(GameAction.SET_PLAYER_EXPRESSION, 'player_idle');
+
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return;
 
-  if (action === GameAction.OPEN_INVENTORY) {
-    const hasItems = player.inventory && player.inventory.length > 0;
-    const message = hasItems
-      ? 'Select an item to use.'
-      : 'Your inventory is empty.';
-    addLogMessage(state, message, 'info');
-    state.phase = 'Inventory';
-    state.selectedItemIndex = hasItems ? 0 : undefined;
-    return;
-  }
-
-  if (action === GameAction.PICKUP_ITEM) {
-    const itemIndex = state.items.findIndex(
-      (i) =>
-        i.position.x === player.position.x && i.position.y === player.position.y
-    );
-
-    if (itemIndex === -1) {
-      addLogMessage(state, 'There is nothing here to pick up.', 'info');
+  switch (action) {
+    case GameAction.OPEN_INVENTORY: {
+      const hasItems = player.inventory && player.inventory.length > 0;
+      const message = hasItems
+        ? 'Select an item to use.'
+        : 'Your inventory is empty.';
+      addLogMessage(state, message, 'info');
+      state.phase = 'Inventory';
+      state.selectedItemIndex = hasItems ? 0 : undefined;
       return;
     }
 
-    const item = state.items[itemIndex];
-    player.inventory = player.inventory || [];
-    player.inventory.push(item);
-    state.items.splice(itemIndex, 1);
-    state.phase = 'PlayerTurn';
+    case GameAction.PICKUP_ITEM: {
+      const itemIndex = state.items.findIndex(
+        (i) =>
+          i.position.x === player.position.x && i.position.y === player.position.y
+      );
 
-    addLogMessage(state, `You picked up the ${item.name}.`, 'info');
-    return;
-  }
+      if (itemIndex === -1) {
+        addLogMessage(state, 'There is nothing here to pick up.', 'info');
+        return;
+      }
 
-  if (action === GameAction.START_INTERACTION) {
-    addLogMessage(state, 'Which direction?', 'info');
-    state.phase = 'Targeting';
-    return;
-  }
+      const item = state.items[itemIndex];
+      player.inventory = player.inventory || [];
+      player.inventory.push(item);
+      state.items.splice(itemIndex, 1);
+      state.phase = 'PlayerTurn';
 
-  if (action === GameAction.OPEN_MESSAGE_LOG) {
-    state.phase = 'MessageLog';
-    return;
+      addLogMessage(state, `You picked up the ${item.name}.`, 'info');
+      return;
+    }
+
+    case GameAction.START_INTERACTION: {
+      addLogMessage(state, 'Which direction?', 'info');
+      state.phase = 'Targeting';
+      return;
+    }
+
+    case GameAction.OPEN_MESSAGE_LOG: {
+      state.phase = 'MessageLog';
+      return;
+    }
   }
 
   const delta = MOVEMENT_DELTAS[action];

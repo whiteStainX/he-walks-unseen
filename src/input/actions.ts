@@ -56,4 +56,7 @@ export enum GameAction {
 
   // Theming
   CYCLE_THEME,
+
+  // Player Expression
+  SET_PLAYER_EXPRESSION,
 }
