@@ -4,13 +4,21 @@ import { resolveAttack } from './combat.js';
 
 function canSeePlayer(
   enemy: Actor,
-  player: Actor, // player is kept for signature consistency, though not used
+  player: Actor,
   state: GameState
 ): boolean {
-  // This is a much cheaper check than calculating FOV for every enemy.
-  // It relies on the player's visibility being calculated once per turn.
-  // If the player can see the enemy's tile, we assume the enemy can see the player.
-  return state.visibleTiles.has(`${enemy.position.x},${enemy.position.y}`);
+  const fov = new FOV.PreciseShadowcasting((x, y) => {
+    return state.map.tiles[y]?.[x]?.transparent ?? false;
+  });
+
+  let seesPlayer = false;
+  fov.compute(enemy.position.x, enemy.position.y, 10, (x, y, r, visibility) => {
+    if (x === player.position.x && y === player.position.y) {
+      seesPlayer = true;
+    }
+  });
+
+  return seesPlayer;
 }
 
 function chasePlayer(enemy: Actor, player: Actor, state: GameState): void {

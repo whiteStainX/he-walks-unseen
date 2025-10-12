@@ -7,7 +7,8 @@
     "attack": 4,
     "defense": 1,
     "xpValue": 10,
-    "profile": "goblin_shaman"
+    "profile": "goblin_shaman",
+    "ai": { "state": "wander" }
   },
   "health-potion": {
     "name": "Health Potion",

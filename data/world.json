@@ -19,6 +19,10 @@
         {
           "id": "friendly-npc",
           "position": { "x": 10, "y": 10 }
+        },
+        {
+          "id": "goblin",
+          "position": { "x": 15, "y": 10 }
         }
       ]
     },
@@ -33,13 +37,7 @@
           "id": "forest_to_town",
           "targetMapId": "town",
           "targetPortalId": "town_to_forest",
-          "position": { "x": 0, "y": 5 }
-        }
-      ],
-      "prefabs": [
-        {
-          "id": "goblin_camp",
-          "position": { "x": 25, "y": 25 }
+          "position": { "x": 0, "y": 25 }
         }
       ]
     }
