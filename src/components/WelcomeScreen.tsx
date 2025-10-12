@@ -5,6 +5,7 @@ import { GameAction } from '../input/actions.js';
 import { updateState } from '../game/updateState.js';
 import type { ThemeName } from '../themes.js';
 import AnimatedChoice from './AnimatedChoice.js';
+import AnimatedAsciiArt from './AnimatedAsciiArt.js';
 
 const WelcomeScreen = () => {
   const [selectedPill, setSelectedPill] = useState(0);
@@ -41,9 +42,7 @@ const WelcomeScreen = () => {
 
   return (
     <Box flexDirection="column" alignItems="center" padding={2}>
-      {gameTitle.split('\n').map((line, index) => (
-        <Text key={index} color="cyan">{line}</Text>
-      ))}
+      <AnimatedAsciiArt art={gameTitle} />
       <Box flexDirection="column" alignItems="center" marginTop={2}>
         <Text>The time has come to choose.</Text>
         <Box flexDirection="column" alignItems="center" marginTop={1}>
