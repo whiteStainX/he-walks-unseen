@@ -205,6 +205,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           borderStyle="round"
           borderColor={theme.border}
           paddingX={1}
+          height={10}
         >
           <Box flexDirection="column">
             <Text bold color={theme.accent}>
