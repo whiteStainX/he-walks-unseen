@@ -14,8 +14,8 @@ import { resolveAction } from '../input/keybindings.js';
 import { getMapDefinition } from '../engine/worldManager.js';
 import { updateState } from '../game/updateState.js';
 import TerminalBox from './TerminalBox.js';
-import ProfileView from './ProfileView.js';
 import { useTheme } from '../themes.js';
+import PlayerExpressionManager from './PlayerExpressionManager.js';
 
 interface Props {
   gameState: GameState;
@@ -108,18 +108,6 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
     (a) => !a.isPlayer && state.visibleTiles.has(`${a.position.x},${a.position.y}`)
   );
   const primaryEnemy = visibleEnemies.length > 0 ? visibleEnemies[0] : null;
-
-  let activeProfileId: string | undefined;
-  if (state.phase === 'CombatMenu' || state.phase === 'Targeting') {
-    activeProfileId = primaryEnemy?.profile;
-  } else if (state.phase === 'Dialogue' && state.conversation) {
-    // TODO: Find the correct NPC actorId from the conversation state
-    const npc = state.actors.find((a) => a.id === (state.conversation as any).actorId);
-    activeProfileId = npc?.profile;
-  } else {
-    activeProfileId = player?.profile;
-  }
-
   const renderMainPanel = () => {
     if (state.phase === 'Dialogue') {
       return (
@@ -254,7 +242,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             />
           </Box>
           <Box marginLeft={2}>
-            <ProfileView profileId={activeProfileId} />
+            <PlayerExpressionManager gameState={state} />
           </Box>
         </Box>
       </Box>

@@ -42,7 +42,7 @@ const WelcomeScreen = () => {
 
   return (
     <Box flexDirection="column" alignItems="center" padding={2}>
-      <AnimatedAsciiArt art={gameTitle} />
+      <AnimatedAsciiArt art={gameTitle} isAnimated={false} />
       <Box flexDirection="column" alignItems="center" marginTop={2}>
         <Text>The time has come to choose.</Text>
         <Box flexDirection="column" alignItems="center" marginTop={1}>

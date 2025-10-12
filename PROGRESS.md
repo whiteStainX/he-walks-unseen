@@ -109,7 +109,7 @@ This milestone introduced a foundational equipment system, a critical component 
 This milestone introduced a foundational status effects system, adding a new layer of tactical depth to combat encounters.
 
 -   **Core Status Effects Logic:**
-    -   A new system processes temporary conditions on actors each turn, such as poison.
+    -   A new system processes temporary conditions on actors each turn, suchs as poison.
     -   Effects apply damage and tick down their duration until they expire.
 -   **Combat and Equipment Integration:**
     -   The equipment system was extended to support `onHit` effects, allowing weapons to apply status effects with a certain probability.
@@ -225,3 +225,8 @@ This milestone was dedicated to a major aesthetic overhaul, transforming the gam
     -   Updated all map symbols (`door`, `chest`, `tree`) to be more evocative of the vintage futuristic aesthetic.
     -   Refactored data files to remove hardcoded colors, allowing all map entities to be correctly styled by the new theme system.
     -   Hardened the map rendering logic to correctly handle variable-width Unicode characters, preventing visual alignment bugs.
+-   **UI-Driven Player Expression System:**
+    -   Implemented a new `PlayerExpressionManager` component that dynamically determines the player's portrait based on the current `GameState`.
+    -   This system observes game phases (e.g., `Inventory`, `MessageLog`, `Dialogue`), player health, and combat status to display appropriate expressions (`player_idle`, `player_hurt`, `player_inventory`, `player_log`).
+    -   The 'hurt' expression is now transient, displaying for a short duration after damage is taken before reverting to the default expression.
+    -   This approach decouples expression logic from core game mechanics, centralizing it within the UI layer for scalability and maintainability.

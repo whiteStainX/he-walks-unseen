@@ -4,6 +4,7 @@ import { useTheme } from '../themes.js';
 
 interface Props {
   art: string;
+  isAnimated: boolean;
 }
 
 const NOISE_CHARS = ['~', '.', '*', '░', '▒'];
@@ -30,16 +31,18 @@ const distortArt = (originalArt: string): string => {
     .join('\n');
 };
 
-const AnimatedAsciiArt: React.FC<Props> = ({ art }) => {
+const AnimatedAsciiArt: React.FC<Props> = ({ art, isAnimated }) => {
   const theme = useTheme();
   const [distortedArt, setDistortedArt] = useState(art);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setDistortedArt(distortArt(art));
-    }, 150);
-    return () => clearInterval(timer);
-  }, [art]);
+    if (isAnimated) {
+      const timer = setInterval(() => {
+        setDistortedArt(distortArt(art));
+      }, 150);
+      return () => clearInterval(timer);
+    }
+  }, [art, isAnimated]);
 
   return (
     <Box flexDirection="column" alignItems="center">
