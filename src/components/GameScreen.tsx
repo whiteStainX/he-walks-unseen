@@ -14,6 +14,7 @@ import { resolveAction } from '../input/keybindings.js';
 import { getMapDefinition } from '../engine/worldManager.js';
 import { updateState } from '../game/updateState.js';
 import TerminalBox from './TerminalBox.js';
+import ProfileView from './ProfileView.js';
 import { useTheme } from '../themes.js';
 
 interface Props {
@@ -108,6 +109,17 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
   );
   const primaryEnemy = visibleEnemies.length > 0 ? visibleEnemies[0] : null;
 
+  let activeProfileId: string | undefined;
+  if (state.phase === 'CombatMenu' || state.phase === 'Targeting') {
+    activeProfileId = primaryEnemy?.profile;
+  } else if (state.phase === 'Dialogue' && state.conversation) {
+    // TODO: Find the correct NPC actorId from the conversation state
+    const npc = state.actors.find((a) => a.id === (state.conversation as any).actorId);
+    activeProfileId = npc?.profile;
+  } else {
+    activeProfileId = player?.profile;
+  }
+
   const renderMainPanel = () => {
     if (state.phase === 'Dialogue') {
       return (
@@ -199,47 +211,51 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
         </Box>
 
         {/* Status Panel */}
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor={theme.border}
-          paddingX={1}
-          height={10}
-        >
-          <Box flexDirection="column">
-            <Text bold color={theme.accent}>
-              Status
-            </Text>
-            {player ? (
-              <Box>
-                <Text color={theme.primary}>
-                  HP: {player.hp.current}/{player.hp.max} | {' '}
-                </Text>
-                <Text color={theme.primary}>Level: {player.level ?? 1} | </Text>
-                <Text color={theme.primary}>
-                  XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
-                </Text>
-              </Box>
-            ) : (
-              <Text>N/A</Text>
-            )}
-            {primaryEnemy && (
-              <Box marginTop={1}>
-                <Text color={theme.primary}>
-                  Target: {primaryEnemy.name} ({primaryEnemy.char}) | HP: {
-                    primaryEnemy.hp.current
-                  }/
-                  {primaryEnemy.hp.max}
-                </Text>
-              </Box>
-            )}
+        <Box marginTop={1} height={10} flexDirection="row">
+          <Box
+            flexDirection="column"
+            borderStyle="round"
+            borderColor={theme.border}
+            paddingX={1}
+            flexGrow={1}
+          >
+            <Box flexDirection="column">
+              <Text bold color={theme.accent}>
+                Status
+              </Text>
+              {player ? (
+                <Box>
+                  <Text color={theme.primary}>
+                    HP: {player.hp.current}/{player.hp.max} | {' '}
+                  </Text>
+                  <Text color={theme.primary}>Level: {player.level ?? 1} | </Text>
+                  <Text color={theme.primary}>
+                    XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
+                  </Text>
+                </Box>
+              ) : (
+                <Text>N/A</Text>
+              )}
+              {primaryEnemy && (
+                <Box marginTop={1}>
+                  <Text color={theme.primary}>
+                    Target: {primaryEnemy.name} ({primaryEnemy.char}) | HP: {
+                      primaryEnemy.hp.current
+                    }/
+                    {primaryEnemy.hp.max}
+                  </Text>
+                </Box>
+              )}
+            </Box>
+            <MessageLogView
+              log={state.log}
+              logOffset={state.logOffset}
+              phase={state.phase}
+            />
           </Box>
-          <MessageLogView
-            log={state.log}
-            logOffset={state.logOffset}
-            phase={state.phase}
-          />
+          <Box marginLeft={2}>
+            <ProfileView profileId={activeProfileId} />
+          </Box>
         </Box>
       </Box>
     </Box>

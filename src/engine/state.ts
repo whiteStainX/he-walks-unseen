@@ -61,6 +61,7 @@ export interface Actor extends Entity {
   loot?: string;
   ai?: Ai;
   statusEffects?: StatusEffect[];
+  profile?: string;
 }
 
 export type StatusEffectType = 'poison';
