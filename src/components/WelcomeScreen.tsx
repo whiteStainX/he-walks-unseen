@@ -3,10 +3,14 @@ import { Box, Text, useInput } from 'ink';
 import { gameTitle } from './AsciiArt.js';
 import { GameAction } from '../input/actions.js';
 import { updateState } from '../game/updateState.js';
+import type { ThemeName } from '../themes.js';
 
 const WelcomeScreen = () => {
   const [selectedOption, setSelectedOption] = useState(0);
-  const options = ['Start New Game', 'Load Game'];
+  const options: { label: string; theme: ThemeName; color: string }[] = [
+    { label: 'Amber Pill', theme: 'amber', color: '#FFB000' },
+    { label: 'Green Pill', theme: 'green', color: '#00FF41' },
+  ];
 
   useInput((input, key) => {
     if (key.upArrow) {
@@ -16,11 +20,8 @@ const WelcomeScreen = () => {
       setSelectedOption((prev) => (prev < options.length - 1 ? prev + 1 : 0));
     }
     if (key.return) {
-      if (selectedOption === 0) {
-        updateState(GameAction.NEW_GAME);
-      } else if (selectedOption === 1) {
-        updateState(GameAction.LOAD_GAME);
-      }
+      const chosenTheme = options[selectedOption].theme;
+      updateState(GameAction.CHOOSE_THEME_AND_START, chosenTheme);
     }
   });
 
@@ -30,10 +31,12 @@ const WelcomeScreen = () => {
         <Text key={index} color="cyan">{line}</Text>
       ))}
       <Box flexDirection="column" alignItems="center" marginTop={2}>
+        <Text>The time has come to choose.</Text>
+        <Text>Will you take the amber pill, or the green pill?</Text>
+        <Box height={1} />
         {options.map((option, index) => (
-          <Text key={option} color={selectedOption === index ? 'yellow' : 'white'}>
-            {selectedOption === index ? '> ' : '  '}
-            {option}
+          <Text key={option.label} color={selectedOption === index ? option.color : 'white'}>
+            {selectedOption === index ? '> ' : '  '}[ {option.label} ]
           </Text>
         ))}
       </Box>

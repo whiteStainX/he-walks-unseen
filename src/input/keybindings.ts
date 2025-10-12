@@ -25,7 +25,7 @@ export function resolveAction(
   key: Key,
   phase: GamePhase
 ): GameAction | undefined {
-  if (key.f5) return GameAction.CYCLE_THEME;
+
 
   // Handle special keys first, which don't have an `input` value.
   if (phase === 'PlayerTurn') {

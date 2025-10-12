@@ -103,8 +103,16 @@ const createDisplayGrid = (
         viewY < VIEWPORT_HEIGHT &&
         displayGrid[viewY]?.[viewX]
       ) {
+        let color = theme.primary;
+        if (entity.interaction) {
+          color = theme.accent;
+        }
+        if (entity.color) {
+          color = entity.color;
+        }
+
         displayGrid[viewY][viewX]!.char = entity.char;
-        displayGrid[viewY][viewX]!.color = entity.color || theme.primary;
+        displayGrid[viewY][viewX]!.color = color;
         displayGrid[viewY][viewX]!.isDim = false;
       }
     }

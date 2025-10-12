@@ -13,7 +13,18 @@ import { getCurrentState } from '../engine/narrativeEngine.js';
 import { produce } from 'immer';
 import { themes } from '../themes.js';
 
-export function updateState(action: GameAction): void {
+export function updateState(action: GameAction, payload?: any): void {
+  if (action === GameAction.CHOOSE_THEME_AND_START) {
+    const theme = payload as ThemeName;
+    deleteSaveGame().then(() => {
+      const baseState = createInitialGameState({ theme });
+      const newGameState: GameState = { ...baseState, phase: 'PlayerTurn' };
+      initializeEngine(newGameState);
+      eventBus.emit('stateChanged', newGameState);
+    });
+    return;
+  }
+
   if (action === GameAction.NEW_GAME) {
     // This is a special case that replaces the entire state.
     // It's handled outside the normal produce -> applyActionToState flow.
@@ -48,7 +59,7 @@ export function updateState(action: GameAction): void {
   if (!currentState) return;
 
   const nextState = produce(currentState, (draftState) => {
-    applyActionToState(draftState, action);
+    applyActionToState(draftState, action, payload);
   });
 
   eventBus.emit('stateChanged', nextState);
@@ -60,7 +71,8 @@ import { createInitialGameState } from './initialState.js';
 
 export function applyActionToState(
   state: GameState,
-  action: GameAction
+  action: GameAction,
+  payload?: any
 ): void {
   if (action === GameAction.QUIT) {
     addLogMessage(state, 'Press Ctrl+C to exit the simulation.', 'info');

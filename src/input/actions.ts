@@ -41,6 +41,7 @@ export enum GameAction {
   NEW_GAME,
   LOAD_GAME,
   SAVE_AND_QUIT,
+  CHOOSE_THEME_AND_START,
 
   // Message Log
   OPEN_MESSAGE_LOG,
