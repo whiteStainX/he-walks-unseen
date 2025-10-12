@@ -4,7 +4,7 @@ import { gameTitle } from './AsciiArt.js';
 import { GameAction } from '../input/actions.js';
 import { updateState } from '../game/updateState.js';
 import type { ThemeName } from '../themes.js';
-import Pill from './Pill.js';
+import AnimatedChoice from './AnimatedChoice.js';
 
 const WelcomeScreen = () => {
   const [selectedPill, setSelectedPill] = useState(0);
@@ -25,11 +25,11 @@ const WelcomeScreen = () => {
   ];
 
   useInput((input, key) => {
-    if (key.leftArrow) {
-      setSelectedPill(0);
+    if (key.upArrow) {
+      setSelectedPill((prev) => (prev > 0 ? prev - 1 : options.length - 1));
     }
-    if (key.rightArrow) {
-      setSelectedPill(1);
+    if (key.downArrow) {
+      setSelectedPill((prev) => (prev < options.length - 1 ? prev + 1 : 0));
     }
     if (key.return) {
       const chosenTheme = options[selectedPill].theme;
@@ -46,9 +46,17 @@ const WelcomeScreen = () => {
       ))}
       <Box flexDirection="column" alignItems="center" marginTop={2}>
         <Text>The time has come to choose.</Text>
-        <Box flexDirection="row" marginTop={1}>
-          <Pill color={options[0].color} isSelected={selectedPill === 0} />
-          <Pill color={options[1].color} isSelected={selectedPill === 1} />
+        <Box flexDirection="column" alignItems="center" marginTop={1}>
+          <AnimatedChoice
+            label={options[0].label}
+            color={options[0].color}
+            isSelected={selectedPill === 0}
+          />
+          <AnimatedChoice
+            label={options[1].label}
+            color={options[1].color}
+            isSelected={selectedPill === 1}
+          />
         </Box>
         <Box marginTop={1} width="100%" alignItems="center">
           <Text>{selectedDescription}</Text>
