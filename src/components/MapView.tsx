@@ -169,17 +169,18 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
             <Box key={y} flexDirection="row">
               {row.map((tile, x) => {
                 if (tile === null) {
-                  return <Text key={`${x},${y}`}>  </Text>; // Render empty space for unexplored tiles
+                  return <Box width={2} key={`${x},${y}`}><Text> </Text></Box>; // Render empty space for unexplored tiles
                 }
                 return (
-                  <Text
-                    key={`${x},${y}`}
-                    color={tile.color}
-                    backgroundColor={tile.backgroundColor}
-                    dimColor={isDimmed || tile.isDim}
-                  >
-                    {tile.char}{' '}
-                  </Text>
+                  <Box width={2} key={`${x},${y}`} justifyContent="center">
+                    <Text
+                      color={tile.color}
+                      backgroundColor={tile.backgroundColor}
+                      dimColor={isDimmed || tile.isDim}
+                    >
+                      {tile.char}
+                    </Text>
+                  </Box>
                 );
               })}
             </Box>

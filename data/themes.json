@@ -5,7 +5,7 @@
     "enemies": ["goblin", "shrieker", "goblin-ambusher"],
     "items": ["unidentified-potion"],
     "map": {
-      "wall": "#",
+      "wall": "▓",
       "floor": "."
     }
   },
@@ -15,8 +15,8 @@
     "enemies": ["skeleton", "ghost"],
     "items": ["unidentified-potion", "key"],
     "map": {
-      "wall": "#",
-      "floor": ","
+      "wall": "▒",
+      "floor": "~"
     }
   },
   "town": {
@@ -33,8 +33,8 @@
     "enemies": ["goblin", "goblin-ambusher"],
     "items": ["health-potion", "scroll-fireball"],
     "map": {
-      "wall": "T",
-      "floor": "."
+      "wall": "℘",
+      "floor": "\""
     }
   }
 }
