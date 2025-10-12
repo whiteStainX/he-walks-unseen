@@ -14,8 +14,8 @@ interface DisplayTile {
   isDim: boolean;
 }
 
-const VIEWPORT_WIDTH = 40;
-const VIEWPORT_HEIGHT = 20;
+export const VIEWPORT_WIDTH = 40;
+export const VIEWPORT_HEIGHT = 20;
 
 const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
   const { actors, items, entities, map, visibleTiles, exploredTiles } = state;

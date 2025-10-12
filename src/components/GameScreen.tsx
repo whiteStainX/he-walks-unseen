@@ -1,6 +1,9 @@
 import React from 'react';
 import { Box, Text, useInput } from 'ink';
-import MapView from './MapView.js';
+import MapView, {
+  VIEWPORT_HEIGHT,
+  VIEWPORT_WIDTH,
+} from './MapView.js';
 import StatusEffectsView from './StatusEffectsView.js';
 import EquipmentView from './EquipmentView.js';
 import InventoryView from './InventoryView.js';
@@ -118,9 +121,10 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
               <TerminalBox
                 paddingX={1}
                 borderColor="cyan"
-                // These dimensions are from the constants in MapView.tsx
-                height={23}
-                width={80}
+                // Height: VIEWPORT_HEIGHT (20) + 2 lines for header + 1 for margin
+                height={VIEWPORT_HEIGHT + 3}
+                // Width: VIEWPORT_WIDTH (40) * 2 because each tile is rendered with a space
+                width={VIEWPORT_WIDTH * 2}
               >
                 <DialogueView state={state} />
               </TerminalBox>
@@ -152,7 +156,9 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             borderStyle="round"
             width={40}
           >
-            {player && <StatusEffectsView statusEffects={player.statusEffects ?? []} />}
+            {player && (
+              <StatusEffectsView statusEffects={player.statusEffects ?? []} />
+            )}
             {player && <EquipmentView player={player} />}
             <InventoryView
               inventory={player?.inventory ?? []}
@@ -167,9 +173,13 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             <Text bold>Status</Text>
             {player ? (
               <Box>
-                <Text>HP: {player.hp.current}/{player.hp.max} | </Text>
+                <Text>
+                  HP: {player.hp.current}/{player.hp.max} | {' '}
+                </Text>
                 <Text>Level: {player.level ?? 1} | </Text>
-                <Text>XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}</Text>
+                <Text>
+                  XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
+                </Text>
               </Box>
             ) : (
               <Text>N/A</Text>
