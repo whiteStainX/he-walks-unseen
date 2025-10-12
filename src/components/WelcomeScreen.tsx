@@ -26,7 +26,9 @@ const WelcomeScreen = () => {
 
   return (
     <Box flexDirection="column" alignItems="center" padding={2}>
-      <Text color="cyan">{gameTitle}</Text>
+      {gameTitle.split('\n').map((line, index) => (
+        <Text key={index} color="cyan">{line}</Text>
+      ))}
       <Box flexDirection="column" alignItems="center" marginTop={2}>
         {options.map((option, index) => (
           <Text key={option} color={selectedOption === index ? 'yellow' : 'white'}>
