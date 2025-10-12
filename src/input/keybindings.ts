@@ -25,6 +25,8 @@ export function resolveAction(
   key: Key,
   phase: GamePhase
 ): GameAction | undefined {
+
+
   // Handle special keys first, which don't have an `input` value.
   if (phase === 'PlayerTurn') {
     if (key.upArrow) return GameAction.MOVE_NORTH;

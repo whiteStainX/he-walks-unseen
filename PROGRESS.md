@@ -205,3 +205,23 @@ This milestone introduced a formal welcome screen and refactored the main game U
 -   **Welcome Screen:** A new welcome screen is now the first thing the player sees, presenting clear options to "Start New Game" or "Load Game". This is managed by a new `Welcome` game phase.
 -   **Classic UI Layout:** The main game screen was refactored into a vertical layout. The top section contains the map view and a contextual sidebar, while the bottom section is dedicated to a persistent player status bar and the scrollable message log.
 -   **Future Work Placeholder:** The "Load Game" functionality is currently foundational. Full integration with the narrative engine's branching and state management capabilities is planned for a future milestone.
+
+## Milestone 20: Thematic & Psychedelic UI/UX (October 2025)
+
+This milestone was dedicated to a major aesthetic overhaul, transforming the game's look and feel to align with a "vintage futuristic" and "psychedelic" theme. This involved deep refactoring of UI components and state management to support a dynamic, player-chosen visual identity.
+
+-   **Dynamic Theming System:**
+    -   Implemented a robust, centralized theme system allowing the entire UI to change its color palette instantly.
+    -   Created two distinct themes: a classic `amber` monochrome and a vibrant `green` "Matrix" style.
+    -   The active theme is now part of the core game state, making it persistent and scalable.
+-   **Thematic Welcome Screen:**
+    -   Replaced the standard "New Game / Load Game" menu with a highly thematic, animated choice.
+    -   Players are now prompted to choose between an "Amber Pill" and a "Green Pill," with the selected choice coming to life with a psychedelic "wavy" and "breathing" text animation.
+    -   The main game title on the welcome screen now features a "glitch" animation, enhancing the unstable, psychedelic feel.
+-   **UI Layout & Consistency:**
+    -   Resolved numerous layout bugs, ensuring a stable and consistent UI. Modal-like views (Dialogue, Full-Screen Log, Combat Menu) now correctly take over their designated screen space without disrupting other UI elements.
+    -   Standardized the dimensions of all main viewport panels (`MapView`, `DialogueView`, `MessageLogView`) to ensure seamless transitions between them.
+-   **Visual Polish & Data Refactoring:**
+    -   Updated all map symbols (`door`, `chest`, `tree`) to be more evocative of the vintage futuristic aesthetic.
+    -   Refactored data files to remove hardcoded colors, allowing all map entities to be correctly styled by the new theme system.
+    -   Hardened the map rendering logic to correctly handle variable-width Unicode characters, preventing visual alignment bugs.

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Item, GameState } from '../engine/state.js';
+import { useTheme } from '../themes.js';
 
 interface InventoryViewProps {
   inventory: Item[];
@@ -18,6 +19,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
   selectedItemIndex,
   phase,
 }) => {
+  const theme = useTheme();
   const isInventoryMode = phase === 'Inventory';
   const isIdentifyMode = phase === 'IdentifyMenu';
   const title = isIdentifyMode ? 'Identify Item' : 'Inventory';
@@ -33,7 +35,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
       const isSelected = isInventoryMode && index === selectedItemIndex;
       return (
         <Box key={name}>
-          <Text color={isSelected ? 'cyan' : 'white'}>
+          <Text color={isSelected ? theme.accent : theme.primary}>
             {isSelected ? '> ' : '  '}
             {name}
             {count > 1 ? ` (x${count})` : ''}
@@ -50,7 +52,7 @@ const InventoryView: React.FC<InventoryViewProps> = ({
       // Use a unique key that includes the item's own ID
       return (
         <Box key={`${item.id}-${index}`}>
-          <Text color={isSelected ? 'cyan' : 'white'}>
+          <Text color={isSelected ? theme.accent : theme.primary}>
             {isSelected ? '> ' : '  '}
             {displayName}
           </Text>
@@ -60,10 +62,10 @@ const InventoryView: React.FC<InventoryViewProps> = ({
   };
 
   return (
-    <Box flexDirection="column" borderStyle="single" padding={1}>
-      <Text bold>{title}</Text>
+    <Box flexDirection="column" borderStyle="single" padding={1} borderColor={theme.border}>
+      <Text bold color={theme.accent}>{title}</Text>
       {inventory.length === 0 ? (
-        <Text>Your inventory is empty.</Text>
+        <Text color={theme.primary}>Your inventory is empty.</Text>
       ) : isIdentifyMode ? (
         renderFlatInventory()
       ) : (
@@ -71,12 +73,12 @@ const InventoryView: React.FC<InventoryViewProps> = ({
       )}
       {isInventoryMode && inventory.length > 0 && (
         <Box marginTop={1}>
-          <Text>e: equip, d: drop, enter: use, esc: close</Text>
+          <Text color={theme.dim}>e: equip, d: drop, enter: use, esc: close</Text>
         </Box>
       )}
       {isIdentifyMode && inventory.length > 0 && (
         <Box marginTop={1}>
-          <Text>enter: identify, esc: cancel</Text>
+          <Text color={theme.dim}>enter: identify, esc: cancel</Text>
         </Box>
       )}
     </Box>

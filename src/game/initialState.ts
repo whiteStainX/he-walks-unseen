@@ -41,10 +41,19 @@ interface InitialStateOptions {
   player?: Actor;
   mapId?: string;
   mapStates?: Map<string, GameState>;
+  theme?: ThemeName;
 }
 
-export function createInitialGameState(options: InitialStateOptions = {}): GameState {
-  const { message, player: existingPlayer, mapId, mapStates = new Map() } = options;
+export function createInitialGameState(
+  options: InitialStateOptions = {}
+): GameState {
+  const {
+    message,
+    player: existingPlayer,
+    mapId,
+    mapStates = new Map(),
+    theme: chosenTheme = 'amber',
+  } = options;
 
   const currentMapId = mapId || getStartMapId();
   const mapDefinition = getMapDefinition(currentMapId);
@@ -248,6 +257,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     exploredTiles: new Set<string>(),
     currentMapId: currentMapId,
     mapStates,
+    activeTheme: chosenTheme,
   };
 
   addLogMessage(
