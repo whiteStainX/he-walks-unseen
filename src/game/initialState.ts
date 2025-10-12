@@ -85,6 +85,8 @@ export function createInitialGameState(
         xpToNextLevel: 100,
         statusEffects: [],
         profile: 'player_default',
+        skillPoints: 0,
+        learnedSkills: {},
       };
 
   const actors: Actor[] = [player];

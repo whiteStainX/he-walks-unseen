@@ -1,0 +1,30 @@
+{
+  "power-strike": {
+    "id": "power-strike",
+    "name": "Power Strike",
+    "description": "Increases melee attack damage.",
+    "cost": 1,
+    "prerequisites": []
+  },
+  "toughness": {
+    "id": "toughness",
+    "name": "Toughness",
+    "description": "Increases maximum HP.",
+    "cost": 1,
+    "prerequisites": []
+  },
+  "cleave": {
+    "id": "cleave",
+    "name": "Cleave",
+    "description": "Attack multiple adjacent enemies.",
+    "cost": 2,
+    "prerequisites": ["power-strike"]
+  },
+  "berserk": {
+    "id": "berserk",
+    "name": "Berserk",
+    "description": "Enter a berserker rage, increasing attack but lowering defense.",
+    "cost": 3,
+    "prerequisites": ["power-strike", "toughness"]
+  }
+}

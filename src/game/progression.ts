@@ -29,17 +29,9 @@ export function checkForLevelUp(state: GameState): void {
   player.hp.max += LEVEL_UP_HP_BONUS;
   player.hp.current = player.hp.max; // Fully heal on level up
   player.attack += LEVEL_UP_ATTACK_BONUS;
+  player.skillPoints = (player.skillPoints ?? 0) + 1;
 
-  player.skills = [
-    ...(player.skills || []),
-    {
-      id: 'power-strike',
-      name: 'Power Strike',
-      description: 'Increases your attack by 1.',
-    },
-  ];
-
-  const levelUpMessage = `You reached level ${player.level}! Your health and attack have increased.`;
+  const levelUpMessage = `You reached level ${player.level}! Your health and attack have increased. You gained 1 skill point!`;
 
   addLogMessage(state, levelUpMessage, 'win');
 

@@ -1,28 +1,32 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { Skill } from '../engine/state.js';
+import type { Actor, Skill } from '../engine/state.js';
 import { useTheme } from '../themes.js';
 
 interface SkillsViewProps {
-  skills: Skill[];
+  player: Actor;
 }
 
-const SkillsView: React.FC<SkillsViewProps> = ({ skills }) => {
+const SkillsView: React.FC<SkillsViewProps> = ({ player }) => {
   const theme = useTheme();
+
+  const learnedSkills = player.learnedSkills ? Object.keys(player.learnedSkills) : [];
 
   return (
     <Box flexDirection="column" borderStyle="single" padding={1} borderColor={theme.border}>
       <Text bold color={theme.accent}>Skills</Text>
-      {skills.length === 0 ? (
-        <Text color={theme.primary}>You have no skills.</Text>
+      <Text color={theme.primary}>Skill Points: {player.skillPoints ?? 0}</Text>
+      {learnedSkills.length === 0 ? (
+        <Text color={theme.primary}>No skills learned.</Text>
       ) : (
-        skills.map((skill) => (
-          <Box key={skill.id} flexDirection="column">
-            <Text bold color={theme.primary}>{skill.name}</Text>
-            <Text color={theme.primary}>{skill.description}</Text>
-          </Box>
+        learnedSkills.map((skillId) => (
+          <Text key={skillId} color={theme.primary}>- {skillId}</Text>
         ))
       )}
+      {/* Placeholder for a 'Learn Skills' button/menu */}
+      <Box marginTop={1}>
+        <Text color={theme.accent}>[ Learn Skills ]</Text>
+      </Box>
     </Box>
   );
 };

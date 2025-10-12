@@ -63,6 +63,8 @@ export interface Actor extends Entity {
   ai?: Ai;
   statusEffects?: StatusEffect[];
   profile?: string;
+  skillPoints?: number;
+  learnedSkills?: Record<string, boolean>;
 }
 
 export type StatusEffectType = 'poison';
@@ -169,6 +171,8 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  prerequisites?: string[];
+  cost?: number;
 }
 
 export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';
