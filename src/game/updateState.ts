@@ -86,11 +86,6 @@ export function applyActionToState(
     return;
   }
 
-  if (action === GameAction.SET_PLAYER_EXPRESSION) {
-    state.playerExpression = payload as string;
-    return;
-  }
-
   if (action === GameAction.CYCLE_THEME) {
     const themeNames = Object.keys(themes);
     const currentIndex = themeNames.indexOf(state.activeTheme);

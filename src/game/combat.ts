@@ -4,8 +4,6 @@ import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from './logger.js';
-import { updateState } from './updateState.js';
-import { GameAction } from '../input/actions.js';
 
 /**
  * Calculates the damage dealt in an attack.
@@ -114,7 +112,6 @@ export function resolveAttack(
     message += ` (${defenderInState.hp.current}/${defenderInState.hp.max} HP left).`;
     // Set message type based on who was hit
     if (damage > 0 && defender.isPlayer) {
-      updateState(GameAction.SET_PLAYER_EXPRESSION, 'player_hurt');
       messageType = 'damage';
     }
   }

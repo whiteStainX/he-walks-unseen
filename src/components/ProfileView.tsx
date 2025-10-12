@@ -18,7 +18,7 @@ const ProfileView: React.FC<Props> = ({ profileId }) => {
       borderStyle="round"
       borderColor={theme.border}
       flexDirection="column"
-      width={12}
+      width={20}
       height={10}
       alignItems="center"
       justifyContent="center"

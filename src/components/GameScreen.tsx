@@ -14,8 +14,8 @@ import { resolveAction } from '../input/keybindings.js';
 import { getMapDefinition } from '../engine/worldManager.js';
 import { updateState } from '../game/updateState.js';
 import TerminalBox from './TerminalBox.js';
-import ProfileView from './ProfileView.js';
 import { useTheme } from '../themes.js';
+import PlayerExpressionManager from './PlayerExpressionManager.js';
 
 interface Props {
   gameState: GameState;
@@ -242,7 +242,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             />
           </Box>
           <Box marginLeft={2}>
-            <ProfileView profileId={state.playerExpression} />
+            <PlayerExpressionManager gameState={state} />
           </Box>
         </Box>
       </Box>

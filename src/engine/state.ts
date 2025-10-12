@@ -201,7 +201,6 @@ export interface GameState {
   mapStates: Map<string, GameState>;
   conversation?: ConversationState;
   activeTheme: ThemeName;
-  playerExpression?: string;
 }
 
 export interface ConversationState {

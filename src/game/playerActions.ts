@@ -3,7 +3,6 @@ import { GameAction } from '../input/actions.js';
 import { updateVisibility } from './visibility.js';
 import { handleInteraction } from './interaction.js';
 import { addLogMessage } from './logger.js';
-import { updateState } from './updateState.js';
 
 interface MovementDelta {
   dx: number;
@@ -26,7 +25,6 @@ function isBlocked(state: GameState, x: number, y: number): boolean {
 }
 
 export function handlePlayerAction(state: GameState, action: GameAction): void {
-  updateState(GameAction.SET_PLAYER_EXPRESSION, 'player_idle');
 
   const player = state.actors.find((a) => a.isPlayer);
   if (!player) return;
