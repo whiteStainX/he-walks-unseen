@@ -7,7 +7,7 @@
     "attack": 4,
     "defense": 1,
     "xpValue": 15,
-    "ai": { "behavior": "wander" }
+    "ai": { "state": "wander" }
   },
   "health-potion": {
     "name": "Health Potion",
