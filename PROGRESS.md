@@ -8,6 +8,7 @@ This milestone established the fundamental gameplay loop and mechanics that defi
 
 -   **Turn-Based System:** Implemented a formal, sequential turn system (`PlayerTurn` -> `EnemyTurn`).
 -   **Permadeath & Restart:** Added a complete game over and restart cycle.
+
 -   **Procedural Generation:**
     -   Map generation is now randomized for unique layouts each run.
     -   Enemy and item placements are randomized.
