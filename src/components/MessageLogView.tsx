@@ -46,7 +46,9 @@ const MessageLogView: React.FC<Props> = ({
         height={height}
         flexGrow={1}
         paddingX={1}
+        borderStyle="round"
         borderColor={theme.border}
+        flexDirection="column"
       >
         <Box paddingBottom={1}>
           <Text bold color={theme.accent}>Message Log (scroll with up/down, 'l' to close)</Text>
