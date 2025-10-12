@@ -1,32 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text } from 'ink';
+import { getResource } from '../engine/resourceManager.js';
 
 interface Props {
   color: string;
   isSelected: boolean;
 }
 
-const GLOW_CHARS = ['o', 'O', '0', 'O'];
+interface AnimationData {
+  frames: string[][];
+  staticFrameIndex: number;
+}
 
 const Pill: React.FC<Props> = ({ color, isSelected }) => {
-  const [glowIndex, setGlowIndex] = useState(0);
+  const animationData = getResource<Record<string, AnimationData>>('animations')[
+    'pill-rotation'
+  ];
+  const ROTATION_FRAMES = animationData.frames;
+  const STATIC_FRAME = ROTATION_FRAMES[animationData.staticFrameIndex];
+
+  const [frameIndex, setFrameIndex] = useState(0);
 
   useEffect(() => {
     if (isSelected) {
       const timer = setInterval(() => {
-        setGlowIndex((prev) => (prev + 1) % GLOW_CHARS.length);
+        setFrameIndex((prev) => (prev + 1) % ROTATION_FRAMES.length);
       }, 150);
       return () => clearInterval(timer);
     }
   }, [isSelected]);
 
-  const glowChar = isSelected ? GLOW_CHARS[glowIndex] : ' ';
+  const frame = isSelected ? ROTATION_FRAMES[frameIndex] : STATIC_FRAME;
 
   return (
     <Box flexDirection="column" alignItems="center" padding={1}>
-      <Text color={isSelected ? color : 'grey'}>  /‾‾‾\</Text>
-      <Text color={isSelected ? color : 'grey'}> ( {glowChar} )</Text>
-      <Text color={isSelected ? color : 'grey'}>  \___/</Text>
+      {frame.map((line, index) => (
+        <Text key={index} color={isSelected ? color : 'grey'}>
+          {line}
+        </Text>
+      ))}
     </Box>
   );
 };
