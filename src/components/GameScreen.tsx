@@ -140,15 +140,6 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
               />
             )}
           </Box>
-          <CombatMenuView state={state} />
-          {state.phase === 'MessageLog' && (
-            <MessageLogView
-              log={state.log}
-              logOffset={state.logOffset}
-              phase={state.phase}
-              height={state.map.height}
-            />
-          )}
           <Box
             flexDirection="column"
             marginLeft={2}
@@ -156,16 +147,24 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             borderStyle="round"
             width={40}
           >
-            {player && (
-              <StatusEffectsView statusEffects={player.statusEffects ?? []} />
+            {state.phase === 'CombatMenu' ? (
+              <CombatMenuView state={state} />
+            ) : (
+              <>
+                {player && (
+                  <StatusEffectsView
+                    statusEffects={player.statusEffects ?? []}
+                  />
+                )}
+                {player && <EquipmentView player={player} />}
+                <InventoryView
+                  inventory={player?.inventory ?? []}
+                  selectedItemIndex={state.selectedItemIndex}
+                  phase={state.phase}
+                />
+                <SkillsView skills={player?.skills ?? []} />
+              </>
             )}
-            {player && <EquipmentView player={player} />}
-            <InventoryView
-              inventory={player?.inventory ?? []}
-              selectedItemIndex={state.selectedItemIndex}
-              phase={state.phase}
-            />
-            <SkillsView skills={player?.skills ?? []} />
           </Box>
         </Box>
         <Box flexDirection="column" marginTop={1} borderStyle="round" paddingX={1}>

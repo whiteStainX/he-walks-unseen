@@ -22,14 +22,7 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
   }
 
   return (
-    <Box
-      flexDirection="column"
-      borderStyle="round"
-      borderColor="yellow"
-      paddingX={1}
-      alignSelf="center"
-      marginTop={5}
-    >
+    <Box flexDirection="column">
       <Text>Engaging: {targetEnemy.name}</Text>
       <Box height={1} />
       {COMBAT_OPTIONS.map((option, index) => {
