@@ -103,6 +103,11 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
   const mapDefinition = getMapDefinition(state.currentMapId);
   const mapName = mapDefinition?.id ?? 'Unknown Area';
 
+  const visibleEnemies = state.actors.filter(
+    (a) => !a.isPlayer && state.visibleTiles.has(`${a.position.x},${a.position.y}`)
+  );
+  const primaryEnemy = visibleEnemies.length > 0 ? visibleEnemies[0] : null;
+
   return (
     <Box>
       {/* Main UI */}
@@ -182,6 +187,11 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
               </Box>
             ) : (
               <Text>N/A</Text>
+            )}
+            {primaryEnemy && (
+              <Box marginTop={1}> 
+                <Text>Target: {primaryEnemy.name} ({primaryEnemy.char}) | HP: {primaryEnemy.hp.current}/{primaryEnemy.hp.max}</Text>
+              </Box>
             )}
           </Box>
           <MessageLogView

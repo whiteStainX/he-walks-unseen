@@ -186,29 +186,6 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
             </Box>
           ))}
         </Box>
-
-        {/* Side Panel for Enemy Status */}
-        {visibleEnemies.length > 0 && (
-          <Box
-            flexDirection="column"
-            marginLeft={4}
-            paddingX={2}
-            borderStyle="round"
-            borderColor="gray"
-          >
-            <Text bold dimColor={isDimmed}>
-              Visible Enemies
-            </Text>
-            {visibleEnemies.map((enemy) => (
-              <Text key={enemy.id} dimColor={isDimmed}>
-                <Text color={enemy.color || 'white'}>
-                  {enemy.name} ({enemy.char})
-                </Text>
-                : {enemy.hp.current}/{enemy.hp.max} HP
-              </Text>
-            ))}
-          </Box>
-        )}
       </Box>
 
     </Box>
