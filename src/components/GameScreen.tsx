@@ -18,193 +18,408 @@ import { getMapDefinition } from '../engine/worldManager.js';
 import { updateState } from '../game/updateState.js';
 import TerminalBox from './TerminalBox.js';
 
+import { useTheme } from '../themes.js';
+
+
+
 interface Props {
+
   gameState: GameState;
+
 }
+
+
 
 export function isActionDefined(
+
   action: GameAction | undefined
+
 ): action is GameAction {
+
   return action !== undefined;
+
 }
 
+
+
 const GameScreen: React.FC<Props> = ({ gameState: state }) => {
+
+  const theme = useTheme();
+
+
+
   useInput(
+
     (input, key) => {
+
       if (
+
         state.phase === 'PlayerTurn' ||
+
         state.phase === 'Inventory' ||
+
         state.phase === 'Targeting' ||
+
         state.phase === 'CombatMenu' ||
+
         state.phase === 'IdentifyMenu' ||
+
         state.phase === 'MessageLog' ||
+
         state.phase === 'Dialogue'
+
       ) {
+
         const action = resolveAction(input, key, state.phase);
+
         if (isActionDefined(action)) {
+
           updateState(action);
+
         }
+
       } else if (state.phase === 'Loss' && input.toLowerCase() === 'r') {
+
         updateState(GameAction.NEW_GAME);
+
       }
+
     },
+
     {
+
       isActive:
+
         state.phase === 'PlayerTurn' ||
+
         state.phase === 'Inventory' ||
+
         state.phase === 'Targeting' ||
+
         state.phase === 'CombatMenu' ||
+
         state.phase === 'IdentifyMenu' ||
+
         state.phase === 'MessageLog' ||
+
         state.phase === 'Dialogue' ||
+
         state.phase === 'Loss',
+
     }
+
   );
+
+
 
   const player = state.actors.find((a) => a.isPlayer);
 
+
+
   if (state.phase === 'Win') {
+
     return (
+
       <Box
+
         flexDirection="column"
+
         alignItems="center"
+
         padding={2}
-        borderColor="green"
+
+        borderColor={theme.accent}
+
         borderStyle="round"
+
       >
-        <Text bold color="green">
+
+        <Text bold color={theme.accent}>
+
           You have escaped the dungeon!
+
         </Text>
-        <Text>You are victorious.</Text>
+
+        <Text color={theme.primary}>You are victorious.</Text>
+
       </Box>
+
     );
+
   }
+
+
 
   if (state.phase === 'Loss') {
+
     return (
+
       <Box
+
         flexDirection="column"
+
         alignItems="center"
+
         padding={2}
-        borderColor="red"
+
+        borderColor={theme.critical}
+
         borderStyle="round"
+
       >
-        <Text bold color="red">
+
+        <Text bold color={theme.critical}>
+
           You have been defeated.
+
         </Text>
-        <Text>Game Over.</Text>
+
+        <Text color={theme.primary}>Game Over.</Text>
+
         <Box marginTop={1}>
-          <Text>Press 'r' to restart.</Text>
+
+          <Text color={theme.primary}>Press 'r' to restart.</Text>
+
         </Box>
+
       </Box>
+
     );
+
   }
 
+
+
   const mapDefinition = getMapDefinition(state.currentMapId);
+
   const mapName = mapDefinition?.id ?? 'Unknown Area';
 
+
+
   const visibleEnemies = state.actors.filter(
+
     (a) => !a.isPlayer && state.visibleTiles.has(`${a.position.x},${a.position.y}`)
+
   );
+
   const primaryEnemy = visibleEnemies.length > 0 ? visibleEnemies[0] : null;
 
+
+
   return (
+
     <Box>
+
       {/* Main UI */}
+
       <Box flexDirection="column">
+
         <Box flexDirection="row">
+
           <Box
+
             flexDirection="column"
+
             borderStyle="round"
-            borderColor="gray"
+
+            borderColor={theme.border}
+
             paddingX={1}
+
           >
+
             <Box justifyContent="center">
-              <Text bold>{mapName}</Text>
+
+              <Text bold color={theme.accent}>{mapName}</Text>
+
             </Box>
+
             {state.phase === 'Dialogue' ? (
+
               <TerminalBox
+
                 paddingX={1}
-                borderColor="cyan"
+
+                borderColor={theme.accent}
+
                 // Height: VIEWPORT_HEIGHT (20) + 2 lines for header + 1 for margin
+
                 height={VIEWPORT_HEIGHT + 3}
+
                 // Width: VIEWPORT_WIDTH (40) * 2 because each tile is rendered with a space
+
                 width={VIEWPORT_WIDTH * 2}
+
               >
+
                 <DialogueView state={state} />
+
               </TerminalBox>
+
             ) : (
+
               <MapView
+
                 state={state}
+
                 isDimmed={
+
                   state.phase === 'Inventory' ||
+
                   state.phase === 'CombatMenu' ||
+
                   state.phase === 'IdentifyMenu' ||
+
                   state.phase === 'MessageLog'
+
                 }
+
               />
+
             )}
+
           </Box>
+
           <Box
+
             flexDirection="column"
+
             marginLeft={2}
+
             paddingX={1}
+
             borderStyle="round"
+
+            borderColor={theme.border}
+
             width={40}
+
           >
+
             {state.phase === 'CombatMenu' ? (
+
               <CombatMenuView state={state} />
+
             ) : (
+
               <>
+
                 {player && (
+
                   <StatusEffectsView
+
                     statusEffects={player.statusEffects ?? []}
+
                   />
+
                 )}
+
                 {player && <EquipmentView player={player} />}
+
                 <InventoryView
+
                   inventory={player?.inventory ?? []}
+
                   selectedItemIndex={state.selectedItemIndex}
+
                   phase={state.phase}
+
                 />
+
                 <SkillsView skills={player?.skills ?? []} />
+
               </>
+
             )}
+
           </Box>
+
         </Box>
-        <Box flexDirection="column" marginTop={1} borderStyle="round" paddingX={1}>
+
+        <Box
+
+          flexDirection="column"
+
+          marginTop={1}
+
+          borderStyle="round"
+
+          borderColor={theme.border}
+
+          paddingX={1}
+
+        >
+
           <Box flexDirection="column">
-            <Text bold>Status</Text>
+
+            <Text bold color={theme.accent}>Status</Text>
+
             {player ? (
+
               <Box>
-                <Text>
+
+                <Text color={theme.primary}>
+
                   HP: {player.hp.current}/{player.hp.max} | {' '}
+
                 </Text>
-                <Text>Level: {player.level ?? 1} | </Text>
-                <Text>
+
+                <Text color={theme.primary}>Level: {player.level ?? 1} | </Text>
+
+                <Text color={theme.primary}>
+
                   XP: {player.xp ?? 0}/{player.xpToNextLevel ?? 100}
+
                 </Text>
+
               </Box>
+
             ) : (
+
               <Text>N/A</Text>
+
             )}
+
             {primaryEnemy && (
-              <Box marginTop={1}> 
-                <Text>Target: {primaryEnemy.name} ({primaryEnemy.char}) | HP: {primaryEnemy.hp.current}/{primaryEnemy.hp.max}</Text>
+
+              <Box marginTop={1}>
+
+                <Text color={theme.primary}>
+
+                  Target: {primaryEnemy.name} ({primaryEnemy.char}) | HP: {
+
+                    primaryEnemy.hp.current
+
+                  }/
+
+                  {primaryEnemy.hp.max}
+
+                </Text>
+
               </Box>
+
             )}
+
           </Box>
+
           <MessageLogView
+
             log={state.log}
+
             logOffset={state.logOffset}
+
             phase={state.phase}
+
           />
+
         </Box>
+
       </Box>
 
-
     </Box>
+
   );
+
 };
 
 export default GameScreen;

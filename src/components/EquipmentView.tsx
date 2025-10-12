@@ -1,17 +1,19 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { Actor, EquipmentSlot } from '../engine/state.js';
+import { useTheme } from '../themes.js';
 
 interface EquipmentViewProps {
   player: Actor;
 }
 
 const EquipmentView: React.FC<EquipmentViewProps> = ({ player }) => {
+  const theme = useTheme();
   const equipmentSlots: EquipmentSlot[] = ['weapon', 'armor'];
 
   return (
-    <Box flexDirection="column" borderStyle="round" paddingX={1}>
-      <Text bold>Equipment</Text>
+    <Box flexDirection="column" borderStyle="round" paddingX={1} borderColor={theme.border}>
+      <Text bold color={theme.accent}>Equipment</Text>
       {equipmentSlots.map(slot => {
         const item = player.equipment?.[slot];
         const itemName =
@@ -33,9 +35,9 @@ const EquipmentView: React.FC<EquipmentViewProps> = ({ player }) => {
 
         return (
           <Box key={slot}>
-            <Text>
+            <Text color={theme.primary}>
               {slot.charAt(0).toUpperCase() + slot.slice(1)}: {itemName}
-              {bonusText && <Text color="green">{bonusText}</Text>}
+              {bonusText && <Text color={theme.accent}>{bonusText}</Text>}
             </Text>
           </Box>
         );

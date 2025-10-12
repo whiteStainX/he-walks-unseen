@@ -1,4 +1,5 @@
 import type { GamePhase } from './fsm.js';
+import type { ThemeName } from '../themes.js';
 
 export interface Point {
   x: number;
@@ -198,6 +199,7 @@ export interface GameState {
   currentMapId: string;
   mapStates: Map<string, GameState>;
   conversation?: ConversationState;
+  activeTheme: ThemeName;
 }
 
 export interface ConversationState {

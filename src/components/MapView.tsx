@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { GameState, Entity, Actor, Item } from '../engine/state.js';
+import { useTheme } from '../themes.js';
 
 interface Props {
   state: GameState;
@@ -17,7 +18,10 @@ interface DisplayTile {
 export const VIEWPORT_WIDTH = 40;
 export const VIEWPORT_HEIGHT = 20;
 
-const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
+const createDisplayGrid = (
+  state: GameState,
+  theme: ReturnType<typeof useTheme>
+): (DisplayTile | null)[][] => {
   const { actors, items, entities, map, visibleTiles, exploredTiles } = state;
   const player = actors.find((a) => a.isPlayer)!;
 
@@ -70,7 +74,7 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
       const tile = map.tiles[mapY][mapX];
       row.push({
         char: tile.char,
-        color: tile.walkable ? 'grey' : 'white',
+        color: tile.walkable ? theme.dim : theme.primary,
         isDim: !isVisible,
       });
     }
@@ -100,7 +104,7 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
         displayGrid[viewY]?.[viewX]
       ) {
         displayGrid[viewY][viewX]!.char = entity.char;
-        displayGrid[viewY][viewX]!.color = entity.color || 'white';
+        displayGrid[viewY][viewX]!.color = entity.color || theme.primary;
         displayGrid[viewY][viewX]!.isDim = false;
       }
     }
@@ -117,8 +121,8 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
     viewY < VIEWPORT_HEIGHT &&
     displayGrid[viewY]?.[viewX]
   ) {
-    displayGrid[viewY][viewX]!.backgroundColor = 'yellow';
-    displayGrid[viewY][viewX]!.color = 'black';
+    displayGrid[viewY][viewX]!.backgroundColor = theme.accent;
+    displayGrid[viewY][viewX]!.color = theme.textOnPrimary;
     displayGrid[viewY][viewX]!.isDim = false;
   }
 
@@ -126,9 +130,10 @@ const createDisplayGrid = (state: GameState): (DisplayTile | null)[][] => {
 };
 
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
+  const theme = useTheme();
   const { actors, visibleTiles } = state;
   const displayGrid = React.useMemo(
-    () => createDisplayGrid(state),
+    () => createDisplayGrid(state, theme),
     [
       state.map,
       state.actors,
@@ -136,24 +141,22 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
       state.entities,
       state.visibleTiles,
       state.exploredTiles,
+      theme,
     ]
-  );
-  const visibleEnemies = actors.filter(
-    (a) => !a.isPlayer && visibleTiles.has(`${a.position.x},${a.position.y}`)
   );
   const player = actors.find((a) => a.isPlayer);
 
   return (
     <Box flexDirection="column">
       <Box flexDirection="column" alignItems="center" marginBottom={1}>
-        <Text bold dimColor={isDimmed}>
+        <Text bold dimColor={isDimmed} color={theme.accent}>
           He Walks Unseen
         </Text>
         {player && (
-          <Text dimColor={isDimmed}>
+          <Text dimColor={isDimmed} color={theme.primary}>
             HP:{' '}
             <Text
-              color={player.hp.current < player.hp.max * 0.3 ? 'red' : 'green'}
+              color={player.hp.current < player.hp.max * 0.3 ? theme.critical : theme.primary}
             >
               {player.hp.current}
             </Text>
@@ -187,9 +190,9 @@ const MapView: React.FC<Props> = ({ state, isDimmed }) => {
           ))}
         </Box>
       </Box>
-
     </Box>
   );
 };
 
 export default MapView;
+

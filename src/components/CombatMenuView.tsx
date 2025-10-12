@@ -1,6 +1,7 @@
 
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
+import { useTheme } from '../themes.js';
 
 interface CombatMenuViewProps {
   state: GameState;
@@ -9,6 +10,8 @@ interface CombatMenuViewProps {
 const COMBAT_OPTIONS = ['Attack', 'Cancel'];
 
 export function CombatMenuView({ state }: CombatMenuViewProps) {
+  const theme = useTheme();
+
   if (state.phase !== 'CombatMenu') {
     return null;
   }
@@ -23,12 +26,12 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
 
   return (
     <Box flexDirection="column">
-      <Text>Engaging: {targetEnemy.name}</Text>
+      <Text color={theme.primary}>Engaging: {targetEnemy.name}</Text>
       <Box height={1} />
       {COMBAT_OPTIONS.map((option, index) => {
         const isSelected = index === state.selectedCombatMenuIndex;
         return (
-          <Text key={option} color={isSelected ? 'yellow' : 'white'}>
+          <Text key={option} color={isSelected ? theme.accent : theme.primary}>
             {isSelected ? '> ' : '  '}
             {option}
           </Text>

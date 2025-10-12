@@ -52,4 +52,7 @@ export enum GameAction {
   SELECT_NEXT_CHOICE,
   SELECT_PREVIOUS_CHOICE,
   CONFIRM_CHOICE,
+
+  // Theming
+  CYCLE_THEME,
 }

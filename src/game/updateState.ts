@@ -11,6 +11,7 @@ import { addLogMessage } from './logger.js';
 import { eventBus } from '../engine/events.js';
 import { getCurrentState } from '../engine/narrativeEngine.js';
 import { produce } from 'immer';
+import { themes } from '../themes.js';
 
 export function updateState(action: GameAction): void {
   if (action === GameAction.NEW_GAME) {
@@ -70,6 +71,14 @@ export function applyActionToState(
     saveGame().then(() => {
         process.exit(0);
     });
+    return;
+  }
+
+  if (action === GameAction.CYCLE_THEME) {
+    const themeNames = Object.keys(themes);
+    const currentIndex = themeNames.indexOf(state.activeTheme);
+    const nextIndex = (currentIndex + 1) % themeNames.length;
+    state.activeTheme = themeNames[nextIndex];
     return;
   }
 

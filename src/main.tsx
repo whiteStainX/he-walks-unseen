@@ -16,6 +16,8 @@ import { enableMapSet } from 'immer';
 
 enableMapSet();
 
+import { ThemeProvider, themes } from './themes.js';
+
 const App = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +97,11 @@ const App = () => {
     return <WelcomeScreen />;
   }
 
-  return <GameScreen gameState={gameState} />;
+  return (
+    <ThemeProvider value={themes[gameState.activeTheme]}>
+      <GameScreen gameState={gameState} />
+    </ThemeProvider>
+  );
 };
 
 render(<App />);

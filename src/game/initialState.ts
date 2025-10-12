@@ -248,6 +248,7 @@ export function createInitialGameState(options: InitialStateOptions = {}): GameS
     exploredTiles: new Set<string>(),
     currentMapId: currentMapId,
     mapStates,
+    activeTheme: 'amber',
   };
 
   addLogMessage(
