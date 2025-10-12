@@ -65,6 +65,7 @@ export interface Actor extends Entity {
   profile?: string;
   skillPoints?: number;
   learnedSkills?: Record<string, boolean>;
+  actionPoints?: { current: number; max: number; };
 }
 
 export type StatusEffectType = 'poison';

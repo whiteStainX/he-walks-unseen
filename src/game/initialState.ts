@@ -87,6 +87,7 @@ export function createInitialGameState(
         profile: 'player_default',
         skillPoints: 0,
         learnedSkills: {},
+        actionPoints: { current: 3, max: 3 },
       };
 
   const actors: Actor[] = [player];

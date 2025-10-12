@@ -56,4 +56,10 @@ export enum GameAction {
 
   // Theming
   CYCLE_THEME,
+
+  // Combat Actions
+  USE_SKILL,
+  USE_ITEM_IN_COMBAT,
+  DEFEND_ACTION,
+  FLEE_ACTION,
 }
