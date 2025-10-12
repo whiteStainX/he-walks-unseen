@@ -10,10 +10,10 @@ const getMessageColor = (messageType: MessageType) => {
       return 'red';
     case 'heal':
     case 'win':
-      return 'green';
+      return 'cyan';
     case 'info':
     default:
-      return 'white';
+      return 'yellow';
   }
 };
 
@@ -33,11 +33,18 @@ const MessageLogView: React.FC<Props> = ({
   height = SIDEBAR_LOG_LENGTH,
 }) => {
   if (phase === 'MessageLog') {
-    // Full-screen, scrollable view (to be implemented)
-    const visibleLog = log.slice(logOffset, logOffset + height);
+    // Full-screen, scrollable view
+    // Subtracting 4 for padding and title
+    const visibleLog = log.slice(logOffset, logOffset + height - 4);
 
     return (
-      <TerminalBox width="100%" flexGrow={1} paddingX={1}>
+      <TerminalBox
+        width="100%"
+        height={height}
+        flexGrow={1}
+        paddingX={1}
+        borderColor="yellow"
+      >
         <Box paddingBottom={1}>
           <Text bold>Message Log (scroll with up/down, 'l' to close)</Text>
         </Box>
