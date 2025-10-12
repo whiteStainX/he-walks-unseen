@@ -11,7 +11,7 @@ import { addLogMessage } from './logger.js';
  * @param defender The actor being attacked.
  * @returns The amount of damage dealt.
  */
-export function calculateDamage(attacker: Actor, defender: Actor): number {
+export function calculateDamage(attacker: Actor, defender: Actor, state: GameState): number {
   const attackerStats = getActorStats(attacker);
   const defenderStats = getActorStats(defender);
 
@@ -66,7 +66,7 @@ export function resolveAttack(
   defender: Actor,
   state: GameState
 ): void {
-  const damage = calculateDamage(attacker, defender);
+  const damage = calculateDamage(attacker, defender, state);
   const defenderInState = state.actors.find(a => a.id === defender.id)!;
   defenderInState.hp.current -= damage;
 
