@@ -113,6 +113,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
       return (
         <TerminalBox
           paddingX={1}
+          borderStyle="round"
           borderColor={theme.accent}
           height={VIEWPORT_HEIGHT + 3}
           width={VIEWPORT_WIDTH * 2}
@@ -130,6 +131,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           logOffset={state.logOffset}
           phase={state.phase}
           height={VIEWPORT_HEIGHT + 3}
+          width={VIEWPORT_WIDTH * 2}
         />
       );
     }
@@ -151,6 +153,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
       {/* Main UI */}
       <Box flexDirection="column">
         <Box flexDirection="row">
+          {/* Main Viewport Panel */}
           <Box
             flexDirection="column"
             borderStyle="round"
@@ -158,10 +161,14 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             paddingX={1}
           >
             <Box justifyContent="center">
-              <Text bold color={theme.accent}>{mapName}</Text>
+              <Text bold color={theme.accent}>
+                {mapName}
+              </Text>
             </Box>
             {renderMainPanel()}
           </Box>
+
+          {/* Sidebar Panel */}
           <Box
             flexDirection="column"
             marginLeft={2}
@@ -190,6 +197,8 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             )}
           </Box>
         </Box>
+
+        {/* Status Panel */}
         <Box
           flexDirection="column"
           marginTop={1}
@@ -198,7 +207,9 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           paddingX={1}
         >
           <Box flexDirection="column">
-            <Text bold color={theme.accent}>Status</Text>
+            <Text bold color={theme.accent}>
+              Status
+            </Text>
             {player ? (
               <Box>
                 <Text color={theme.primary}>

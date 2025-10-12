@@ -23,6 +23,7 @@ interface Props {
   logOffset: number;
   phase: GameState['phase'];
   height?: number;
+  width?: number;
 }
 
 const SIDEBAR_LOG_LENGTH = 5;
@@ -32,6 +33,7 @@ const MessageLogView: React.FC<Props> = ({
   logOffset,
   phase,
   height = SIDEBAR_LOG_LENGTH,
+  width,
 }) => {
   const theme = useTheme();
 
@@ -42,7 +44,7 @@ const MessageLogView: React.FC<Props> = ({
 
     return (
       <TerminalBox
-        width="100%"
+        width={width}
         height={height}
         flexGrow={1}
         paddingX={1}
