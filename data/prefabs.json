@@ -10,6 +10,61 @@
     "profile": "goblin_shaman",
     "ai": { "state": "wander" }
   },
+  "shrieker": {
+    "name": "Shrieker",
+    "char": "S",
+    "color": "magenta",
+    "hp": { "current": 12, "max": 12 },
+    "attack": 0,
+    "defense": 0,
+    "xpValue": 15,
+    "profile": "goblin_shaman",
+    "ai": { "state": "wander" }
+  },
+  "goblin-ambusher": {
+    "name": "Goblin Ambusher",
+    "char": "a",
+    "color": "red",
+    "hp": { "current": 10, "max": 10 },
+    "attack": 5,
+    "defense": 1,
+    "xpValue": 12,
+    "profile": "goblin_shaman",
+    "ai": { "state": "wander" }
+  },
+  "skeleton": {
+    "name": "Skeleton",
+    "char": "z",
+    "color": "white",
+    "hp": { "current": 15, "max": 15 },
+    "attack": 6,
+    "defense": 2,
+    "xpValue": 20,
+    "profile": "goblin_shaman",
+    "ai": { "state": "wander" }
+  },
+  "ghost": {
+    "name": "Ghost",
+    "char": "G",
+    "color": "cyan",
+    "hp": { "current": 10, "max": 10 },
+    "attack": 3,
+    "defense": 0,
+    "xpValue": 18,
+    "profile": "goblin_shaman",
+    "ai": { "state": "wander", "canPassThroughWalls": true }
+  },
+  "guard": {
+    "name": "Guard",
+    "char": "U",
+    "color": "blue",
+    "hp": { "current": 20, "max": 20 },
+    "attack": 7,
+    "defense": 3,
+    "xpValue": 25,
+    "profile": "goblin_shaman",
+    "ai": { "state": "patrol", "patrolPoints": [{"x":10,"y":10},{"x":15,"y":10},{"x":15,"y":15},{"x":10,"y":15}] }
+  },
   "health-potion": {
     "name": "Health Potion",
     "char": "!",
