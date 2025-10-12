@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { GameState, Message, MessageType } from '../engine/state.js';
+import TerminalBox from './TerminalBox.js';
 
 const getMessageColor = (messageType: MessageType) => {
   switch (messageType) {
@@ -36,15 +37,10 @@ const MessageLogView: React.FC<Props> = ({
     const visibleLog = log.slice(logOffset, logOffset + height);
 
     return (
-      <Box
-        width="100%"
-        flexDirection="column"
-        borderStyle="round"
-        borderColor="yellow"
-        padding={1}
-        flexGrow={1}
-      >
-        <Text bold>Message Log (scroll with up/down, 'l' to close)</Text>
+      <TerminalBox width="100%" flexGrow={1} paddingX={1}>
+        <Box paddingBottom={1}>
+          <Text bold>Message Log (scroll with up/down, 'l' to close)</Text>
+        </Box>
         <Box flexDirection="column" flexGrow={1}>
           {visibleLog.map((msg) => (
             <Text key={msg.id} color={getMessageColor(msg.type)}>
@@ -53,7 +49,7 @@ const MessageLogView: React.FC<Props> = ({
             </Text>
           ))}
         </Box>
-      </Box>
+      </TerminalBox>
     );
   }
 

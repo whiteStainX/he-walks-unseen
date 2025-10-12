@@ -2,7 +2,7 @@
   {
     "id": "door",
     "name": "Door",
-    "char": "+",
+    "char": "▕",
     "color": "brown",
     "interaction": {
       "type": "door",
@@ -12,7 +12,7 @@
   {
     "id": "chest",
     "name": "Chest",
-    "char": "C",
+    "char": "⌸",
     "color": "brown",
     "interaction": {
       "type": "chest",
@@ -23,7 +23,7 @@
   {
     "id": "upstairs",
     "name": "Upstairs",
-    "char": "<",
+    "char": "⇡",
     "color": "white",
     "interaction": {
       "type": "stairs",
@@ -33,7 +33,7 @@
   {
     "id": "downstairs",
     "name": "Downstairs",
-    "char": ">",
+    "char": "⇣",
     "color": "white",
     "interaction": {
       "type": "stairs",
@@ -43,7 +43,7 @@
   {
     "id": "portal",
     "name": "Portal",
-    "char": "O",
+    "char": "◎",
     "color": "purple",
     "interaction": {
       "type": "portal",

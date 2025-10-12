@@ -3,7 +3,7 @@
     "id": "health-potion",
     "name": "Health Potion",
     "unidentifiedName": "Bubbling Red Potion",
-    "char": "!",
+    "char": "⚕",
     "color": "red",
     "identified": false,
     "effects": [
@@ -18,7 +18,7 @@
     "id": "scroll-fireball",
     "name": "Scroll of Fireball",
     "unidentifiedName": "Scroll with Fiery Glyphs",
-    "char": "?",
+    "char": "§",
     "color": "orange",
     "identified": false,
     "effects": [
@@ -34,7 +34,7 @@
     "id": "scroll-mapping",
     "name": "Scroll of Mapping",
     "unidentifiedName": "Scroll with Cartographic Marks",
-    "char": "?",
+    "char": "§",
     "color": "cyan",
     "identified": false,
     "effects": [
@@ -48,7 +48,7 @@
     "id": "scroll-identify",
     "name": "Scroll of Identify",
     "unidentifiedName": "Scroll with an Inquisitive Eye",
-    "char": "?",
+    "char": "§",
     "color": "white",
     "identified": false,
     "effects": [
@@ -61,13 +61,13 @@
   {
     "id": "key",
     "name": "Key",
-    "char": "k",
+    "char": "⚷",
     "color": "yellow"
   },
   {
     "id": "dagger",
     "name": "Dagger",
-    "char": ")",
+    "char": "¬",
     "color": "silver",
     "equipment": {
       "slot": "weapon",
@@ -79,7 +79,7 @@
   {
     "id": "leather-armor",
     "name": "Leather Armor",
-    "char": "[",
+    "char": "☗",
     "color": "brown",
     "equipment": {
       "slot": "armor",
@@ -91,7 +91,7 @@
   {
     "id": "poisoned-dagger",
     "name": "Poisoned Dagger",
-    "char": ")",
+    "char": "¬",
     "color": "green",
     "equipment": {
       "slot": "weapon",
