@@ -95,6 +95,7 @@ export interface Equipment {
     attack?: number;
     defense?: number;
   };
+  damage?: { min: number; max: number; };
   onHit?: {
     type: StatusEffectType;
     duration: number;
@@ -174,6 +175,7 @@ export interface Skill {
   description: string;
   prerequisites?: string[];
   cost?: number;
+  effects?: ItemEffect[];
 }
 
 export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';

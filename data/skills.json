@@ -4,14 +4,20 @@
     "name": "Power Strike",
     "description": "Increases melee attack damage.",
     "cost": 1,
-    "prerequisites": []
+    "prerequisites": [],
+    "effects": [
+      { "type": "increase_attack", "potency": 1, "requiresTarget": false }
+    ]
   },
   "toughness": {
     "id": "toughness",
     "name": "Toughness",
     "description": "Increases maximum HP.",
     "cost": 1,
-    "prerequisites": []
+    "prerequisites": [],
+    "effects": [
+      { "type": "increase_max_hp", "potency": 5, "requiresTarget": false }
+    ]
   },
   "cleave": {
     "id": "cleave",
