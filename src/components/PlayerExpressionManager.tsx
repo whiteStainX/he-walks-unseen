@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GameState } from '../engine/state.js';
 import ProfileView from './ProfileView.js';
 
@@ -13,10 +13,36 @@ const PlayerExpressionManager: React.FC<Props> = ({ gameState }) => {
   );
   const primaryEnemy = visibleEnemies.length > 0 ? visibleEnemies[0] : null;
 
+  const [isHurt, setIsHurt] = useState(false);
+  const previousHpRef = useRef(player?.hp.current);
+
+  // Effect to detect damage and set isHurt
+  useEffect(() => {
+    if (player && previousHpRef.current !== undefined) {
+      if (player.hp.current < previousHpRef.current) {
+        setIsHurt(true);
+      }
+    }
+    previousHpRef.current = player?.hp.current;
+  }, [player?.hp.current]);
+
+  // Effect to reset isHurt after a delay
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isHurt) {
+      timer = setTimeout(() => {
+        setIsHurt(false);
+      }, 700); // Display hurt expression for 700ms
+    }
+    return () => clearTimeout(timer);
+  }, [isHurt]);
+
   let currentExpressionId: string | undefined;
 
-  // Determine expression based on game phase and other state
-  if (gameState.phase === 'CombatMenu' || gameState.phase === 'Targeting') {
+  // Prioritize hurt expression if active
+  if (isHurt) {
+    currentExpressionId = 'player_hurt';
+  } else if (gameState.phase === 'CombatMenu' || gameState.phase === 'Targeting') {
     // If in combat or targeting, show primary enemy's profile
     currentExpressionId = primaryEnemy?.profile;
   } else if (gameState.phase === 'Dialogue' && gameState.conversation) {
@@ -28,9 +54,6 @@ const PlayerExpressionManager: React.FC<Props> = ({ gameState }) => {
     currentExpressionId = 'player_inventory';
   } else if (gameState.phase === 'MessageLog') {
     currentExpressionId = 'player_log';
-  } else if (player?.hp.current && player.hp.current < player.hp.max / 2) {
-    // If player is hurt (less than half HP), show hurt expression
-    currentExpressionId = 'player_hurt';
   } else {
     // Default to player idle
     currentExpressionId = 'player_idle';
