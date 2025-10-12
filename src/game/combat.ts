@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType, Item } from '../engine/state.js';
+import type { Actor, GameState, MessageType, Item, ItemEffectType, Skill } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from './logger.js';
@@ -15,12 +15,43 @@ export function calculateDamage(attacker: Actor, defender: Actor): number {
   const attackerStats = getActorStats(attacker);
   const defenderStats = getActorStats(defender);
 
-  const powerStrikeBonus = attacker.skills?.some((s) => s.id === 'power-strike')
-    ? 1
-    : 0;
-  const totalAttack = attackerStats.attack + powerStrikeBonus;
-  const damage = Math.max(0, totalAttack - defenderStats.defense);
-  return damage;
+  let baseDamage = 0;
+  const weapon = attacker.equipment?.weapon;
+
+  if (weapon?.equipment?.damage) {
+    baseDamage = Math.floor(
+      Math.random() * (weapon.equipment.damage.max - weapon.equipment.damage.min + 1)
+    ) + weapon.equipment.damage.min;
+  } else {
+    baseDamage = attackerStats.attack; // Fallback to actor's base attack if no weapon damage defined
+  }
+
+  let attackBonus = 0;
+
+  // Apply bonuses from learned skills
+  if (attacker.learnedSkills) {
+    const allSkills = getResource<Record<string, Skill>>('skills');
+    for (const skillId in attacker.learnedSkills) {
+      const skill = allSkills[skillId];
+      if (skill?.effects) {
+        for (const effect of skill.effects) {
+          if (effect.type === 'increase_attack') {
+            attackBonus += effect.potency;
+          }
+        }
+      }
+    }
+  }
+
+  let totalDamage = Math.max(0, baseDamage + attackBonus - defenderStats.defense);
+
+  // Critical hit chance (e.g., 10% chance for double damage)
+  if (Math.random() < 0.1) {
+    totalDamage *= 2;
+    addLogMessage(state, `${attacker.name} scores a critical hit!`, 'info');
+  }
+
+  return totalDamage;
 }
 
 /**
