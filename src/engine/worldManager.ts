@@ -1,5 +1,5 @@
 import { getResource } from './resourceManager.js';
-import { WorldSchema } from './schemas.js';
+import { WorldSchema } from './schemas/world.js';
 import type { z } from 'zod';
 
 type WorldData = z.infer<typeof WorldSchema>;
