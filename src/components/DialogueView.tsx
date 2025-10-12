@@ -34,14 +34,7 @@ const DialogueView: React.FC<DialogueViewProps> = ({ state }) => {
   }
 
   return (
-    <Box
-      flexDirection="column"
-      borderStyle="round"
-      borderColor="cyan"
-      paddingX={1}
-      alignSelf="center"
-      marginTop={5}
-    >
+    <>
       <Text>{currentNode.text}</Text>
       <Box height={1} />
       {currentNode.choices.map((choice, index) => {
@@ -53,7 +46,7 @@ const DialogueView: React.FC<DialogueViewProps> = ({ state }) => {
           </Text>
         );
       })}
-    </Box>
+    </>
   );
 };
 
