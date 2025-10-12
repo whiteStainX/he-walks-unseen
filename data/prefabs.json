@@ -6,8 +6,8 @@
     "hp": { "current": 8, "max": 8 },
     "attack": 4,
     "defense": 1,
-    "xpValue": 15,
-    "ai": { "state": "wander" }
+    "xpValue": 10,
+    "profile": "goblin_shaman"
   },
   "health-potion": {
     "name": "Health Potion",

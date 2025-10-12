@@ -6,6 +6,7 @@ import type {
   Tile,
   Item,
   Entity,
+  ThemeName,
 } from '../engine/state.js';
 import { Path } from 'rot-js';
 import { generateMap } from './map-generation.js';
@@ -82,6 +83,8 @@ export function createInitialGameState(
         level: 1,
         xp: 0,
         xpToNextLevel: 100,
+        statusEffects: [],
+        profile: 'player_default',
       };
 
   const actors: Actor[] = [player];

@@ -53,7 +53,7 @@ When interacting with a door, the door's character would sometimes fail to chang
 
 My initial hypothesis was that the issue was a simple state mutation problem related to hot-reloading in the development environment. This was proven incorrect as the bug persists in production builds.
 
-The next hypothesis was a subtle state mutation issue in the game logic. I refactored the `MapView` component to use a more functional and immutable approach, and created a unit test to isolate the game logic from the rendering logic. While the unit test passes, the bug still appears in the running application.
+The next hypothesis was a subtle state mutation issue in the game logic. I refactore the `MapView` component to use a more functional and immutable approach, and created a unit test to isolate the game logic from the rendering logic. While the unit test passes, the bug still appears in the running application.
 
 ### Current Status
 
@@ -109,3 +109,20 @@ Two coupled issues were at fault:
 
 - Added `hasResource` to the resource manager so future code can probe for optional data without triggering hard errors.
 - Documented the expectation that new dialogue features should consume the centralized helper instead of reaching directly into the resource cache.
+
+## Faulty Actor/Entity Separation Prevents NPC Interactions
+
+-   **Date:** October 2025
+-   **Status:** Fixed
+
+### Symptoms
+
+Implementing a dynamic profile viewer revealed a deeper issue. When an NPC was given actor properties (like `hp`) so it could have a profile, it became impossible to interact with them. The game would report "nothing to engage". Conversely, if the NPC was a simple entity without `hp`, it was interactable, but its profile could not be displayed because it wasn't considered an actor.
+
+### Root Cause
+
+The game's instantiation logic separates objects into two distinct lists: `state.actors` (if the object has an `hp` property) and `state.entities` (if it does not). The interaction system (`handleInteraction`) was designed to only search for targets in the `state.entities` list. This meant that any object classified as an `Actor` was invisible to the interaction system, even if it had interaction properties (like a conversation).
+
+### Fix
+
+The fix was to make the interaction system aware of all entity types. In `src/game/interaction.ts`, the `handleInteraction` function was modified to search a combined list of `[...state.entities, ...state.actors]`. This ensures that any object on a tile with an `interaction` property is found, regardless of whether it is classified as a simple `Entity` or a complex `Actor`.
