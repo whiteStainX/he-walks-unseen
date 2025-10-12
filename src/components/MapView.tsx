@@ -111,7 +111,18 @@ const createDisplayGrid = (
           color = entity.color;
         }
 
-        displayGrid[viewY][viewX]!.char = entity.char;
+        let effectiveChar = entity.char;
+        if (entity.states) {
+          if (entity.interaction?.type === 'door') {
+            effectiveChar = entity.states[entity.interaction.isOpen ? 'open' : 'closed'] ?? entity.char;
+          } else if (entity.interaction?.type === 'chest') {
+            effectiveChar = entity.states[entity.interaction.isLooted ? 'looted' : 'unlooted'] ?? entity.char;
+          } else {
+            effectiveChar = entity.states.default ?? entity.char;
+          }
+        }
+
+        displayGrid[viewY][viewX]!.char = effectiveChar;
         displayGrid[viewY][viewX]!.color = color;
         displayGrid[viewY][viewX]!.isDim = false;
       }

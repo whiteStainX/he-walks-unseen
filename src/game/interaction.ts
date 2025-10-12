@@ -39,7 +39,7 @@ export function handleInteraction(
       const doorEntity = state.entities.find(e => e.id === entity.id);
       if (doorEntity) {
         (doorEntity.interaction as DoorInteraction).isOpen = newIsOpen;
-        doorEntity.char = newIsOpen ? '-' : '+';
+        doorEntity.char = newIsOpen ? doorEntity.states?.open ?? '-' : doorEntity.states?.closed ?? '+';
       }
 
       state.map.tiles[y][x].walkable = newIsOpen;
@@ -78,6 +78,7 @@ export function handleInteraction(
       const chestEntity = state.entities.find(e => e.id === entity.id);
       if (chestEntity) {
         (chestEntity.interaction as ChestInteraction).isLooted = true;
+        chestEntity.char = chestEntity.states?.looted ?? ' ';
       }
 
       state.phase = 'EnemyTurn';

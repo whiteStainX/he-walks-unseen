@@ -11,6 +11,7 @@ export interface Entity {
   name: string;
   char: string;
   color?: string;
+  states?: Record<string, string>;
   position: Point;
   interaction?: DoorInteraction | ChestInteraction | StairsInteraction | PortalInteraction | ConversationInteraction;
 }
