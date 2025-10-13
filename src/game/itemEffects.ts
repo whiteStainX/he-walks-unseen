@@ -1,10 +1,7 @@
 import type {
   Actor,
   GameState,
-  ItemEffect,
-  HealEffect,
-  DamageEffect,
-  FireballEffect,
+  Effect,
   Point,
 } from '../engine/state.js';
 import { addLogMessage } from './logger.js';
@@ -12,7 +9,7 @@ import { addLogMessage } from './logger.js';
 function resolveHeal(
   target: Actor,
   state: GameState,
-  effect: HealEffect
+  effect: { potency: number }
 ): void {
   const amountHealed = Math.min(
     target.hp.max - target.hp.current,
@@ -31,7 +28,7 @@ function resolveHeal(
 function resolveDamage(
   target: Actor,
   state: GameState,
-  effect: DamageEffect
+  effect: { potency: number }
 ): void {
   // This will be expanded later to include combat calculations
   target.hp.current -= effect.potency;
@@ -43,7 +40,7 @@ function resolveDamage(
 function resolveFireball(
   targetPosition: Point,
   state: GameState,
-  effect: FireballEffect
+  effect: { radius: number; potency: number }
 ): void {
   const { radius, potency } = effect;
 
@@ -72,7 +69,7 @@ function resolveRevealMap(state: GameState): void {
 export function applyEffect(
   user: Actor,
   state: GameState,
-  effect: ItemEffect,
+  effect: Effect,
   target?: Point
 ): void {
   switch (effect.type) {
