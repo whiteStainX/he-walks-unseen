@@ -66,6 +66,8 @@ export interface Actor extends Entity {
   skillPoints?: number;
   learnedSkills?: Record<string, boolean>;
   actionPoints?: { current: number; max: number; };
+  critChance?: number;
+  critDamage?: number;
 }
 
 export type StatusEffectType = 'poison';
@@ -94,6 +96,8 @@ export interface Equipment {
   bonuses: {
     attack?: number;
     defense?: number;
+    critChance?: number;
+    critDamage?: number;
   };
   damage?: { min: number; max: number; };
   onHit?: {

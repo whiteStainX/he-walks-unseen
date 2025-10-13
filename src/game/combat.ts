@@ -45,9 +45,9 @@ export function calculateDamage(attacker: Actor, defender: Actor, state: GameSta
 
   let totalDamage = Math.max(0, baseDamage + attackBonus - defenderStats.defense);
 
-  // Critical hit chance (e.g., 10% chance for double damage)
-  if (Math.random() < 0.1) {
-    totalDamage *= 2;
+  // Critical hit chance
+  if (Math.random() < attackerStats.critChance) {
+    totalDamage *= attackerStats.critDamage;
     addLogMessage(state, `${attacker.name} scores a critical hit!`, 'info');
   }
 
