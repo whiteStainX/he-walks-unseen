@@ -71,23 +71,10 @@ export function createInitialGameState(
   const player: Actor = existingPlayer
     ? { ...existingPlayer, position: playerStart }
     : {
+        ...(instantiate('player') as Actor),
         id: 'player',
-        name: 'Player',
-        char: '@',
-        color: 'white',
         position: playerStart,
-        hp: { current: 10, max: 10 },
-        attack: 2,
-        defense: 1,
         isPlayer: true,
-        level: 1,
-        xp: 0,
-        xpToNextLevel: 100,
-        statusEffects: [],
-        profile: 'player_default',
-        skillPoints: 0,
-        learnedSkills: {},
-        actionPoints: { current: 3, max: 3 },
       };
 
   const actors: Actor[] = [player];
