@@ -6,8 +6,8 @@ import type {
   Tile,
   Item,
   Entity,
-  ThemeName,
 } from '../engine/state.js';
+import type { ThemeName } from '../themes.js';
 import { Path } from 'rot-js';
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
@@ -82,30 +82,47 @@ export function createInitialGameState(
   const items: Item[] = [];
   const occupiedPoints: Point[] = [player.position];
 
-  const numberOfEnemies = Math.floor(Math.random() * 4) + 2;
-  for (let i = 0; i < numberOfEnemies; i++) {
-    const enemyPosition = findRandomWalkableTile(map, occupiedPoints);
-    if (enemyPosition) {
-      const prefabId = theme.enemies[Math.floor(Math.random() * theme.enemies.length)];
-      const newEnemy = instantiate(prefabId) as Omit<Actor, 'position'>;
-      if (newEnemy) {
-        (newEnemy as Actor).position = enemyPosition;
-        actors.push(newEnemy as Actor);
-        occupiedPoints.push(enemyPosition);
+  // Entity Placement Logic
+  if (mapDefinition.entityPlacement) {
+    // Explicit prefab placement
+    if (mapDefinition.entityPlacement.prefabs) {
+      for (const prefabInfo of mapDefinition.entityPlacement.prefabs) {
+        const newEntity = instantiate(prefabInfo.id);
+        if (newEntity) {
+          (newEntity as Entity).position = prefabInfo.position;
+          if ('hp' in newEntity) {
+            actors.push(newEntity as Actor);
+          } else if ('effects' in newEntity || 'equipment' in newEntity) {
+            items.push(newEntity as Item);
+          } else {
+            entities.push(newEntity as Entity);
+          }
+          occupiedPoints.push(prefabInfo.position);
+        }
       }
     }
-  }
 
-  const numberOfItems = Math.floor(Math.random() * 3) + 2;
-  for (let i = 0; i < numberOfItems; i++) {
-    const itemPosition = findRandomWalkableTile(map, occupiedPoints);
-    if (itemPosition) {
-      const prefabId = theme.items[Math.floor(Math.random() * theme.items.length)];
-      const newItem = instantiate(prefabId) as Omit<Item, 'position'>;
-      if (newItem) {
-        (newItem as Item).position = itemPosition;
-        items.push(newItem as Item);
-        occupiedPoints.push(itemPosition);
+    // Random entity placement
+    if (mapDefinition.entityPlacement.random) {
+      for (const randomPlacement of mapDefinition.entityPlacement.random) {
+        for (let i = 0; i < randomPlacement.count; i++) {
+          const position = findRandomWalkableTile(map, occupiedPoints);
+          if (position) {
+            const prefabId = randomPlacement.types[Math.floor(Math.random() * randomPlacement.types.length)];
+            const newEntity = instantiate(prefabId);
+            if (newEntity) {
+              (newEntity as Entity).position = position;
+              if ('hp' in newEntity) {
+                actors.push(newEntity as Actor);
+              } else if ('effects' in newEntity || 'equipment' in newEntity) {
+                items.push(newEntity as Item);
+              } else {
+                entities.push(newEntity as Entity);
+              }
+              occupiedPoints.push(position);
+            }
+          }
+        }
       }
     }
   }
@@ -175,24 +192,6 @@ export function createInitialGameState(
         occupiedPoints.push(chestPosition);
       }
     }
-  }
-
-  if (mapDefinition.prefabs) {
-    mapDefinition.prefabs.forEach((prefabInfo) => {
-      const newEntity = instantiate(prefabInfo.id);
-      if (newEntity) {
-        (newEntity as Entity).position = prefabInfo.position;
-
-        if ('hp' in newEntity) {
-          actors.push(newEntity as Actor);
-        } else if ('effects' in newEntity || 'equipment' in newEntity) {
-          items.push(newEntity as Item);
-        } else {
-          entities.push(newEntity as Entity);
-        }
-        occupiedPoints.push(prefabInfo.position);
-      }
-    });
   }
 
   const portals = entities.filter(

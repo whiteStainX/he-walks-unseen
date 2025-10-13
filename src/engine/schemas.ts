@@ -17,6 +17,16 @@ export const MapPrefabSchema = z.object({
   position: PointSchema,
 });
 
+export const RandomPlacementSchema = z.object({
+  count: z.number(),
+  types: z.array(z.string()),
+});
+
+export const EntityPlacementSchema = z.object({
+  prefabs: z.array(MapPrefabSchema).optional(),
+  random: z.array(RandomPlacementSchema).optional(),
+});
+
 export const GeneratorSchema = z.object({
   type: z.enum(['digger']),
 });
@@ -28,7 +38,7 @@ export const MapDefinitionSchema = z.object({
   theme: z.string(),
   generator: GeneratorSchema,
   connections: z.array(MapConnectionSchema),
-  prefabs: z.array(MapPrefabSchema).optional(),
+  entityPlacement: EntityPlacementSchema.optional(),
 });
 
 export const WorldSchema = z.object({
