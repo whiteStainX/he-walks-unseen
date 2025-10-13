@@ -10,6 +10,8 @@ export const getActorStats = (actor: Actor) => {
   const stats = {
     attack: actor.attack,
     defense: actor.defense,
+    critChance: actor.critChance ?? 0,
+    critDamage: actor.critDamage ?? 2, // Default to 2x damage
   };
 
   if (actor.equipment) {
@@ -19,6 +21,12 @@ export const getActorStats = (actor: Actor) => {
       }
       if (item?.equipment?.bonuses.defense) {
         stats.defense += item.equipment.bonuses.defense;
+      }
+      if (item?.equipment?.bonuses.critChance) {
+        stats.critChance += item.equipment.bonuses.critChance;
+      }
+      if (item?.equipment?.bonuses.critDamage) {
+        stats.critDamage += item.equipment.bonuses.critDamage;
       }
     }
   }

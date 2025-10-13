@@ -4,6 +4,7 @@ import type { Actor, GameState, MessageType, Item, ItemEffectType, Skill } from 
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from './logger.js';
+import { generateLoot } from './loot.js';
 
 /**
  * Calculates the damage dealt in an attack.
@@ -45,9 +46,9 @@ export function calculateDamage(attacker: Actor, defender: Actor, state: GameSta
 
   let totalDamage = Math.max(0, baseDamage + attackBonus - defenderStats.defense);
 
-  // Critical hit chance (e.g., 10% chance for double damage)
-  if (Math.random() < 0.1) {
-    totalDamage *= 2;
+  // Critical hit chance
+  if (Math.random() < attackerStats.critChance) {
+    totalDamage *= attackerStats.critDamage;
     addLogMessage(state, `${attacker.name} scores a critical hit!`, 'info');
   }
 
@@ -119,17 +120,12 @@ export function resolveAttack(
     }
 
     // Handle loot drops
-    if (defender.loot) {
-      const itemTemplates = getResource<any[]>('items');
-      const lootTemplate = itemTemplates.find(i => i.id === defender.loot);
-      if (lootTemplate) {
-        const newItem: Item = {
-          ...lootTemplate,
-          id: nanoid(),
-          position: defender.position,
-        };
-        state.items.push(newItem);
-        message += ` The ${defender.name} drops a ${lootTemplate.name}.`;
+    if (defender.lootTableId) {
+      const generatedItems = generateLoot(defender.lootTableId);
+      for (const item of generatedItems) {
+        item.position = defender.position;
+        state.items.push(item);
+        message += ` The ${defender.name} drops a ${item.name}.`;
       }
     }
 

@@ -15,16 +15,18 @@
           "position": { "x": 19, "y": 10 }
         }
       ],
-      "prefabs": [
-        {
-          "id": "friendly-npc",
-          "position": { "x": 10, "y": 10 }
-        },
-        {
-          "id": "goblin",
-          "position": { "x": 15, "y": 10 }
-        }
-      ]
+      "entityPlacement": {
+        "prefabs": [
+          {
+            "id": "friendly-npc",
+            "position": { "x": 10, "y": 10 }
+          },
+          {
+            "id": "goblin",
+            "position": { "x": 15, "y": 10 }
+          }
+        ]
+      }
     },
     {
       "id": "forest",
@@ -39,7 +41,15 @@
           "targetPortalId": "town_to_forest",
           "position": { "x": 0, "y": 25 }
         }
-      ]
+      ],
+      "entityPlacement": {
+        "random": [
+          {
+            "count": 5,
+            "types": ["goblin", "goblin-ambusher"]
+          }
+        ]
+      }
     }
   ]
 }

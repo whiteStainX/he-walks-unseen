@@ -58,14 +58,15 @@ export interface Actor extends Entity {
   xp?: number;
   xpToNextLevel?: number;
   xpValue?: number;
-  skills?: Skill[];
-  loot?: string;
+  lootTableId?: string;
   ai?: Ai;
   statusEffects?: StatusEffect[];
   profile?: string;
   skillPoints?: number;
   learnedSkills?: Record<string, boolean>;
   actionPoints?: { current: number; max: number; };
+  critChance?: number;
+  critDamage?: number;
 }
 
 export type StatusEffectType = 'poison';
@@ -94,6 +95,8 @@ export interface Equipment {
   bonuses: {
     attack?: number;
     defense?: number;
+    critChance?: number;
+    critDamage?: number;
   };
   damage?: { min: number; max: number; };
   onHit?: {
@@ -104,48 +107,60 @@ export interface Equipment {
   };
 }
 
-export type ItemEffectType =
+export type EffectType =
   | 'heal'
   | 'damage'
   | 'fireball'
   | 'revealMap'
   | 'applyStatus'
-  | 'identify';
+  | 'identify'
+  | 'increase_attack'
+  | 'increase_max_hp';
 
-export interface BaseEffect {
-  type: ItemEffectType;
+export interface Effect {
+  type: EffectType;
   requiresTarget: boolean;
 }
 
-export interface HealEffect extends BaseEffect {
+export interface HealEffect extends Effect {
   type: 'heal';
   potency: number;
 }
 
-export interface DamageEffect extends BaseEffect {
+export interface DamageEffect extends Effect {
   type: 'damage';
   potency: number;
 }
 
-export interface FireballEffect extends BaseEffect {
+export interface FireballEffect extends Effect {
   type: 'fireball';
   potency: number;
   radius: number;
 }
 
-export interface RevealMapEffect extends BaseEffect {
+export interface RevealMapEffect extends Effect {
   type: 'revealMap';
 }
 
-export interface ApplyStatusEffect extends BaseEffect {
+export interface ApplyStatusEffect extends Effect {
   type: 'applyStatus';
   status: StatusEffectType;
   duration: number;
   potency: number;
 }
 
-export interface IdentifyEffect extends BaseEffect {
+export interface IdentifyEffect extends Effect {
   type: 'identify';
+}
+
+export interface IncreaseAttackEffect extends Effect {
+  type: 'increase_attack';
+  potency: number;
+}
+
+export interface IncreaseMaxHpEffect extends Effect {
+  type: 'increase_max_hp';
+  potency: number;
 }
 
 export type ItemEffect =
@@ -154,7 +169,9 @@ export type ItemEffect =
   | FireballEffect
   | RevealMapEffect
   | ApplyStatusEffect
-  | IdentifyEffect;
+  | IdentifyEffect
+  | IncreaseAttackEffect
+  | IncreaseMaxHpEffect;
 
 export interface Item extends Entity {
   effects?: ItemEffect[];
