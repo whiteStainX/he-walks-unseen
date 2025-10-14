@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Text } from 'ink';
-import type { Actor, Skill } from '../engine/state.js';
+import type { Actor } from '../engine/state.js';
 import { useTheme } from '../themes.js';
 
 interface SkillsViewProps {
@@ -25,7 +25,7 @@ const SkillsView: React.FC<SkillsViewProps> = ({ player }) => {
       )}
       {/* Placeholder for a 'Learn Skills' button/menu */}
       <Box marginTop={1}>
-        <Text color={theme.accent}>[ Learn Skills ]</Text>
+        <Text color={theme.accent}>[ Press 'k' to view the skill tree ]</Text>
       </Box>
     </Box>
   );

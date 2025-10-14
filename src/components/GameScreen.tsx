@@ -6,9 +6,10 @@ import EquipmentView from './EquipmentView.js';
 import InventoryView from './InventoryView.js';
 import SkillsView from './SkillsView.js';
 import MessageLogView from './MessageLogView.js';
+import SkillTreeView from './SkillTreeView.js';
 import { CombatMenuView } from './CombatMenuView.js';
 import DialogueView from './DialogueView.js';
-import type { GameState } from '../engine/state.js';
+import type { GameState, Skill } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { resolveAction } from '../input/keybindings.js';
 import { getMapDefinition } from '../engine/worldManager.js';
@@ -16,6 +17,8 @@ import { updateState } from '../game/updateState.js';
 import TerminalBox from './TerminalBox.js';
 import { useTheme } from '../themes.js';
 import PlayerExpressionManager from './PlayerExpressionManager.js';
+import { getResource } from '../engine/resourceManager.js';
+import { buildSkillTreeLayout } from './skillTreeLayout.js';
 
 interface Props {
   gameState: GameState;
@@ -29,9 +32,171 @@ export function isActionDefined(
 
 const GameScreen: React.FC<Props> = ({ gameState: state }) => {
   const theme = useTheme();
+  const [isSkillTreeOpen, setIsSkillTreeOpen] = React.useState(false);
+  const [selectedSkillId, setSelectedSkillId] = React.useState<string | null>(null);
+
+  const skillData = React.useMemo(() => {
+    try {
+      return getResource<Record<string, Skill>>('skills');
+    } catch (error) {
+      return {} as Record<string, Skill>;
+    }
+  }, []);
+
+  const skillTreeCanvasWidth = React.useMemo(
+    () => Math.max(20, VIEWPORT_WIDTH * 2 - 6),
+    []
+  );
+  const skillTreeCanvasHeight = React.useMemo(
+    () => Math.max(8, VIEWPORT_HEIGHT - 6),
+    []
+  );
+
+  const skillTreeLayout = React.useMemo(
+    () => buildSkillTreeLayout(skillData, skillTreeCanvasWidth, skillTreeCanvasHeight),
+    [skillData, skillTreeCanvasHeight, skillTreeCanvasWidth]
+  );
+
+  const layoutMap = React.useMemo(() => {
+    return new Map(skillTreeLayout.map((node) => [node.id, node]));
+  }, [skillTreeLayout]);
+
+  const nodesByDepth = React.useMemo(() => {
+    const map = new Map<number, typeof skillTreeLayout>();
+    for (const node of skillTreeLayout) {
+      const list = map.get(node.depth) ?? [];
+      list.push(node);
+      map.set(node.depth, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.x - b.x);
+    }
+    return map;
+  }, [skillTreeLayout]);
+
+  const dependentsMap = React.useMemo(() => {
+    const dependents = new Map<string, string[]>();
+    for (const skill of Object.values(skillData)) {
+      const prereqs = skill.prerequisites ?? [];
+      for (const prereq of prereqs) {
+        if (!dependents.has(prereq)) {
+          dependents.set(prereq, []);
+        }
+        dependents.get(prereq)!.push(skill.id);
+      }
+    }
+    return dependents;
+  }, [skillData]);
+
+  React.useEffect(() => {
+    if (skillTreeLayout.length === 0) {
+      return;
+    }
+    setSelectedSkillId((current) => {
+      if (current && layoutMap.has(current)) {
+        return current;
+      }
+      return skillTreeLayout[0]?.id ?? null;
+    });
+  }, [layoutMap, skillTreeLayout]);
+
+  React.useEffect(() => {
+    if (
+      isSkillTreeOpen &&
+      !(state.phase === 'PlayerTurn' || state.phase === 'Inventory')
+    ) {
+      setIsSkillTreeOpen(false);
+    }
+  }, [isSkillTreeOpen, state.phase]);
 
   useInput(
     (input, key) => {
+      const normalizedInput = input?.toLowerCase?.();
+
+      if (isSkillTreeOpen) {
+        if (key.escape || normalizedInput === 'k') {
+          setIsSkillTreeOpen(false);
+          return;
+        }
+
+        const currentNode = selectedSkillId ? layoutMap.get(selectedSkillId) : null;
+        if (!currentNode) {
+          if (skillTreeLayout[0]) {
+            setSelectedSkillId(skillTreeLayout[0].id);
+          }
+          return;
+        }
+
+        const currentSkill = skillData[currentNode.id];
+        if (!currentSkill) {
+          return;
+        }
+
+        const chooseClosest = (candidateIds: string[], preferRight = false) => {
+          let chosen: { id: string; distance: number } | null = null;
+          for (const id of candidateIds) {
+            const node = layoutMap.get(id);
+            if (!node) continue;
+            const distance = Math.abs(node.x - currentNode.x) + Math.abs(node.y - currentNode.y);
+            if (
+              !chosen ||
+              distance < chosen.distance ||
+              (distance === chosen.distance && preferRight && node.x > (layoutMap.get(chosen.id)?.x ?? 0))
+            ) {
+              chosen = { id, distance };
+            }
+          }
+          if (chosen) {
+            setSelectedSkillId(chosen.id);
+          }
+        };
+
+        if (key.upArrow) {
+          chooseClosest(currentSkill.prerequisites ?? []);
+          return;
+        }
+
+        if (key.downArrow) {
+          chooseClosest(dependentsMap.get(currentNode.id) ?? [], true);
+          return;
+        }
+
+        if (key.leftArrow || key.rightArrow) {
+          const nodesOnLevel = nodesByDepth.get(currentNode.depth) ?? [];
+          const currentIndex = nodesOnLevel.findIndex((entry) => entry.id === currentNode.id);
+          if (currentIndex >= 0) {
+            const direction = key.rightArrow ? 1 : -1;
+            let newIndex = currentIndex + direction;
+            while (newIndex >= 0 && newIndex < nodesOnLevel.length) {
+              const candidate = nodesOnLevel[newIndex];
+              if (candidate) {
+                setSelectedSkillId(candidate.id);
+                break;
+              }
+              newIndex += direction;
+            }
+          }
+          return;
+        }
+
+        return;
+      }
+
+      if (
+        normalizedInput === 'k' &&
+        (state.phase === 'PlayerTurn' || state.phase === 'Inventory') &&
+        skillTreeLayout.length > 0
+      ) {
+        setIsSkillTreeOpen(true);
+        setSelectedSkillId((current) => {
+          if (current && layoutMap.has(current)) {
+            return current;
+          }
+          return skillTreeLayout[0].id;
+        });
+        return;
+      }
+
       if (
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
@@ -51,6 +216,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
     },
     {
       isActive:
+        isSkillTreeOpen ||
         state.phase === 'PlayerTurn' ||
         state.phase === 'Inventory' ||
         state.phase === 'Targeting' ||
@@ -132,6 +298,21 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           phase={state.phase}
           height={VIEWPORT_HEIGHT + 3}
           width={VIEWPORT_WIDTH * 2}
+        />
+      );
+    }
+
+    if (isSkillTreeOpen) {
+      return (
+        <SkillTreeView
+          skills={skillData}
+          player={player ?? undefined}
+          layout={skillTreeLayout}
+          canvasWidth={skillTreeCanvasWidth}
+          canvasHeight={skillTreeCanvasHeight}
+          selectedSkillId={selectedSkillId}
+          width={VIEWPORT_WIDTH * 2}
+          height={VIEWPORT_HEIGHT + 3}
         />
       );
     }
