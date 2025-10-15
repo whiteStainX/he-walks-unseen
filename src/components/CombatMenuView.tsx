@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
 import { useTheme } from '../themes.js';
-import { BASIC_COMBAT_ACTIONS } from '../game/combatMenuActions.js';
+import { getAvailableCombatActions } from '../game/combatMenuActions.js';
 
 interface CombatMenuViewProps {
   state: GameState;
@@ -20,19 +20,19 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
   );
 
   if (!player || !targetEnemy || !player.actionPoints) {
-    return null; // Should not happen in CombatMenu phase
+    return null;
   }
 
-  const currentOptions = BASIC_COMBAT_ACTIONS; // For now, just basic actions
+  const availableActions = getAvailableCombatActions(player);
 
   return (
     <Box flexDirection="column">
       <Text color={theme.primary}>Engaging: {targetEnemy.name}</Text>
-      <Text color={theme.primary}>AP: {player.actionPoints?.current}/{player.actionPoints?.max}</Text>
+      <Text color={theme.primary}>AP: {player.actionPoints.current}/{player.actionPoints.max}</Text>
       <Box height={1} />
-      {currentOptions.map((option, index) => {
+      {availableActions.map((action, index) => {
         const isSelected = index === state.selectedCombatMenuIndex;
-        const canAfford = player.actionPoints ? player.actionPoints.current >= option.apCost : false;
+        const canAfford = player.actionPoints.current >= action.apCost;
         const optionColor = isSelected
           ? theme.accent
           : canAfford
@@ -40,9 +40,9 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
           : theme.dim;
 
         return (
-          <Text key={option.id} color={optionColor}>
+          <Text key={action.id} color={optionColor}>
             {isSelected ? '> ' : '  '}
-            {option.name} ({option.apCost} AP)
+            {action.name} ({action.apCost} AP)
           </Text>
         );
       })}

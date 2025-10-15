@@ -194,6 +194,7 @@ export interface Skill {
   prerequisites?: string[];
   cost?: number;
   apCost?: number;
+  combatActionId?: string;
   effects?: ItemEffect[];
 }
 
