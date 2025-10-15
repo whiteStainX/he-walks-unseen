@@ -231,3 +231,41 @@ This milestone was dedicated to a major aesthetic overhaul, transforming the gam
     -   This system observes game phases (e.g., `Inventory`, `MessageLog`, `Dialogue`), player health, and combat status to display appropriate expressions (`player_idle`, `player_hurt`, `player_inventory`, `player_log`).
     -   The 'hurt' expression is now transient, displaying for a short duration after damage is taken before reverting to the default expression.
     -   This approach decouples expression logic from core game mechanics, centralizing it within the UI layer for scalability and maintainability.
+
+## Milestone 21: Data Architecture & Systems Refactoring (October 2025)
+
+This milestone focused on a deep refactoring of the game's data architecture to improve consistency, scalability, and clarity. It addressed several legacy issues and established cleaner, more robust patterns for core game systems.
+
+-   **Data-Driven Entity Visuals:**
+    -   Replaced hardcoded characters for entities like doors and chests with a generic, data-driven `states` property in `entities.json`.
+    -   This allows the visual representation of any entity to change based on its state (e.g., `open`/`closed`, `looted`/`unlooted`), making the system more flexible and easier to modify.
+-   **Consolidated Item & Prefab Definitions:**
+    -   Cleaned up the data hierarchy by creating a dedicated `data/items.json` file for all item definitions (consumables, equipment, etc.).
+    -   `data/prefabs.json` is now exclusively for **Actor** definitions (player, enemies, NPCs).
+    -   The `instantiate` function was refactored into a true factory that can create any object from `prefabs.json`, `items.json`, or `entities.json`, unifying the object creation process.
+-   **Data-Driven Entity Placement:**
+    -   Replaced the old, theme-based random enemy generation with a more expressive `entityPlacement` system in `world.json`.
+    -   Maps can now have a mix of explicitly placed entities (e.g., quest NPCs, bosses) and randomly generated entities, all defined in a single, authoritative source.
+-   **General-Purpose Code Library:**
+    -   Created a new `src/lib/` directory for generic, reusable algorithms and utilities.
+    -   Moved modules like `logger.ts`, `visibility.ts`, `fov.ts`, and `skillTreeLayout.ts` into this new directory, cleaning up the `src/game/` folder to be more focused on core gameplay rules.
+
+## Milestone 22: Advanced Combat & Skill Systems (October 2025)
+
+This milestone laid the foundation for a more strategic, tactical combat system and a meaningful player progression path through a data-driven skill tree.
+
+-   **Action Point (AP) System:**
+    -   Introduced an Action Point system to govern combat. Actors now have a set number of AP to spend each turn on various actions.
+-   **Dynamic Combat Menu:**
+    -   The combat menu is no longer static. It is now dynamically generated based on a new `data/combatActions.json` file and the player's learned skills.
+    -   This allows for the seamless addition of new skills and abilities to the player's combat options.
+-   **Data-Driven Skill Tree:**
+    -   Established a data-driven foundation for a skill tree in `data/skills.json`, including prerequisites and skill point costs.
+    -   Differentiated between `passive` skills (which are always active) and `active` skills (which can be used in combat).
+    -   Implemented a `learnSkill` system, allowing players to spend points gained from leveling up.
+-   **Interactive Skill Tree UI:**
+    -   Created a new, navigable, text-based skill tree screen that visually represents skill dependencies.
+    -   Players can now browse available skills, see their status (Learned, Learnable, Locked), and spend points to acquire them.
+-   **Enhanced Damage Calculation:**
+    -   Refactored the damage calculation to be data-driven. It now incorporates weapon damage ranges and applies bonuses from passive skills and equipment.
+    -   Added a data-driven critical hit system, allowing `critChance` and `critDamage` to be modified by gear and skills.
