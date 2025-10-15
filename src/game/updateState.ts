@@ -1,5 +1,6 @@
 import { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
+import { ThemeName } from '../themes.js';
 import { handleInventoryAction } from './inventoryActions.js';
 import { handleTargeting } from './targetingActions.js';
 import { handleCombatMenuAction } from './combatMenuActions.js';
@@ -87,7 +88,7 @@ export function applyActionToState(
   }
 
   if (action === GameAction.CYCLE_THEME) {
-    const themeNames = Object.keys(themes);
+    const themeNames = Object.keys(themes) as ThemeName[];
     const currentIndex = themeNames.indexOf(state.activeTheme);
     const nextIndex = (currentIndex + 1) % themeNames.length;
     state.activeTheme = themeNames[nextIndex];

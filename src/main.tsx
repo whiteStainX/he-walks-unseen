@@ -25,7 +25,7 @@ const App = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        await loadResources('./data');
+        await loadResources(['./data', './assets']);
         loadWorldData();
 
         const savedState = await loadGame();

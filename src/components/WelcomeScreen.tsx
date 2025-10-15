@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { gameTitle } from './AsciiArt.js';
+import { getResource } from '../engine/resourceManager.js';
 import { GameAction } from '../input/actions.js';
 import { updateState } from '../game/updateState.js';
 import type { ThemeName } from '../themes.js';
@@ -42,7 +42,7 @@ const WelcomeScreen = () => {
 
   return (
     <Box flexDirection="column" alignItems="center" padding={2}>
-      <AnimatedAsciiArt art={gameTitle} isAnimated={false} />
+      <AnimatedAsciiArt art={getResource<string>('gameTitle')} isAnimated={false} />
       <Box flexDirection="column" alignItems="center" marginTop={2}>
         <Text>The time has come to choose.</Text>
         <Box flexDirection="column" alignItems="center" marginTop={1}>

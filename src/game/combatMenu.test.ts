@@ -12,6 +12,7 @@ const mockPlayer: Actor = {
   attack: 5,
   defense: 2,
   isPlayer: true,
+  actionPoints: { current: 1, max: 1 },
 };
 
 const mockEnemy: Actor = {
@@ -42,6 +43,7 @@ const mockGameState: GameState = {
   selectedCombatMenuIndex: 0,
   visibleTiles: new Set<string>(),
   exploredTiles: new Set<string>(),
+  activeTheme: 'amber',
 };
 
 import { produce } from 'immer';
@@ -78,7 +80,7 @@ describe('Combat Menu Logic', () => {
     const nextState = produce(mockGameState, (draft) => {
       applyActionToState(draft, GameAction.SELECT_PREVIOUS_COMBAT_OPTION);
     });
-    expect(nextState.selectedCombatMenuIndex).toBe(1); // Assumes 2 options
+    expect(nextState.selectedCombatMenuIndex).toBe(3); // Assumes 4 options, wraps to the last one
   });
 
   it('should transition to EnemyTurn when "Attack" is confirmed', () => {
@@ -93,7 +95,7 @@ describe('Combat Menu Logic', () => {
   it('should transition to PlayerTurn when "Cancel" is confirmed', () => {
     const stateWithCancelSelected = {
       ...mockGameState,
-      selectedCombatMenuIndex: 1,
+      selectedCombatMenuIndex: 3,
     };
     const nextState = produce(stateWithCancelSelected, (draft) => {
       applyActionToState(draft, GameAction.CONFIRM_COMBAT_ACTION);

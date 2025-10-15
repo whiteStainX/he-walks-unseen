@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType, Item, ItemEffectType, Skill } from '../engine/state.js';
+import type { Actor, GameState, MessageType, Skill } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from './logger.js';

@@ -9,9 +9,10 @@ interface Props {
 
 const ProfileView: React.FC<Props> = ({ profileId }) => {
   const theme = useTheme();
-  const profiles = getResource<Record<string, string[]>>('profiles');
-
-  const art = (profileId && profiles[profileId]) ? profiles[profileId] : profiles['no_signal'];
+  const profiles = getResource<Record<string, string>>('profiles');
+  const artKey = (profileId && profiles[profileId]) ? profiles[profileId] : 'no_signal';
+  const artString = getResource<string>(artKey);
+  const art = artString.split('\n');
 
   return (
     <Box

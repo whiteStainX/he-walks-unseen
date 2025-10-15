@@ -150,7 +150,7 @@ const createDisplayGrid = (
 
 const MapView: React.FC<Props> = ({ state, isDimmed }) => {
   const theme = useTheme();
-  const { actors, visibleTiles } = state;
+  const { actors } = state;
   const displayGrid = React.useMemo(
     () => createDisplayGrid(state, theme),
     [

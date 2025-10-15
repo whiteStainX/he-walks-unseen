@@ -34,17 +34,16 @@ describe('GameScreen', () => {
     });
     loadWorldData();
     setResource('parcels', {}); // Mock parcels to prevent errors in initialState
-    setResource('themes', {
+    setResource('environmentThemes', {
       'overgrown-keep': {
-        floors: [1],
         map: {
           wall: '#',
           floor: '.',
         },
-        enemies: ['goblin'],
-        items: ['health-potion', 'dagger'],
       },
     });
+    setResource('player_idle', 'player_idle');
+    setResource('profiles', { 'player_idle': 'player_idle' });
     setResource('enemies', [
       {
         id: 'goblin',
@@ -72,6 +71,14 @@ describe('GameScreen', () => {
       { id: 'upstairs', char: '<' },
     ]);
     setResource('prefabs', {
+      player: {
+        name: 'Player',
+        char: '@',
+        hp: { current: 10, max: 10 },
+        attack: 5,
+        defense: 2,
+        isPlayer: true,
+      },
       goblin: {
         name: 'Goblin',
         char: 'g',

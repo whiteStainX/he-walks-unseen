@@ -26,6 +26,7 @@ const mockGameState: GameState = {
   exploredTiles: new Set(),
   currentMapId: 'testMap',
   mapStates: new Map(),
+  activeTheme: 'amber',
 };
 
 const mockDagger: Item = {

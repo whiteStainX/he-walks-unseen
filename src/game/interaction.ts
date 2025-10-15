@@ -1,11 +1,9 @@
-import { nanoid } from 'nanoid';
 import type {
   GameState,
   DoorInteraction,
   ChestInteraction,
   PortalInteraction,
   ConversationInteraction,
-  Item,
 } from '../engine/state.js';
 import { updateVisibility } from './visibility.js';
 import { createInitialGameState } from './initialState.js';

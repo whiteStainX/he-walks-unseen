@@ -232,6 +232,7 @@ export interface ConversationState {
   parcelId: string;
   currentNodeId: string;
   selectedChoiceIndex: number;
+  actorId?: string;
 }
 
 export type Prefab = Omit<Entity, 'id' | 'position'>;

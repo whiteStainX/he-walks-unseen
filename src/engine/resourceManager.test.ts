@@ -34,14 +34,18 @@ describe('ResourceManager', () => {
     mockedFs.readdir.mockResolvedValue(mockFiles as any);
     mockedFs.readFile.mockResolvedValue(JSON.stringify(mockData));
 
-    await loadResources('fake/data/dir');
+    await loadResources(['fake/data/dir']);
 
     expect(mockedFs.readdir).toHaveBeenCalledWith('fake/data/dir');
     expect(mockedFs.readFile).toHaveBeenCalledWith(
       path.join('fake/data/dir', 'test.json'),
       'utf-8'
     );
-    expect(mockedFs.readFile).toHaveBeenCalledTimes(1);
+    expect(mockedFs.readFile).toHaveBeenCalledWith(
+      path.join('fake/data/dir', 'another.txt'),
+      'utf-8'
+    );
+    expect(mockedFs.readFile).toHaveBeenCalledTimes(2);
 
     const resource = getResource<{ message: string }>('test');
     expect(resource).toEqual(mockData);

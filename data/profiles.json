@@ -1,92 +1,11 @@
 {
-  "player_default": [
-    "   /|_/|   ",
-    "  ( . . )  ",
-    "   > - <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "player_idle": [
-    "   /|_/|   ",
-    "  ( . . )  ",
-    "   > - <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "player_hurt": [
-    "   /|_/|   ",
-    "  ( >.< )  ",
-    "   > O <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "player_interact": [
-    "   /|_/|   ",
-    "  ( o.o )  ",
-    "   > ^ <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "player_inventory": [
-    "   /|_/|   ",
-    "  ( $.$ )  ",
-    "   > = <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "player_log": [
-    "   /|_/|   ",
-    "  ( -.- )  ",
-    "   > ~ <   ",
-    "           ",
-    "           ",
-    "           ",
-    "           ",
-    "           "
-  ],
-  "goblin_shaman": [
-    "           ",
-    "   /|_/|   ",
-    "  (O.O)  ",
-    "  <~^~>  ",
-    "           ",
-    "           ",
-    "           ",
-    "          "
-  ],
-  "placeholder_npc": [
-    "           ",
-    "   /|_/|   ",
-    "  ( .-. )  ",
-    "   > - <   ",
-    "           ",
-    "           ",
-    "           ",
-    "          "
-  ],
-  "no_signal": [
-    " ░▒▓█▓▒░ ",
-    " ▒▓█▓▒░▒ ",
-    " ▓█▓▒░▒▓ ",
-    " █▓▒░▒▓█ ",
-    " ▓█▓▒░▒▓ ",
-    " ▒▓█▓▒░▒ ",
-    " ░▒▓█▓▒░ ",
-    "         "
-  ]
+  "player_default": "player_default",
+  "player_idle": "player_idle",
+  "player_hurt": "player_hurt",
+  "player_interact": "player_interact",
+  "player_inventory": "player_inventory",
+  "player_log": "player_log",
+  "goblin_shaman": "goblin_shaman",
+  "placeholder_npc": "placeholder_npc",
+  "no_signal": "no_signal"
 }

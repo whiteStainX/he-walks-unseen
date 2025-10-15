@@ -66,6 +66,8 @@ function resolveRevealMap(state: GameState): void {
   addLogMessage(state, message, 'info');
 }
 
+import { HealEffect, DamageEffect, FireballEffect } from '../engine/state.js';
+
 export function applyEffect(
   user: Actor,
   state: GameState,
@@ -74,7 +76,7 @@ export function applyEffect(
 ): void {
   switch (effect.type) {
     case 'heal':
-      resolveHeal(user, state, effect);
+      resolveHeal(user, state, effect as HealEffect);
       return;
     case 'damage':
       // For now, damage effects target the user unless a target is specified.
@@ -85,14 +87,14 @@ export function applyEffect(
           )
         : user;
       if (damageTarget) {
-        resolveDamage(damageTarget, state, effect);
+        resolveDamage(damageTarget, state, effect as DamageEffect);
         return;
       }
       addLogMessage(state, 'Invalid target.', 'info');
       return;
     case 'fireball':
       if (target) {
-        resolveFireball(target, state, effect);
+        resolveFireball(target, state, effect as FireballEffect);
         return;
       }
       addLogMessage(state, 'A target is required for the fireball.', 'info');
