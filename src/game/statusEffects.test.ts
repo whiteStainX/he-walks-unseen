@@ -46,6 +46,7 @@ describe('Status Effects System', () => {
       exploredTiles: new Set(),
       currentMapId: 'testMap',
       mapStates: new Map(),
+      activeTheme: 'amber',
     };
   });
 

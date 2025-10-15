@@ -31,6 +31,7 @@ const createInitialState = (door: Entity): GameState => ({
   mapStates: new Map(),
   visibleTiles: new Set<string>(),
   exploredTiles: new Set<string>(),
+  activeTheme: 'amber',
 });
 
 import { produce } from 'immer';

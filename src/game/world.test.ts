@@ -6,7 +6,7 @@ import { createInitialGameState } from './initialState.js';
 describe('World Data Integration Test', () => {
   beforeAll(async () => {
     // Load all the actual game data from the data directory
-    await loadResources('./data');
+    await loadResources(['./data', './assets']);
     loadWorldData();
   });
 

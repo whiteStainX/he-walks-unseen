@@ -12,6 +12,7 @@ const mockPlayer: Actor = {
   attack: 5,
   defense: 2,
   isPlayer: true,
+  actionPoints: { current: 1, max: 1 },
 };
 
 const mockEnemy: Actor = {
@@ -42,6 +43,7 @@ const mockGameState: GameState = {
   selectedCombatMenuIndex: 0,
   visibleTiles: new Set<string>(),
   exploredTiles: new Set<string>(),
+  activeTheme: 'amber',
 };
 
 describe('CombatMenuView', () => {
@@ -53,15 +55,15 @@ describe('CombatMenuView', () => {
   });
 
   it('should highlight the selected option', () => {
-    const stateWithSecondOptionSelected = {
+    const stateWithThirdOptionSelected = {
       ...mockGameState,
-      selectedCombatMenuIndex: 1,
+      selectedCombatMenuIndex: 2,
     };
     const { lastFrame } = render(
-      <CombatMenuView state={stateWithSecondOptionSelected} />
+      <CombatMenuView state={stateWithThirdOptionSelected} />
     );
     expect(lastFrame()).toContain('  Attack');
-    expect(lastFrame()).toContain('> Cancel');
+    expect(lastFrame()).toContain('> Flee');
   });
 
   it('should not render if not in the CombatMenu phase', () => {

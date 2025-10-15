@@ -47,6 +47,7 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => {
         exploredTiles: new Set<string>(),
         currentMapId: 'testMap',
         mapStates: new Map(),
+        activeTheme: 'amber',
         ...overrides,
     };
 };

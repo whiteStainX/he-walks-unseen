@@ -2,9 +2,9 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { GameState, Message, MessageType } from '../engine/state.js';
 import TerminalBox from './TerminalBox.js';
-import { useTheme } from '../themes.js';
+import { useTheme, Theme } from '../themes.js';
 
-const getMessageColor = (messageType: MessageType, theme) => {
+const getMessageColor = (messageType: MessageType, theme: Theme) => {
   switch (messageType) {
     case 'damage':
     case 'death':

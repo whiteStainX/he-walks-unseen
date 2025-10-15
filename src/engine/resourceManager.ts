@@ -8,19 +8,27 @@ import path from 'path';
 const resourceCache = new Map<string, any>();
 
 /**
- * Loads all .json files from the specified data directory,
+ * Loads all .json and .txt files from the specified data directories,
  * parses them, and stores them in the resource cache.
- * @param dataDir The path to the directory containing data files.
+ * @param dataDirs The paths to the directories containing data files.
  */
-export async function loadResources(dataDir: string): Promise<void> {
+export async function loadResources(dataDirs: string[]): Promise<void> {
   try {
-    const files = await fs.readdir(dataDir);
-    for (const file of files) {
-      if (path.extname(file) === '.json') {
+    for (const dataDir of dataDirs) {
+      const files = await fs.readdir(dataDir);
+      for (const file of files) {
         const filePath = path.join(dataDir, file);
-        const content = await fs.readFile(filePath, 'utf-8');
-        const resourceKey = path.basename(file, '.json');
-        resourceCache.set(resourceKey, JSON.parse(content));
+        const fileExt = path.extname(file);
+
+        if (fileExt === '.json') {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const resourceKey = path.basename(file, '.json');
+          resourceCache.set(resourceKey, JSON.parse(content));
+        } else if (fileExt === '.txt') {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const resourceKey = path.basename(file, '.txt');
+          resourceCache.set(resourceKey, content);
+        }
       }
     }
   } catch (error) {

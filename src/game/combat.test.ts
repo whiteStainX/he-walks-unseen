@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { calculateDamage, resolveAttack } from './combat.js';
 import {
   setResource,
@@ -17,6 +18,27 @@ const mockItems: Partial<Item>[] = [
 
 beforeAll(() => {
   setResource('items', mockItems);
+  setResource('lootTables', {
+    'goblin-loot': {
+      items: [{ id: 'potion-heal', weight: 100, min: 1, max: 1 }],
+    },
+  });
+  setResource('prefabs', {
+    'potion-heal': {
+      name: 'Healing Potion',
+      char: '!',
+      color: 'red',
+      effects: [{ type: 'heal', potency: 5, requiresTarget: false }],
+    },
+  });
+  setResource('skills', {
+    'power-strike': {
+      id: 'power-strike',
+      name: 'Power Strike',
+      description: 'A powerful attack.',
+      effects: [{ type: 'increase_attack', potency: 1, requiresTarget: false }],
+    },
+  });
 });
 
 afterAll(() => {
@@ -67,7 +89,7 @@ const mockEnemy: Actor = {
   attack: 3,
   defense: 1,
   xpValue: 10,
-  loot: 'potion-heal',
+  lootTableId: 'goblin-loot',
 };
 
 // A mock game state for testing
@@ -87,26 +109,27 @@ const mockGameState: GameState = {
   mapStates: new Map(),
   visibleTiles: new Set<string>(),
   exploredTiles: new Set<string>(),
+  activeTheme: 'amber',
 };
 
 describe('calculateDamage', () => {
   it('should return the difference between attack and defense', () => {
-    const damage = calculateDamage(mockPlayer, mockEnemy);
+    const damage = calculateDamage(mockPlayer, mockEnemy, mockGameState);
     expect(damage).toBe(4); // 5 attack - 1 defense
   });
 
   it('should return 0 if defense is greater than attack', () => {
     const strongEnemy = { ...mockEnemy, defense: 10 };
-    const damage = calculateDamage(mockPlayer, strongEnemy);
+    const damage = calculateDamage(mockPlayer, strongEnemy, mockGameState);
     expect(damage).toBe(0);
   });
 
   it('should add bonus damage if attacker has power-strike skill', () => {
     const playerWithSkill = {
       ...mockPlayer,
-      skills: [{ id: 'power-strike', name: 'Power Strike', description: '' }],
+      learnedSkills: { 'power-strike': true },
     };
-    const damage = calculateDamage(playerWithSkill, mockEnemy);
+    const damage = calculateDamage(playerWithSkill, mockEnemy, mockGameState);
     expect(damage).toBe(5); // (5 attack + 1 skill) - 1 defense
   });
 
@@ -122,7 +145,11 @@ describe('calculateDamage', () => {
     // Player: 5 base attack + 2 from dagger = 7 attack
     // Enemy: 1 base defense + 1 from armor = 2 defense
     // Damage: 7 - 2 = 5
-    const damage = calculateDamage(playerWithDagger, enemyWithArmor);
+    const damage = calculateDamage(
+      playerWithDagger,
+      enemyWithArmor,
+      mockGameState
+    );
     expect(damage).toBe(5);
   });
 });
@@ -174,6 +201,7 @@ describe('resolveAttack', () => {
   });
 
   it('should drop loot when an enemy is defeated', () => {
+    jest.spyOn(global.Math, 'random').mockReturnValue(0.1); // Ensure loot drop
     const strongPlayer = { ...mockPlayer, attack: 10 };
     const stateWithStrongPlayer = {
       ...mockGameState,
@@ -189,6 +217,7 @@ describe('resolveAttack', () => {
     expect(droppedItem.position).toEqual(mockEnemy.position);
     const lastMessage = nextState.log[nextState.log.length - 1];
     expect(lastMessage.text).toContain('The Goblin drops a');
+    jest.spyOn(global.Math, 'random').mockRestore();
   });
 
   it('should handle attacks that deal no damage', () => {
