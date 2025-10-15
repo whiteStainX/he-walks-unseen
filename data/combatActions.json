@@ -1,0 +1,32 @@
+{
+  "attack": {
+    "id": "attack",
+    "name": "Attack",
+    "apCost": 1,
+    "effect": { "type": "damage", "potency": 0 } 
+  },
+  "defend": {
+    "id": "defend",
+    "name": "Defend",
+    "apCost": 1,
+    "effect": { "type": "apply_status", "status": "defending", "duration": 1 }
+  },
+  "flee": {
+    "id": "flee",
+    "name": "Flee",
+    "apCost": 1,
+    "effect": { "type": "flee" }
+  },
+  "cleave": {
+    "id": "cleave",
+    "name": "Cleave",
+    "apCost": 2,
+    "effect": { "type": "cleave_attack", "potency": 1.5 }
+  },
+  "berserk": {
+    "id": "berserk",
+    "name": "Berserk",
+    "apCost": 3,
+    "effect": { "type": "apply_status", "status": "berserk", "duration": 3 }
+  }
+}

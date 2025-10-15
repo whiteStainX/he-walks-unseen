@@ -190,8 +190,11 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  type: 'passive' | 'active';
   prerequisites?: string[];
   cost?: number;
+  apCost?: number;
+  combatActionId?: string;
   effects?: ItemEffect[];
 }
 

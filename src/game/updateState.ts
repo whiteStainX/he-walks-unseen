@@ -70,11 +70,17 @@ import { deleteSaveGame, saveGame, loadGame } from '../engine/persistence.js';
 import { initializeEngine } from '../engine/narrativeEngine.js';
 import { createInitialGameState } from './initialState.js';
 
+import { learnSkill } from './skills.js';
+
 export function applyActionToState(
   state: GameState,
   action: GameAction,
   payload?: any
 ): void {
+  if (action === GameAction.LEARN_SKILL) {
+    learnSkill(state, payload as string);
+    return;
+  }
   if (action === GameAction.QUIT) {
     addLogMessage(state, 'Press Ctrl+C to exit the simulation.', 'info');
     return;

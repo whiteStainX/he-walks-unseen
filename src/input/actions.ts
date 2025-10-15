@@ -62,4 +62,8 @@ export enum GameAction {
   USE_ITEM_IN_COMBAT,
   DEFEND_ACTION,
   FLEE_ACTION,
+  // Skill Tree
+  OPEN_SKILL_TREE,
+  CLOSE_SKILL_TREE,
+  LEARN_SKILL,
 }

@@ -119,6 +119,11 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
           return;
         }
 
+        if (key.return && selectedSkillId) {
+          updateState(GameAction.LEARN_SKILL, selectedSkillId);
+          return;
+        }
+
         const currentNode = selectedSkillId ? layoutMap.get(selectedSkillId) : null;
         if (!currentNode) {
           if (skillTreeLayout[0]) {
