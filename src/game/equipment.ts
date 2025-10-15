@@ -1,5 +1,5 @@
 import type { Actor, EquipmentSlot, GameState, Item } from '../engine/state.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 /**
  * Calculates the total stats of an actor, including bonuses from equipped items.

@@ -1,7 +1,7 @@
 import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { resolveAttack } from './combat.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 // Define basic combat actions with their AP costs
 export const BASIC_COMBAT_ACTIONS = [

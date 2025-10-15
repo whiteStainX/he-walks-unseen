@@ -1,6 +1,6 @@
 import type { GameState, Skill } from '../engine/state.js';
 import { getResource } from '../engine/resourceManager.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 export function learnSkill(state: GameState, skillId: string): boolean {
   const player = state.actors.find((a) => a.isPlayer);

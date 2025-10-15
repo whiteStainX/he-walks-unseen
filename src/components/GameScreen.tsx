@@ -18,7 +18,7 @@ import TerminalBox from './TerminalBox.js';
 import { useTheme } from '../themes.js';
 import PlayerExpressionManager from './PlayerExpressionManager.js';
 import { getResource } from '../engine/resourceManager.js';
-import { buildSkillTreeLayout } from './skillTreeLayout.js';
+import { buildSkillTreeLayout } from '../lib/skillTreeLayout.js';
 
 interface Props {
   gameState: GameState;

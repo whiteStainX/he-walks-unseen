@@ -2,7 +2,7 @@ import type { GameState } from '../engine/state.js';
 import type { Parcel } from '../types/parcel.js';
 import { GameAction } from '../input/actions.js';
 import { endConversation, resolveConversationParcel } from './conversation.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 interface ConversationContext {
   currentNode: Parcel['nodes'][string];

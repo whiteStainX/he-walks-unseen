@@ -1,7 +1,7 @@
 import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { getDisplayName } from './inventoryActions.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 export function handleIdentifyMenuAction(
   state: GameState,

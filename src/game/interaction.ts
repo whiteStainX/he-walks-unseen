@@ -5,9 +5,9 @@ import type {
   PortalInteraction,
   ConversationInteraction,
 } from '../engine/state.js';
-import { updateVisibility } from './visibility.js';
+import { updateVisibility } from '../lib/visibility.js';;
 import { createInitialGameState } from './initialState.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 import { replacer, reviver } from '../engine/persistence.js';
 import { beginConversation } from './conversation.js';
 import { generateLoot } from './loot.js';
