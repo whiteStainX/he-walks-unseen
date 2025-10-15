@@ -3,7 +3,7 @@ import { GameAction } from '../input/actions.js';
 import { applyEffect } from './itemEffects.js';
 import { processItemConsumption } from './inventoryActions.js';
 import { handleInteraction } from './interaction.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 // This is duplicated from updateState.ts. We should find a better home for it later.
 interface MovementDelta {

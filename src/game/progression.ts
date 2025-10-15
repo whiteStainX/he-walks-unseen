@@ -1,5 +1,5 @@
 import type { GameState } from '../engine/state.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 const LEVEL_UP_HP_BONUS = 10;
 const LEVEL_UP_ATTACK_BONUS = 1;

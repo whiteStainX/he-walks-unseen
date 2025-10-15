@@ -16,7 +16,7 @@
         }
       ],
       "entityPlacement": {
-        "prefabs": [
+        "placements": [
           {
             "id": "friendly-npc",
             "position": { "x": 10, "y": 10 }
@@ -43,10 +43,13 @@
         }
       ],
       "entityPlacement": {
+        "placements": [
+          { "id": "chest", "position": { "x": 30, "y": 30 } }
+        ],
         "random": [
           {
-            "count": 5,
-            "types": ["goblin", "goblin-ambusher"]
+            "count": 8,
+            "types": ["goblin", "goblin-ambusher", "shrieker"]
           }
         ]
       }

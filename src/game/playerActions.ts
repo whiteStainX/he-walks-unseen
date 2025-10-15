@@ -1,8 +1,8 @@
 import type { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
-import { updateVisibility } from './visibility.js';
+import { updateVisibility } from '../lib/visibility.js';;
 import { handleInteraction } from './interaction.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 interface MovementDelta {
   dx: number;

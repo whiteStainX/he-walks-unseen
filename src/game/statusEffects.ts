@@ -1,5 +1,5 @@
 import type { GameState, Actor } from '../engine/state.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 /**
  * Processes all active status effects for all actors in the game state.

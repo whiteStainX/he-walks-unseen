@@ -4,7 +4,7 @@ import type {
   Effect,
   Point,
 } from '../engine/state.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 function resolveHeal(
   target: Actor,

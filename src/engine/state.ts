@@ -237,6 +237,6 @@ export interface ConversationState {
 
 export type Prefab = Omit<Entity, 'id' | 'position'>;
 
-export interface PrefabCollection {
+export interface DefinitionCollection {
   [id: string]: Prefab;
 }

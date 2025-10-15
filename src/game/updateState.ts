@@ -8,7 +8,7 @@ import { handleIdentifyMenuAction } from './identifyActions.js';
 import { handleMessageLogAction } from './messageLogActions.js';
 import { handlePlayerAction } from './playerActions.js';
 import { handleDialogueAction } from './dialogueActions.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 import { eventBus } from '../engine/events.js';
 import { getCurrentState } from '../engine/narrativeEngine.js';
 import { produce } from 'immer';

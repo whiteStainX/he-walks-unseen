@@ -1,7 +1,7 @@
 import { getResource, hasResource, setResource } from '../engine/resourceManager.js';
 import type { GameState } from '../engine/state.js';
 import type { Parcel } from '../types/parcel.js';
-import { addLogMessage } from './logger.js';
+import { addLogMessage } from '../lib/logger.js';;
 
 function clearConversation(state: GameState): void {
   state.conversation = undefined;

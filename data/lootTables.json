@@ -2,7 +2,8 @@
   "basic_chest_loot": {
     "items": [
       { "id": "health-potion", "weight": 100, "min": 1, "max": 1 },
-      { "id": "dagger", "weight": 20, "min": 1, "max": 1 },
+      { "id": "dagger", "weight": 50, "min": 1, "max": 1 },
+      { "id": "longsword", "weight": 10, "min": 1, "max": 1 },
       { "id": "scroll-fireball", "weight": 5, "min": 1, "max": 1 }
     ]
   },

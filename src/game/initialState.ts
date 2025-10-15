@@ -11,8 +11,8 @@ import type { ThemeName } from '../themes.js';
 import { Path } from 'rot-js';
 import { generateMap } from './map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
-import { updateVisibility } from './visibility.js';
-import { addLogMessage } from './logger.js';
+import { updateVisibility } from '../lib/visibility.js';;
+import { addLogMessage } from '../lib/logger.js';;
 import { instantiate } from '../engine/prefab.js';
 import { getMapDefinition, getStartMapId } from '../engine/worldManager.js';
 
@@ -84,12 +84,12 @@ export function createInitialGameState(
 
   // Entity Placement Logic
   if (mapDefinition.entityPlacement) {
-    // Explicit prefab placement
-    if (mapDefinition.entityPlacement.prefabs) {
-      for (const prefabInfo of mapDefinition.entityPlacement.prefabs) {
-        const newEntity = instantiate(prefabInfo.id);
+    // Explicit placement
+    if (mapDefinition.entityPlacement.placements) {
+      for (const placementInfo of mapDefinition.entityPlacement.placements) {
+        const newEntity = instantiate(placementInfo.id);
         if (newEntity) {
-          (newEntity as Entity).position = prefabInfo.position;
+          (newEntity as Entity).position = placementInfo.position;
           if ('hp' in newEntity) {
             actors.push(newEntity as Actor);
           } else if ('effects' in newEntity || 'equipment' in newEntity) {
@@ -97,7 +97,7 @@ export function createInitialGameState(
           } else {
             entities.push(newEntity as Entity);
           }
-          occupiedPoints.push(prefabInfo.position);
+          occupiedPoints.push(placementInfo.position);
         }
       }
     }

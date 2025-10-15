@@ -23,7 +23,7 @@ export const RandomPlacementSchema = z.object({
 });
 
 export const EntityPlacementSchema = z.object({
-  prefabs: z.array(MapPrefabSchema).optional(),
+  placements: z.array(MapPrefabSchema).optional(),
   random: z.array(RandomPlacementSchema).optional(),
 });
 

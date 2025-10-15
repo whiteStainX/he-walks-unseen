@@ -1,109 +1,51 @@
-[
-  {
-    "id": "health-potion",
+{
+  "health-potion": {
     "name": "Health Potion",
-    "unidentifiedName": "Bubbling Red Potion",
-    "char": "⚕",
+    "char": "!",
     "color": "red",
+    "unidentifiedName": "Bubbling Red Potion",
     "identified": false,
     "effects": [
       {
         "type": "heal",
-        "potency": 5,
+        "potency": 10,
         "requiresTarget": false
       }
     ]
   },
-  {
-    "id": "scroll-fireball",
+  "dagger": {
+    "name": "Dagger",
+    "char": "/",
+    "color": "gray",
+    "equipment": {
+      "slot": "weapon",
+      "damage": { "min": 1, "max": 4 },
+      "bonuses": { "attack": 1 }
+    }
+  },
+  "longsword": {
+    "name": "Longsword",
+    "char": "/",
+    "color": "cyan",
+    "equipment": {
+      "slot": "weapon",
+      "damage": { "min": 3, "max": 8 },
+      "bonuses": { "attack": 3 }
+    }
+  },
+  "scroll-fireball": {
     "name": "Scroll of Fireball",
-    "unidentifiedName": "Scroll with Fiery Glyphs",
-    "char": "§",
+    "char": "?",
     "color": "orange",
+    "unidentifiedName": "Scroll of Flame",
     "identified": false,
     "effects": [
       {
         "type": "fireball",
-        "potency": 10,
+        "potency": 12,
         "radius": 3,
         "requiresTarget": true
       }
     ]
-  },
-  {
-    "id": "scroll-mapping",
-    "name": "Scroll of Mapping",
-    "unidentifiedName": "Scroll with Cartographic Marks",
-    "char": "§",
-    "color": "cyan",
-    "identified": false,
-    "effects": [
-      {
-        "type": "revealMap",
-        "requiresTarget": false
-      }
-    ]
-  },
-  {
-    "id": "scroll-identify",
-    "name": "Scroll of Identify",
-    "unidentifiedName": "Scroll with an Inquisitive Eye",
-    "char": "§",
-    "color": "white",
-    "identified": false,
-    "effects": [
-      {
-        "type": "identify",
-        "requiresTarget": true
-      }
-    ]
-  },
-  {
-    "id": "key",
-    "name": "Key",
-    "char": "⚷",
-    "color": "yellow"
-  },
-  {
-    "id": "dagger",
-    "name": "Dagger",
-    "char": "¬",
-    "color": "silver",
-    "equipment": {
-      "slot": "weapon",
-      "bonuses": {
-        "attack": 2
-      }
-    }
-  },
-  {
-    "id": "leather-armor",
-    "name": "Leather Armor",
-    "char": "☗",
-    "color": "brown",
-    "equipment": {
-      "slot": "armor",
-      "bonuses": {
-        "defense": 1
-      }
-    }
-  },
-  {
-    "id": "poisoned-dagger",
-    "name": "Poisoned Dagger",
-    "char": "¬",
-    "color": "green",
-    "equipment": {
-      "slot": "weapon",
-      "bonuses": {
-        "attack": 1
-      },
-      "onHit": {
-        "type": "poison",
-        "duration": 3,
-        "potency": 1,
-        "chance": 0.5
-      }
-    }
   }
-]
+}
