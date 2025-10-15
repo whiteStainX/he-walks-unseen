@@ -3,6 +3,7 @@
     "id": "power-strike",
     "name": "Power Strike",
     "description": "Increases melee attack damage.",
+    "type": "passive",
     "cost": 1,
     "prerequisites": [],
     "effects": [
@@ -13,6 +14,7 @@
     "id": "toughness",
     "name": "Toughness",
     "description": "Increases maximum HP.",
+    "type": "passive",
     "cost": 1,
     "prerequisites": [],
     "effects": [
@@ -23,14 +25,18 @@
     "id": "cleave",
     "name": "Cleave",
     "description": "Attack multiple adjacent enemies.",
+    "type": "active",
     "cost": 2,
+    "apCost": 2,
     "prerequisites": ["power-strike"]
   },
   "berserk": {
     "id": "berserk",
     "name": "Berserk",
     "description": "Enter a berserker rage, increasing attack but lowering defense.",
+    "type": "active",
     "cost": 3,
+    "apCost": 3,
     "prerequisites": ["power-strike", "toughness"]
   }
 }

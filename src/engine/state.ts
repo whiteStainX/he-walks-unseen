@@ -190,8 +190,10 @@ export interface Skill {
   id: string;
   name: string;
   description: string;
+  type: 'passive' | 'active';
   prerequisites?: string[];
   cost?: number;
+  apCost?: number;
   effects?: ItemEffect[];
 }
 
