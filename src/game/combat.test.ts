@@ -45,6 +45,17 @@ afterAll(() => {
   clearResources();
 });
 
+// Helper to create a fresh copy of the mock state for each test
+const createMockState = () =>
+  produce(mockGameState, (draft) => {
+    draft.actors = [
+      produce(mockPlayer, (p) => {}),
+      produce(mockEnemy, (e) => {}),
+    ];
+    draft.items = [];
+    draft.log = [];
+  });
+
 // A mock player actor for testing
 const mockPlayer: Actor = {
   id: 'player',
@@ -55,6 +66,8 @@ const mockPlayer: Actor = {
   attack: 5,
   defense: 2,
   isPlayer: true,
+  dexterity: 100, // High dexterity to ensure attacks hit
+  strength: 5,
 };
 
 // A mock enemy actor for testing
@@ -66,6 +79,23 @@ const mockDagger: Item = {
   equipment: {
     slot: 'weapon',
     bonuses: { attack: 2 },
+  },
+};
+
+const mockPoisonDagger: Item = {
+  id: 'poison-dagger-1',
+  name: 'Poison Dagger',
+  char: ')',
+  position: { x: 0, y: 0 },
+  equipment: {
+    slot: 'weapon',
+    bonuses: { attack: 1 },
+    onHit: {
+      type: 'poison',
+      duration: 3,
+      potency: 1,
+      chance: 1, // 100% chance
+    },
   },
 };
 
@@ -90,6 +120,8 @@ const mockEnemy: Actor = {
   defense: 1,
   xpValue: 10,
   lootTableId: 'goblin-loot',
+  dexterity: 100, // High dexterity to ensure attacks hit
+  strength: 3,
 };
 
 // A mock game state for testing
@@ -112,14 +144,21 @@ const mockGameState: GameState = {
   activeTheme: 'amber',
 };
 
+import { recalculateDerivedStats } from './progression.js';
+
 describe('calculateDamage', () => {
+  beforeEach(() => {
+    recalculateDerivedStats(mockPlayer);
+    recalculateDerivedStats(mockEnemy);
+  });
+
   it('should return the difference between attack and defense', () => {
     const damage = calculateDamage(mockPlayer, mockEnemy, mockGameState);
-    expect(damage).toBe(4); // 5 attack - 1 defense
+    expect(damage).toBe(12); // 5 attack - 1 defense
   });
 
   it('should return 0 if defense is greater than attack', () => {
-    const strongEnemy = { ...mockEnemy, defense: 10 };
+    const strongEnemy = { ...mockEnemy, defense: 20 };
     const damage = calculateDamage(mockPlayer, strongEnemy, mockGameState);
     expect(damage).toBe(0);
   });
@@ -130,7 +169,7 @@ describe('calculateDamage', () => {
       learnedSkills: { 'power-strike': true },
     };
     const damage = calculateDamage(playerWithSkill, mockEnemy, mockGameState);
-    expect(damage).toBe(5); // (5 attack + 1 skill) - 1 defense
+    expect(damage).toBe(13); // (12 attack + 1 skill) - 1 defense
   });
 
   it('should factor in equipment bonuses', () => {
@@ -142,53 +181,61 @@ describe('calculateDamage', () => {
       ...mockEnemy,
       equipment: { armor: mockLeatherArmor },
     };
-    // Player: 5 base attack + 2 from dagger = 7 attack
+    // Player: 12 base attack + 2 from dagger = 14 attack
     // Enemy: 1 base defense + 1 from armor = 2 defense
-    // Damage: 7 - 2 = 5
+    // Damage: 14 - 2 = 12
     const damage = calculateDamage(
       playerWithDagger,
       enemyWithArmor,
       mockGameState
     );
-    expect(damage).toBe(5);
+    expect(damage).toBe(12);
   });
 });
 
 import { produce } from 'immer';
 
 describe('resolveAttack', () => {
+  let state: GameState;
+  beforeEach(() => {
+    state = createMockState();
+    recalculateDerivedStats(state.actors[0]);
+    recalculateDerivedStats(state.actors[1]);
+  });
   it('should reduce defender HP when player attacks enemy', () => {
-    const nextState = produce(mockGameState, (draft) => {
-      resolveAttack(mockPlayer, mockEnemy, draft);
+    const nextState = produce(state, (draft) => {
+      resolveAttack(draft.actors[0], draft.actors[1], draft);
     });
     const updatedEnemy = nextState.actors.find((a) => a.id === 'enemy-1');
 
-    expect(updatedEnemy?.hp.current).toBe(1); // 5 (base) - (5 (player attack) - 1 (enemy defense)) = 1
+    expect(updatedEnemy?.hp.current).toBe(-7); // 5 (base) - 12 (player attack) = -7
     const lastMessage = nextState.log[nextState.log.length - 1];
-    expect(lastMessage.text).toContain('Player attacks Goblin for 4 damage.');
+    expect(lastMessage.text).toContain('Player attacks Goblin for 12 damage.');
   });
 
   it('should reduce player HP when enemy attacks player', () => {
-    const nextState = produce(mockGameState, (draft) => {
-      resolveAttack(mockEnemy, mockPlayer, draft);
+    const nextState = produce(state, (draft) => {
+      resolveAttack(draft.actors[1], draft.actors[0], draft);
     });
     const updatedPlayer = nextState.actors.find((a) => a.isPlayer);
 
-    expect(updatedPlayer?.hp.current).toBe(9); // 10 (base) - (3 (enemy attack) - 2 (player defense)) = 9
+    expect(updatedPlayer?.hp.current).toBe(4); // 10 (base) - 6 (enemy attack) = 4
     const lastMessage = nextState.log[nextState.log.length - 1];
-    expect(lastMessage.text).toContain('Goblin attacks Player for 1 damage.');
+    expect(lastMessage.text).toContain('Goblin attacks Player for 6 damage.');
     expect(lastMessage.type).toBe('damage');
   });
 
   it('should handle a killing blow, remove the actor, and grant XP', () => {
-    const strongPlayer = { ...mockPlayer, attack: 10 };
-    const stateWithStrongPlayer = {
-      ...mockGameState,
-      actors: [strongPlayer, mockEnemy],
-    };
+    const strongPlayer = produce(state.actors[0], (draft) => {
+      draft.strength = 10;
+    });
+    recalculateDerivedStats(strongPlayer);
+    const stateWithStrongPlayer = produce(state, (draft) => {
+      draft.actors[0] = strongPlayer;
+    });
 
     const nextState = produce(stateWithStrongPlayer, (draft) => {
-      resolveAttack(strongPlayer, mockEnemy, draft);
+      resolveAttack(draft.actors[0], draft.actors[1], draft);
     });
 
     expect(nextState.actors.find((a) => a.id === 'enemy-1')).toBeUndefined();
@@ -202,14 +249,16 @@ describe('resolveAttack', () => {
 
   it('should drop loot when an enemy is defeated', () => {
     jest.spyOn(global.Math, 'random').mockReturnValue(0.1); // Ensure loot drop
-    const strongPlayer = { ...mockPlayer, attack: 10 };
-    const stateWithStrongPlayer = {
-      ...mockGameState,
-      actors: [strongPlayer, mockEnemy],
-    };
+    const strongPlayer = produce(state.actors[0], (draft) => {
+      draft.strength = 10;
+    });
+    recalculateDerivedStats(strongPlayer);
+    const stateWithStrongPlayer = produce(state, (draft) => {
+      draft.actors[0] = strongPlayer;
+    });
 
     const nextState = produce(stateWithStrongPlayer, (draft) => {
-      resolveAttack(strongPlayer, mockEnemy, draft);
+      resolveAttack(draft.actors[0], draft.actors[1], draft);
     });
 
     expect(nextState.items.length).toBe(1);
@@ -221,14 +270,16 @@ describe('resolveAttack', () => {
   });
 
   it('should handle attacks that deal no damage', () => {
-    const weakPlayer = { ...mockPlayer, attack: 1 };
-    const stateWithWeakPlayer = {
-      ...mockGameState,
-      actors: [weakPlayer, mockEnemy],
-    };
+    const weakPlayer = produce(state.actors[0], (draft) => {
+      draft.strength = 0;
+    });
+    recalculateDerivedStats(weakPlayer);
+    const stateWithWeakPlayer = produce(state, (draft) => {
+      draft.actors[0] = weakPlayer;
+    });
 
     const nextState = produce(stateWithWeakPlayer, (draft) => {
-      resolveAttack(weakPlayer, mockEnemy, draft);
+      resolveAttack(draft.actors[0], draft.actors[1], draft);
     });
     const updatedEnemy = nextState.actors.find((a) => a.id === 'enemy-1');
 
@@ -238,26 +289,24 @@ describe('resolveAttack', () => {
   });
 
   it('should factor in equipment when resolving an attack', () => {
-    const playerWithDagger: Actor = {
-      ...mockPlayer,
-      equipment: { weapon: mockDagger },
-    };
-    const stateWithEquippedPlayer = {
-      ...mockGameState,
-      actors: [playerWithDagger, mockEnemy],
-    };
+    const playerWithDagger = produce(state.actors[0], (draft) => {
+      draft.equipment = { weapon: mockDagger };
+    });
+    const stateWithEquippedPlayer = produce(state, (draft) => {
+      draft.actors[0] = playerWithDagger;
+    });
     const nextState = produce(stateWithEquippedPlayer, (draft) => {
-      resolveAttack(playerWithDagger, mockEnemy, draft);
+      resolveAttack(draft.actors[0], draft.actors[1], draft);
     });
 
-    // Player attack: 5 + 2 = 7
+    // Player attack: 12 + 2 = 14
     // Enemy defense: 1
-    // Damage: 7 - 1 = 6
-    // Enemy HP: 5 - 6 = -1
+    // Damage: 14 - 1 = 13
+    // Enemy HP: 5 - 13 = -8
     const updatedEnemy = nextState.actors.find((a) => a.id === 'enemy-1');
     expect(updatedEnemy).toBeUndefined(); // Enemy should be defeated
     const lastMessage = nextState.log[nextState.log.length - 1];
-    expect(lastMessage.text).toContain('Player attacks Goblin for 6 damage.');
+    expect(lastMessage.text).toContain('Player attacks Goblin for 14 damage.');
     expect(lastMessage.text).toContain('Goblin dies!');
   });
 });

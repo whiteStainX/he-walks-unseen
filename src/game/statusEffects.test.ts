@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import type { GameState, Actor, StatusEffect } from '../engine/state.js';
 import { processStatusEffects } from './statusEffects.js';
 import { resolveAttack } from './combat.js';
+import { recalculateDerivedStats } from './progression.js';
 
 import { produce } from 'immer';
 
@@ -17,6 +18,8 @@ describe('Status Effects System', () => {
     attack: 2,
     defense: 1,
     statusEffects: [],
+    dexterity: 100, // High dexterity to ensure attacks hit
+    strength: 5,
   };
 
   const enemy: Actor = {
@@ -28,6 +31,8 @@ describe('Status Effects System', () => {
     attack: 1,
     defense: 0,
     statusEffects: [],
+    dexterity: 100, // High dexterity to ensure attacks hit
+    strength: 3,
   };
 
   beforeEach(() => {
@@ -48,6 +53,8 @@ describe('Status Effects System', () => {
       mapStates: new Map(),
       activeTheme: 'amber',
     };
+    recalculateDerivedStats(mockState.actors[0]);
+    recalculateDerivedStats(mockState.actors[1]);
   });
 
   describe('processStatusEffects', () => {
@@ -124,22 +131,7 @@ describe('Status Effects System', () => {
       const attackerWithPoisonWeapon: Actor = {
         ...enemy,
         equipment: {
-          weapon: {
-            id: 'poison-dagger',
-            name: 'Poison Dagger',
-            char: ')',
-            position: { x: -1, y: -1 },
-            equipment: {
-              slot: 'weapon',
-              bonuses: { attack: 1 },
-              onHit: {
-                type: 'poison',
-                duration: 3,
-                potency: 1,
-                chance: 0.5,
-              },
-            },
-          },
+          weapon: mockPoisonDagger,
         },
       };
 

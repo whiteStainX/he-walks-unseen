@@ -13,7 +13,11 @@
     "profile": "player_default",
     "skillPoints": 10,
     "learnedSkills": {},
-    "actionPoints": { "current": 3, "max": 3 }
+    "actionPoints": { "current": 3, "max": 3 },
+    "strength": 5,
+    "dexterity": 5,
+    "intelligence": 5,
+    "vitality": 5
   },
   "goblin": {
     "name": "Goblin",
@@ -24,7 +28,11 @@
     "defense": 1,
     "xpValue": 10,
     "profile": "goblin_shaman",
-    "ai": { "state": "wander" }
+    "ai": { "state": "wander" },
+    "strength": 3,
+    "dexterity": 3,
+    "intelligence": 1,
+    "vitality": 2
   },
   "shrieker": {
     "name": "Shrieker",

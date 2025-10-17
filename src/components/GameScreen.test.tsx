@@ -34,6 +34,7 @@ describe('GameScreen', () => {
     });
     loadWorldData();
     setResource('parcels', {}); // Mock parcels to prevent errors in initialState
+    setResource('skills', {}); // Mock skills to prevent errors
     setResource('environmentThemes', {
       'overgrown-keep': {
         map: {

@@ -67,6 +67,13 @@ export interface Actor extends Entity {
   actionPoints?: { current: number; max: number; };
   critChance?: number;
   critDamage?: number;
+
+  // Attributes
+  strength?: number;
+  dexterity?: number;
+  intelligence?: number;
+  vitality?: number;
+  attributePoints?: number;
 }
 
 export type StatusEffectType = 'poison';
@@ -107,6 +114,8 @@ export interface Equipment {
   };
 }
 
+export type Attribute = 'strength' | 'dexterity' | 'intelligence' | 'vitality';
+
 export type EffectType =
   | 'heal'
   | 'damage'
@@ -115,7 +124,8 @@ export type EffectType =
   | 'applyStatus'
   | 'identify'
   | 'increase_attack'
-  | 'increase_max_hp';
+  | 'increase_max_hp'
+  | 'increase_attribute';
 
 export interface Effect {
   type: EffectType;
@@ -163,6 +173,12 @@ export interface IncreaseMaxHpEffect extends Effect {
   potency: number;
 }
 
+export interface IncreaseAttributeEffect extends Effect {
+  type: 'increase_attribute';
+  attribute: Attribute;
+  potency: number;
+}
+
 export type ItemEffect =
   | HealEffect
   | DamageEffect
@@ -171,7 +187,8 @@ export type ItemEffect =
   | ApplyStatusEffect
   | IdentifyEffect
   | IncreaseAttackEffect
-  | IncreaseMaxHpEffect;
+  | IncreaseMaxHpEffect
+  | IncreaseAttributeEffect;
 
 export interface Item extends Entity {
   effects?: ItemEffect[];

@@ -1,50 +1,50 @@
 import { nanoid } from 'nanoid';
 import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType, Skill } from '../engine/state.js';
-import { getResource } from '../engine/resourceManager.js';
+import type { Actor, GameState, MessageType } from '../engine/state.js';
 import { getActorStats } from './equipment.js';
 import { addLogMessage } from '../lib/logger.js';;
 import { generateLoot } from './loot.js';
 
 /**
- * Calculates the damage dealt in an attack.
+ * Calculates the damage dealt in an attack, accounting for accuracy, evasion, critical hits, and resistances.
  * @param attacker The actor initiating the attack.
  * @param defender The actor being attacked.
- * @returns The amount of damage dealt.
+ * @returns The amount of damage dealt, or null if the attack misses.
  */
-export function calculateDamage(attacker: Actor, defender: Actor, state: GameState): number {
+export function calculateDamage(
+  attacker: Actor,
+  defender: Actor,
+  state: GameState
+): number | null {
   const attackerStats = getActorStats(attacker);
   const defenderStats = getActorStats(defender);
+
+  // Accuracy check
+  const hitChance = Math.min(
+    100,
+    Math.max(0, attackerStats.accuracy - defenderStats.evasion)
+  );
+  if (Math.random() * 100 > hitChance) {
+    return null; // Attack misses
+  }
 
   let baseDamage = 0;
   const weapon = attacker.equipment?.weapon;
 
   if (weapon?.equipment?.damage) {
-    baseDamage = Math.floor(
-      Math.random() * (weapon.equipment.damage.max - weapon.equipment.damage.min + 1)
-    ) + weapon.equipment.damage.min;
+    baseDamage =
+      Math.floor(
+        Math.random() *
+          (weapon.equipment.damage.max - weapon.equipment.damage.min + 1)
+      ) + weapon.equipment.damage.min;
   } else {
     baseDamage = attackerStats.attack; // Fallback to actor's base attack if no weapon damage defined
   }
 
-  let attackBonus = 0;
+  let totalDamage = Math.max(0, baseDamage - defenderStats.defense);
 
-  // Apply bonuses from learned skills
-  if (attacker.learnedSkills) {
-    const allSkills = getResource<Record<string, Skill>>('skills');
-    for (const skillId in attacker.learnedSkills) {
-      const skill = allSkills[skillId];
-      if (skill?.effects) {
-        for (const effect of skill.effects) {
-          if (effect.type === 'increase_attack') {
-            attackBonus += effect.potency;
-          }
-        }
-      }
-    }
-  }
-
-  let totalDamage = Math.max(0, baseDamage + attackBonus - defenderStats.defense);
+  // Apply damage resistance
+  totalDamage *= 1 - defenderStats.damageResistance;
 
   // Critical hit chance
   if (Math.random() < attackerStats.critChance) {
@@ -52,7 +52,7 @@ export function calculateDamage(attacker: Actor, defender: Actor, state: GameSta
     addLogMessage(state, `${attacker.name} scores a critical hit!`, 'info');
   }
 
-  return totalDamage;
+  return Math.round(totalDamage);
 }
 
 /**
@@ -68,7 +68,17 @@ export function resolveAttack(
   state: GameState
 ): void {
   const damage = calculateDamage(attacker, defender, state);
-  const defenderInState = state.actors.find(a => a.id === defender.id)!;
+  const defenderInState = state.actors.find((a) => a.id === defender.id)!;
+
+  if (damage === null) {
+    addLogMessage(
+      state,
+      `${attacker.name} attacks ${defender.name}, but misses.`,
+      'info'
+    );
+    return;
+  }
+
   defenderInState.hp.current -= damage;
 
   let message = `${attacker.name} attacks ${defender.name}`;

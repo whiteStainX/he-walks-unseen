@@ -28,11 +28,14 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
   return (
     <Box flexDirection="column">
       <Text color={theme.primary}>Engaging: {targetEnemy.name}</Text>
-      <Text color={theme.primary}>AP: {player.actionPoints.current}/{player.actionPoints.max}</Text>
+      <Text color={theme.primary}>
+        AP: {player.actionPoints.current}/{player.actionPoints.max}
+      </Text>
       <Box height={1} />
       {availableActions.map((action, index) => {
+        if (typeof action.apCost !== 'number') return null;
         const isSelected = index === state.selectedCombatMenuIndex;
-        const canAfford = player.actionPoints.current >= action.apCost;
+        const canAfford = player.actionPoints!.current >= action.apCost;
         const optionColor = isSelected
           ? theme.accent
           : canAfford

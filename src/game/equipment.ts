@@ -12,6 +12,9 @@ export const getActorStats = (actor: Actor) => {
     defense: actor.defense,
     critChance: actor.critChance ?? 0,
     critDamage: actor.critDamage ?? 2, // Default to 2x damage
+    accuracy: (actor.dexterity ?? 0) * 5, // 5% accuracy per dexterity point
+    evasion: (actor.dexterity ?? 0) * 5, // 5% evasion per dexterity point
+    damageResistance: (actor.intelligence ?? 0) * 0.05, // 5% resistance per intelligence point
   };
 
   if (actor.equipment) {
