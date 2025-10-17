@@ -33,6 +33,7 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
       </Text>
       <Box height={1} />
       {availableActions.map((action, index) => {
+        if (typeof action.apCost !== 'number') return null;
         const isSelected = index === state.selectedCombatMenuIndex;
         const canAfford = player.actionPoints!.current >= action.apCost;
         const optionColor = isSelected

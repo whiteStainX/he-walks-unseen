@@ -28,5 +28,11 @@
     "name": "Berserk",
     "apCost": 3,
     "effect": { "type": "apply_status", "status": "berserk", "duration": 3 }
+  },
+  "cancel": {
+    "id": "cancel",
+    "name": "Cancel",
+    "apCost": 0,
+    "effect": { "type": "cancel" }
   }
 }
