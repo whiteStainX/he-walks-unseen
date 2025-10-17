@@ -15,7 +15,11 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
   const combatActions = getResource<Record<string, CombatAction>>('combatActions');
   const allSkills = getResource<Record<string, Skill>>('skills');
 
-  const availableActions: CombatAction[] = [combatActions.attack, combatActions.defend, combatActions.flee];
+  const availableActions: CombatAction[] = [
+    combatActions.attack,
+    combatActions.defend,
+    combatActions.flee,
+  ];
 
   if (player.learnedSkills) {
     for (const skillId in player.learnedSkills) {
@@ -29,6 +33,7 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
     }
   }
 
+  availableActions.push(combatActions.cancel); // Always allow canceling
   return availableActions;
 }
 
@@ -48,20 +53,15 @@ export function handleCombatMenuAction(
   const availableActions = getAvailableCombatActions(player);
 
   switch (action) {
-    case GameAction.SELECT_PREVIOUS_COMBAT_OPTION: {
-      const newIndex =
-        (state.selectedCombatMenuIndex ?? 0) - 1 < 0
-          ? availableActions.length - 1
-          : (state.selectedCombatMenuIndex ?? 0) - 1;
-      state.selectedCombatMenuIndex = newIndex;
+    case GameAction.SELECT_PREVIOUS_COMBAT_OPTION:
+      state.selectedCombatMenuIndex =
+        (((state.selectedCombatMenuIndex ?? 0) - 1) + availableActions.length) %
+        availableActions.length;
       break;
-    }
-    case GameAction.SELECT_NEXT_COMBAT_OPTION: {
-      const newIndex =
+    case GameAction.SELECT_NEXT_COMBAT_OPTION:
+      state.selectedCombatMenuIndex =
         ((state.selectedCombatMenuIndex ?? 0) + 1) % availableActions.length;
-      state.selectedCombatMenuIndex = newIndex;
       break;
-    }
     case GameAction.CANCEL_COMBAT: {
       state.phase = 'PlayerTurn';
       state.combatTargetId = undefined;
@@ -70,8 +70,15 @@ export function handleCombatMenuAction(
     case GameAction.CONFIRM_COMBAT_ACTION: {
       const selectedAction = availableActions[state.selectedCombatMenuIndex ?? 0];
 
-      if (player.actionPoints.current < selectedAction.apCost) {
-        addLogMessage(state, `Not enough AP for ${selectedAction.name}.`, 'info');
+      if (
+        player.actionPoints &&
+        player.actionPoints.current < selectedAction.apCost
+      ) {
+        addLogMessage(
+          state,
+          `Not enough AP for ${selectedAction.name}.`,
+          'info'
+        );
         return;
       }
 

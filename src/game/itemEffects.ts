@@ -66,7 +66,40 @@ function resolveRevealMap(state: GameState): void {
   addLogMessage(state, message, 'info');
 }
 
-import { HealEffect, DamageEffect, FireballEffect } from '../engine/state.js';
+function resolveIncreaseAttack(
+  target: Actor,
+  state: GameState,
+  effect: { potency: number }
+): void {
+  target.attack = (target.attack ?? 0) + effect.potency;
+  addLogMessage(
+    state,
+    `The ${target.name}'s attack increases by ${effect.potency}.`,
+    'info'
+  );
+}
+
+function resolveIncreaseMaxHp(
+  target: Actor,
+  state: GameState,
+  effect: { potency: number }
+): void {
+  target.hp.max = (target.hp.max ?? 0) + effect.potency;
+  target.hp.current += effect.potency; // Also increase current hp
+  addLogMessage(
+    state,
+    `The ${target.name}'s max HP increases by ${effect.potency}.`,
+    'info'
+  );
+}
+
+import {
+  HealEffect,
+  DamageEffect,
+  FireballEffect,
+  IncreaseAttackEffect,
+  IncreaseMaxHpEffect,
+} from '../engine/state.js';
 
 export function applyEffect(
   user: Actor,
@@ -101,6 +134,12 @@ export function applyEffect(
       return;
     case 'revealMap':
       resolveRevealMap(state);
+      return;
+    case 'increase_attack':
+      resolveIncreaseAttack(user, state, effect as IncreaseAttackEffect);
+      return;
+    case 'increase_max_hp':
+      resolveIncreaseMaxHp(user, state, effect as IncreaseMaxHpEffect);
       return;
     // Other effects like applyStatus will be added here
     default:

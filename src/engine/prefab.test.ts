@@ -18,6 +18,8 @@ describe('Prefab System', () => {
       },
     };
     setResource('prefabs', prefabs);
+    setResource('items', {}); // Mock items to prevent errors
+    setResource('entities', {}); // Mock entities to prevent errors
   });
 
   afterAll(() => {

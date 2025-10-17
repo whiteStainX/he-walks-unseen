@@ -40,5 +40,22 @@
     "cost": 3,
     "apCost": 3,
     "prerequisites": ["power-strike", "toughness"]
+  },
+  "fireball": {
+    "id": "fireball",
+    "name": "Fireball",
+    "description": "Hurls a ball of fire at a target.",
+    "type": "active",
+    "cost": 2,
+    "apCost": 2,
+    "prerequisites": [],
+    "effects": [
+      {
+        "type": "fireball",
+        "potency": 10,
+        "radius": 3,
+        "requiresTarget": true
+      }
+    ]
   }
 }

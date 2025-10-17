@@ -52,6 +52,13 @@ describe('Combat Menu Logic', () => {
   beforeAll(() => {
     // Mock resources if combat actions require them (e.g., loot drops)
     setResource('items', []);
+    setResource('combatActions', {
+      attack: { id: 'attack', name: 'Attack', apCost: 1 },
+      flee: { id: 'flee', name: 'Flee', apCost: 1 },
+      cleave: { id: 'cleave', name: 'Cleave', apCost: 2 },
+      cancel: { id: 'cancel', name: 'Cancel', apCost: 0 },
+    });
+    setResource('skills', {}); // Mock skills to prevent errors
   });
 
   afterAll(() => {
