@@ -13,6 +13,7 @@ const mockPlayer: Actor = {
   defense: 2,
   isPlayer: true,
   actionPoints: { current: 1, max: 1 },
+  dexterity: 100, // High dexterity to ensure attacks hit
 };
 
 const mockEnemy: Actor = {
@@ -23,6 +24,7 @@ const mockEnemy: Actor = {
   hp: { current: 5, max: 5 },
   attack: 3,
   defense: 1,
+  dexterity: 10, // Low dexterity to be hit easily
 };
 
 const mockGameState: GameState = {

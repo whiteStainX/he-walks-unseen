@@ -1,10 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { jest } from '@jest/globals';
 import { render } from 'ink-testing-library';
 import { GameAction } from '../input/actions.js';
 import GameScreen, { isActionDefined } from './GameScreen.js';
 import { createInitialGameState } from '../game/initialState.js';
 import { setResource, clearResources } from '../engine/resourceManager.js';
 import { loadWorldData } from '../engine/worldManager.js';
+
+// Mock the PlayerExpressionManager component to avoid async issues with timers
+jest.mock('./PlayerExpressionManager.js', () => ({
+  __esModule: true,
+  default: () => null, // Render nothing
+}));
 
 describe('isActionDefined', () => {
   it('treats MOVE_NORTH as a valid action', () => {

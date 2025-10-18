@@ -2,6 +2,7 @@
 import { render } from 'ink-testing-library';
 import { CombatMenuView } from './CombatMenuView.js';
 import type { GameState, Actor } from '../engine/state.js';
+import { setResource, clearResources } from '../engine/resourceManager.js';
 
 const mockPlayer: Actor = {
   id: 'player',
@@ -47,6 +48,20 @@ const mockGameState: GameState = {
 };
 
 describe('CombatMenuView', () => {
+  beforeAll(() => {
+    setResource('combatActions', {
+      attack: { id: 'attack', name: 'Attack', apCost: 1 },
+      defend: { id: 'defend', name: 'Defend', apCost: 1 },
+      flee: { id: 'flee', name: 'Flee', apCost: 1 },
+      cancel: { id: 'cancel', name: 'Cancel', apCost: 0 },
+    });
+    setResource('skills', {});
+  });
+
+  afterAll(() => {
+    clearResources();
+  });
+
   it('should render the combat menu when in the CombatMenu phase', () => {
     const { lastFrame } = render(<CombatMenuView state={mockGameState} />);
     expect(lastFrame()).toContain('Engaging: Goblin');

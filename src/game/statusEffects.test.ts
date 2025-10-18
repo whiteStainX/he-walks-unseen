@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import type { GameState, Actor, StatusEffect } from '../engine/state.js';
+import type { GameState, Actor, StatusEffect, Item } from '../engine/state.js';
 import { processStatusEffects } from './statusEffects.js';
 import { resolveAttack } from './combat.js';
 import { recalculateDerivedStats } from './progression.js';
@@ -18,8 +18,9 @@ describe('Status Effects System', () => {
     attack: 2,
     defense: 1,
     statusEffects: [],
-    dexterity: 100, // High dexterity to ensure attacks hit
     strength: 5,
+    dexterity: 100,
+    vitality: 10,
   };
 
   const enemy: Actor = {
@@ -31,17 +32,21 @@ describe('Status Effects System', () => {
     attack: 1,
     defense: 0,
     statusEffects: [],
-    dexterity: 100, // High dexterity to ensure attacks hit
     strength: 3,
+    dexterity: 10,
+    vitality: 5,
   };
 
   beforeEach(() => {
+    const freshPlayer = JSON.parse(JSON.stringify(player));
+    const freshEnemy = JSON.parse(JSON.stringify(enemy));
+
+    recalculateDerivedStats(freshPlayer);
+    recalculateDerivedStats(freshEnemy);
+
     mockState = {
       phase: 'PlayerTurn',
-      actors: [
-        { ...player, hp: { ...player.hp, current: 10 }, statusEffects: [] },
-        { ...enemy, hp: { ...enemy.hp, current: 5 }, statusEffects: [] },
-      ],
+      actors: [freshPlayer, freshEnemy],
       items: [],
       entities: [],
       map: { tiles: [], width: 10, height: 10 },
@@ -53,8 +58,6 @@ describe('Status Effects System', () => {
       mapStates: new Map(),
       activeTheme: 'amber',
     };
-    recalculateDerivedStats(mockState.actors[0]);
-    recalculateDerivedStats(mockState.actors[1]);
   });
 
   describe('processStatusEffects', () => {
@@ -72,7 +75,7 @@ describe('Status Effects System', () => {
       });
       const updatedPlayer = nextState.actors.find((a) => a.id === 'player');
 
-      expect(updatedPlayer?.hp.current).toBe(9);
+      expect(updatedPlayer?.hp.current).toBe(119);
       expect(updatedPlayer?.statusEffects?.[0]?.duration).toBe(2);
       expect(
         nextState.log.some((m) => m.text.includes('Player takes 1 poison damage.'))
@@ -93,7 +96,7 @@ describe('Status Effects System', () => {
       });
       const updatedPlayer = nextState.actors.find((a) => a.id === 'player');
 
-      expect(updatedPlayer?.hp.current).toBe(9);
+      expect(updatedPlayer?.hp.current).toBe(119);
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
       expect(
         nextState.log.some((m) => m.text.includes('Player is no longer poisoned.'))
@@ -124,26 +127,42 @@ describe('Status Effects System', () => {
   });
 
   describe('Combat Integration', () => {
+    const mockPoisonDagger: Item = {
+      id: 'poison-dagger',
+      name: 'Poison Dagger',
+      char: ')',
+      position: { x: -1, y: -1 },
+      equipment: {
+        slot: 'weapon',
+        bonuses: { attack: 1 },
+        onHit: {
+          type: 'poison',
+          duration: 3,
+          potency: 1,
+          chance: 0.5,
+        },
+      },
+    };
+
     it('should apply a status effect from a weapon on a successful hit', () => {
       // Mock random to always succeed the chance roll
       jest.spyOn(global.Math, 'random').mockReturnValue(0.4);
 
-      const attackerWithPoisonWeapon: Actor = {
-        ...enemy,
-        equipment: {
-          weapon: mockPoisonDagger,
-        },
-      };
+      const attacker = mockState.actors[1];
+      const defender = mockState.actors[0];
 
-      mockState.actors[1] = attackerWithPoisonWeapon;
-      const nextState = produce(mockState, (draft) => {
-        resolveAttack(attackerWithPoisonWeapon, player, draft);
-      });
-      const updatedPlayer = nextState.actors.find((a) => a.isPlayer);
+      attacker.dexterity = 200; // Crank it up to guarantee a hit
+      attacker.equipment = {
+        weapon: mockPoisonDagger,
+      };
+      recalculateDerivedStats(attacker);
+
+      resolveAttack(attacker, defender, mockState);
+      const updatedPlayer = mockState.actors.find((a) => a.isPlayer);
 
       expect(updatedPlayer?.statusEffects?.length).toBe(1);
       expect(updatedPlayer?.statusEffects?.[0].type).toBe('poison');
-      const lastMessage = nextState.log[nextState.log.length - 1];
+      const lastMessage = mockState.log[mockState.log.length - 1];
       expect(lastMessage.text).toContain('The Player is poisoned!');
 
       // Restore mock
