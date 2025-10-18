@@ -1,10 +1,22 @@
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
 import { useTheme } from '../themes.js';
-import { getResource } from '../engine/resourceManager.js'; // Import getResource
+import { getResource, hasResource } from '../engine/resourceManager.js';
+import HealthBar from './HealthBar.js';
 
 interface CombatSceneViewProps {
   state: GameState;
+}
+
+function getArt(id: string): string {
+  try {
+    if (hasResource(id)) {
+      return getResource<string>(id);
+    }
+  } catch (e) {
+    // Fallback if resource loading fails for any reason
+  }
+  return 'Art not found';
 }
 
 export function CombatSceneView({ state }: CombatSceneViewProps) {
@@ -19,9 +31,8 @@ export function CombatSceneView({ state }: CombatSceneViewProps) {
     return null;
   }
 
-  // Load ASCII art for player and enemy
-  const playerArt = getResource<string>('player_combat');
-  const enemyArt = getResource<string>(targetEnemy.profile ? `${targetEnemy.profile}_combat` : 'goblin_combat');
+  const playerArt = getArt('player_combat');
+  const enemyArt = getArt(targetEnemy.profile ? `${targetEnemy.profile}_combat` : 'goblin_combat');
 
   return (
     <Box flexDirection="column" flexGrow={1} borderStyle="round" borderColor={theme.border} padding={1}>
@@ -34,9 +45,13 @@ export function CombatSceneView({ state }: CombatSceneViewProps) {
             <Text key={`player-art-${i}`}>{line}</Text>
           ))}
           <Box height={1} />
+          <HealthBar current={player.hp.current} max={player.hp.max} />
           <Text color={theme.primary}>HP: {player.hp.current}/{player.hp.max}</Text>
-          <Text color={theme.primary}>ATK: {player.attack}</Text>
-          <Text color={theme.primary}>DEF: {player.defense}</Text>
+          <Box marginTop={1}>
+            {(player.statusEffects ?? []).map(effect => (
+              <Text key={effect.id} color={theme.warning}>- {effect.type} ({effect.duration}) -</Text>
+            ))}
+          </Box>
         </Box>
 
         {/* VS Text */}
@@ -52,9 +67,13 @@ export function CombatSceneView({ state }: CombatSceneViewProps) {
             <Text key={`enemy-art-${i}`}>{line}</Text>
           ))}
           <Box height={1} />
+          <HealthBar current={targetEnemy.hp.current} max={targetEnemy.hp.max} />
           <Text color={theme.primary}>HP: {targetEnemy.hp.current}/{targetEnemy.hp.max}</Text>
-          <Text color={theme.primary}>ATK: {targetEnemy.attack}</Text>
-          <Text color={theme.primary}>DEF: {targetEnemy.defense}</Text>
+          <Box marginTop={1}>
+            {(targetEnemy.statusEffects ?? []).map(effect => (
+              <Text key={effect.id} color={theme.warning}>- {effect.type} ({effect.duration}) -</Text>
+            ))}
+          </Box>
         </Box>
       </Box>
     </Box>
