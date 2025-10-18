@@ -3,7 +3,7 @@ import { Box, Text } from 'ink';
 import type { Actor, Skill } from '../engine/state.js';
 import TerminalBox from './TerminalBox.js';
 import { useTheme } from '../themes.js';
-import type { SkillNodeLayout } from './skillTreeLayout.js';
+import type { SkillNodeLayout } from '../lib/skillTreeLayout.js';
 
 interface SkillTreeViewProps {
   skills: Record<string, Skill>;

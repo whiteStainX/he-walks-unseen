@@ -89,6 +89,10 @@ export function handleCombatMenuAction(
         case 'attack':
           resolveAttack(player, targetEnemy, state);
           break;
+        case 'cancel':
+          state.phase = 'PlayerTurn';
+          state.combatTargetId = undefined;
+          return; // Exit early, no turn change
         case 'defend':
           addLogMessage(state, 'You brace for impact.', 'info');
           break;
