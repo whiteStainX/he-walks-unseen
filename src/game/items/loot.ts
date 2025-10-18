@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
-import { getResource } from '../engine/resourceManager.js';
-import { instantiate } from '../engine/prefab.js';
-import type { Item } from '../engine/state.js';
+import { getResource } from '../../engine/resourceManager.js';
+import { instantiate } from '../../engine/prefab.js';
+import type { Item } from '../../engine/state.js';
 
 interface LootTableItem {
   id: string;

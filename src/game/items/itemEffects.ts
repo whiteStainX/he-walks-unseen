@@ -3,8 +3,8 @@ import type {
   GameState,
   Effect,
   Point,
-} from '../engine/state.js';
-import { addLogMessage } from '../lib/logger.js';;
+} from '../../engine/state.js';
+import { addLogMessage } from '../../lib/logger.js';;
 
 function resolveHeal(
   target: Actor,
@@ -99,7 +99,7 @@ import {
   FireballEffect,
   IncreaseAttackEffect,
   IncreaseMaxHpEffect,
-} from '../engine/state.js';
+} from '../../engine/state.js';
 
 export function applyEffect(
   user: Actor,

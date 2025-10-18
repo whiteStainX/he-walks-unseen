@@ -1,7 +1,7 @@
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
 import { useTheme } from '../themes.js';
-import { getAvailableCombatActions } from '../game/combatMenuActions.js';
+import { getAvailableCombatActions } from '../game/combat/combatMenuActions.js';
 
 interface CombatMenuViewProps {
   state: GameState;

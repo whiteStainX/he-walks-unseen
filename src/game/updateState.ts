@@ -1,13 +1,13 @@
 import { GameState } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
 import { ThemeName } from '../themes.js';
-import { handleInventoryAction } from './inventoryActions.js';
-import { handleTargeting } from './targetingActions.js';
-import { handleCombatMenuAction } from './combatMenuActions.js';
-import { handleIdentifyMenuAction } from './identifyActions.js';
-import { handleMessageLogAction } from './messageLogActions.js';
-import { handlePlayerAction } from './playerActions.js';
-import { handleDialogueAction } from './dialogueActions.js';
+import { handleInventoryAction } from './items/inventoryActions.js';
+import { handleTargeting } from './player/targetingActions.js';
+import { handleCombatMenuAction } from './combat/combatMenuActions.js';
+import { handleIdentifyMenuAction } from './items/identifyActions.js';
+import { handleMessageLogAction } from './player/messageLogActions.js';
+import { handlePlayerAction } from './player/playerActions.js';
+import { handleDialogueAction } from './dialogue/dialogueActions.js';
 import { addLogMessage } from '../lib/logger.js';;
 import { eventBus } from '../engine/events.js';
 import { getCurrentState } from '../engine/narrativeEngine.js';
@@ -70,7 +70,7 @@ import { deleteSaveGame, saveGame, loadGame } from '../engine/persistence.js';
 import { initializeEngine } from '../engine/narrativeEngine.js';
 import { createInitialGameState } from './initialState.js';
 
-import { learnSkill } from './skills.js';
+import { learnSkill } from './character/skills.js';
 
 export function applyActionToState(
   state: GameState,

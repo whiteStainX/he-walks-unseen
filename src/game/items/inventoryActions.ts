@@ -1,8 +1,8 @@
-import type { GameState, Item } from '../engine/state.js';
-import { GameAction } from '../input/actions.js';
+import type { GameState, Item } from '../../engine/state.js';
+import { GameAction } from '../../input/actions.js';
 import { applyEffect } from './itemEffects.js';
 import { equip } from './equipment.js';
-import { addLogMessage } from '../lib/logger.js';;
+import { addLogMessage } from '../../lib/logger.js';;
 
 export const getDisplayName = (item: Item) =>
   item.identified === false && item.unidentifiedName

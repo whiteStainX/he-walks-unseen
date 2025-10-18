@@ -1,5 +1,5 @@
 import { equip, getActorStats, unequip } from './equipment.js';
-import type { Actor, GameState, Item } from '../engine/state.js';
+import type { Actor, GameState, Item } from '../../engine/state.js';
 
 const mockPlayer: Actor = {
   id: 'player',

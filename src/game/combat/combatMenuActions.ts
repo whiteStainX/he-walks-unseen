@@ -1,8 +1,8 @@
-import type { Actor, GameState, Skill } from '../engine/state.js';
-import { GameAction } from '../input/actions.js';
+import type { Actor, GameState, Skill } from '../../engine/state.js';
+import { GameAction } from '../../input/actions.js';
 import { resolveAttack } from './combat.js';
-import { addLogMessage } from '../lib/logger.js';
-import { getResource } from '../engine/resourceManager.js';
+import { addLogMessage } from '../../lib/logger.js';
+import { getResource } from '../../engine/resourceManager.js';
 
 export interface CombatAction {
   id: string;

@@ -1,5 +1,5 @@
-import type { GameState } from '../engine/state.js';
-import { GameAction } from '../input/actions.js';
+import type { GameState } from '../../engine/state.js';
+import { GameAction } from '../../input/actions.js';
 
 const SCROLL_SPEED = 1; // Number of lines to scroll at a time
 

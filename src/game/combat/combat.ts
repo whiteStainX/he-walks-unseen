@@ -1,9 +1,9 @@
 import { nanoid } from 'nanoid';
-import { checkForLevelUp } from './progression.js';
-import type { Actor, GameState, MessageType } from '../engine/state.js';
-import { getActorStats } from './equipment.js';
-import { addLogMessage } from '../lib/logger.js';;
-import { generateLoot } from './loot.js';
+import { checkForLevelUp } from '../character/progression.js';
+import type { Actor, GameState, MessageType } from '../../engine/state.js';
+import { getActorStats } from '../items/equipment.js';
+import { addLogMessage } from '../../lib/logger.js';;
+import { generateLoot } from '../items/loot.js';
 
 /**
  * Calculates the damage dealt in an attack, accounting for accuracy, evasion, critical hits, and resistances.

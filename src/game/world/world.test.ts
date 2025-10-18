@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
-import { loadResources, clearResources } from '../engine/resourceManager.js';
-import { loadWorldData } from '../engine/worldManager.js';
-import { createInitialGameState } from './initialState.js';
+import { loadResources, clearResources } from '../../engine/resourceManager.js';
+import { loadWorldData } from '../../engine/worldManager.js';
+import { createInitialGameState } from '../initialState.js';
 
 describe('World Data Integration Test', () => {
   beforeAll(async () => {

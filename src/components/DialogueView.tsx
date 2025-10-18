@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { GameState } from '../engine/state.js';
-import { resolveConversationParcel } from '../game/conversation.js';
+import { resolveConversationParcel } from '../game/dialogue/conversation.js';
 import { useTheme } from '../themes.js';
 
 interface DialogueViewProps {

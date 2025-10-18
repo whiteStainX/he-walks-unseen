@@ -9,7 +9,7 @@ import type {
 } from '../engine/state.js';
 import type { ThemeName } from '../themes.js';
 import { Path } from 'rot-js';
-import { generateMap } from './map-generation.js';
+import { generateMap } from './world/map-generation.js';
 import { getResource } from '../engine/resourceManager.js';
 import { updateVisibility } from '../lib/visibility.js';;
 import { addLogMessage } from '../lib/logger.js';;
