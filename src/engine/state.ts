@@ -1,5 +1,7 @@
 import type { GamePhase } from './fsm.js';
 import type { ThemeName } from '../themes.js';
+import type { z } from 'zod';
+import { StatusEffectsSchema, AiStatesSchema, EquipmentSlotsSchema, AttributesSchema, MessageTypesSchema, EffectsSchema } from './schemas.js';
 
 export interface Point {
   x: number;
@@ -76,7 +78,8 @@ export interface Actor extends Entity {
   attributePoints?: number;
 }
 
-export type StatusEffectType = 'poison';
+export type StatusEffectType = keyof z.infer<typeof StatusEffectsSchema>;
+
 
 export interface StatusEffect {
   id: string;
@@ -85,7 +88,7 @@ export interface StatusEffect {
   potency: number; // e.g., damage per turn for poison
 }
 
-export type AiState = 'idle' | 'wander' | 'chase' | 'flee' | 'patrol';
+export type AiState = keyof z.infer<typeof AiStatesSchema>;
 
 export interface Ai {
   state: AiState;
@@ -95,7 +98,7 @@ export interface Ai {
   currentPatrolIndex?: number;
 }
 
-export type EquipmentSlot = 'weapon' | 'armor';
+export type EquipmentSlot = keyof z.infer<typeof EquipmentSlotsSchema>;
 
 export interface Equipment {
   slot: EquipmentSlot;
@@ -114,84 +117,22 @@ export interface Equipment {
   };
 }
 
-export type Attribute = 'strength' | 'dexterity' | 'intelligence' | 'vitality';
+export type Attribute = keyof z.infer<typeof AttributesSchema>;
 
-export type EffectType =
-  | 'heal'
-  | 'damage'
-  | 'fireball'
-  | 'revealMap'
-  | 'applyStatus'
-  | 'identify'
-  | 'increase_attack'
-  | 'increase_max_hp'
-  | 'increase_attribute';
+export type EffectType = keyof z.infer<typeof EffectsSchema>;
 
 export interface Effect {
   type: EffectType;
   requiresTarget: boolean;
+  potency?: number;
+  radius?: number;
+  status?: StatusEffectType;
+  duration?: number;
+  attribute?: Attribute;
 }
-
-export interface HealEffect extends Effect {
-  type: 'heal';
-  potency: number;
-}
-
-export interface DamageEffect extends Effect {
-  type: 'damage';
-  potency: number;
-}
-
-export interface FireballEffect extends Effect {
-  type: 'fireball';
-  potency: number;
-  radius: number;
-}
-
-export interface RevealMapEffect extends Effect {
-  type: 'revealMap';
-}
-
-export interface ApplyStatusEffect extends Effect {
-  type: 'applyStatus';
-  status: StatusEffectType;
-  duration: number;
-  potency: number;
-}
-
-export interface IdentifyEffect extends Effect {
-  type: 'identify';
-}
-
-export interface IncreaseAttackEffect extends Effect {
-  type: 'increase_attack';
-  potency: number;
-}
-
-export interface IncreaseMaxHpEffect extends Effect {
-  type: 'increase_max_hp';
-  potency: number;
-}
-
-export interface IncreaseAttributeEffect extends Effect {
-  type: 'increase_attribute';
-  attribute: Attribute;
-  potency: number;
-}
-
-export type ItemEffect =
-  | HealEffect
-  | DamageEffect
-  | FireballEffect
-  | RevealMapEffect
-  | ApplyStatusEffect
-  | IdentifyEffect
-  | IncreaseAttackEffect
-  | IncreaseMaxHpEffect
-  | IncreaseAttributeEffect;
 
 export interface Item extends Entity {
-  effects?: ItemEffect[];
+  effects?: Effect[];
   equipment?: Equipment;
   unidentifiedName?: string;
   identified?: boolean;
@@ -211,11 +152,11 @@ export interface Skill {
   prerequisites?: string[];
   cost?: number;
   apCost?: number;
-  combatActionId?: string;
-  effects?: ItemEffect[];
+  
+  effects?: Effect[];
 }
 
-export type MessageType = 'info' | 'damage' | 'heal' | 'win' | 'death';
+export type MessageType = keyof z.infer<typeof MessageTypesSchema>;
 
 export interface Message {
   id: string;

@@ -1,0 +1,22 @@
+{
+  "strength": {
+    "id": "strength",
+    "name": "Strength",
+    "description": "Increases melee damage and carrying capacity."
+  },
+  "dexterity": {
+    "id": "dexterity",
+    "name": "Dexterity",
+    "description": "Increases accuracy, evasion, and ranged damage."
+  },
+  "intelligence": {
+    "id": "intelligence",
+    "name": "Intelligence",
+    "description": "Increases spell power and damage resistance."
+  },
+  "vitality": {
+    "id": "vitality",
+    "name": "Vitality",
+    "description": "Increases maximum HP and regeneration."
+  }
+}

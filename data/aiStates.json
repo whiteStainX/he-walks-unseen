@@ -1,0 +1,22 @@
+{
+  "idle": {
+    "id": "idle",
+    "description": "The actor is not doing anything."
+  },
+  "wander": {
+    "id": "wander",
+    "description": "The actor is wandering randomly."
+  },
+  "chase": {
+    "id": "chase",
+    "description": "The actor is chasing a target."
+  },
+  "flee": {
+    "id": "flee",
+    "description": "The actor is fleeing from a target."
+  },
+  "patrol": {
+    "id": "patrol",
+    "description": "The actor is following a patrol route."
+  }
+}

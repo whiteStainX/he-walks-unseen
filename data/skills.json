@@ -26,7 +26,6 @@
     "name": "Cleave",
     "description": "Attack multiple adjacent enemies.",
     "type": "active",
-    "combatActionId": "cleave",
     "cost": 2,
     "apCost": 2,
     "prerequisites": ["power-strike"]
@@ -36,7 +35,6 @@
     "name": "Berserk",
     "description": "Enter a berserker rage, increasing attack but lowering defense.",
     "type": "active",
-    "combatActionId": "berserk",
     "cost": 3,
     "apCost": 3,
     "prerequisites": ["power-strike", "toughness"]
@@ -48,14 +46,6 @@
     "type": "active",
     "cost": 2,
     "apCost": 2,
-    "prerequisites": [],
-    "effects": [
-      {
-        "type": "fireball",
-        "potency": 10,
-        "radius": 3,
-        "requiresTarget": true
-      }
-    ]
+    "prerequisites": []
   }
 }

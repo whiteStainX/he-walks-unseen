@@ -1,0 +1,12 @@
+{
+  "weapon": {
+    "id": "weapon",
+    "name": "Weapon Slot",
+    "description": "Holds a weapon."
+  },
+  "armor": {
+    "id": "armor",
+    "name": "Armor Slot",
+    "description": "Holds a piece of armor."
+  }
+}

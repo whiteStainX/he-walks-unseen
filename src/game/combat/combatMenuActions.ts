@@ -24,8 +24,8 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
   if (player.learnedSkills) {
     for (const skillId in player.learnedSkills) {
       const skill = allSkills[skillId];
-      if (skill?.type === 'active' && skill.combatActionId) {
-        const action = combatActions[skill.combatActionId];
+      if (skill?.type === 'active') {
+        const action = combatActions[skill.id];
         if (action) {
           availableActions.push(action);
         }
@@ -89,6 +89,24 @@ export function handleCombatMenuAction(
         case 'attack':
           resolveAttack(player, targetEnemy, state);
           break;
+        case 'cleave': {
+          const cleavePotency = selectedAction.effect.potency;
+          // Attack the main target
+          resolveAttack(player, targetEnemy, state, cleavePotency);
+          // Find and attack adjacent enemies
+          const enemies = state.actors.filter(a => !a.isPlayer);
+          const adjacentEnemies = enemies.filter(enemy => {
+            const dx = Math.abs(player.position.x - enemy.position.x);
+            const dy = Math.abs(player.position.y - enemy.position.y);
+            return dx <= 1 && dy <= 1 && (dx !== 0 || dy !== 0);
+          });
+          adjacentEnemies.forEach(enemy => {
+            if (enemy.id !== targetEnemy.id) {
+              resolveAttack(player, enemy, state, cleavePotency);
+            }
+          });
+          break;
+        }
         case 'cancel':
           state.phase = 'PlayerTurn';
           state.combatTargetId = undefined;

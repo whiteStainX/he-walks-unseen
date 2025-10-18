@@ -269,3 +269,11 @@ This milestone laid the foundation for a more strategic, tactical combat system 
 -   **Enhanced Damage Calculation:**
     -   Refactored the damage calculation to be data-driven. It now incorporates weapon damage ranges and applies bonuses from passive skills and equipment.
     -   Added a data-driven critical hit system, allowing `critChance` and `critDamage` to be modified by gear and skills.
+
+## Milestone 23: Game Folder Structure Refactoring (October 2025)
+
+This milestone focused on improving the codebase structure and maintainability by organizing files into a more logical and modular hierarchy.
+
+-   **Modular Code Organization:** Grouped core gameplay modules (e.g., `combat`, `dialogue`, `items`) into a dedicated `src/game/` directory, improving the project's structure and making the codebase easier to navigate.
+-   **General-Purpose Library:** Created a new `src/lib/` directory for generic, reusable utilities and algorithms (e.g., `logger.ts`, `visibility.ts`). This separates foundational code from game-specific logic.
+-   **Improved Maintainability:** This refactoring enhances the project's modularity, making it easier to maintain and scale as new features are added.

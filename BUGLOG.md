@@ -2,6 +2,25 @@
 
 This document tracks interesting bugs encountered during the development of "He Walks Unseen".
 
+## Map Generation Failure for Small Maps
+
+-   **Date:** October 2025
+-   **Status:** Fixed
+
+### Symptoms
+
+When starting a new game, the engine would fail to initialize with the error: `Failed to initialize engine: Not enough rooms to place all portals for map "town"`.
+
+### Root Cause
+
+The "town" map, which is 20x20, was using the "digger" map generator from `rot-js`. For small map sizes, the "digger" generator does not guarantee the creation of a sufficient number of rooms. The portal placement logic requires at least one room for the player's starting position and one room for each portal. When the "digger" generator created only one room, the portal placement logic would fail, as there were no available rooms to place the portal.
+
+### Fix
+
+The fix involved two steps:
+1.  **Implemented a new map generator:** A new map generator function, `generateUniformMap`, was added to `src/game/world/map-generation.ts`. This function uses the `rot-js` `Map.Uniform` generator, which creates a more structured, grid-based layout of rooms and is better suited for creating town-like maps with a guaranteed number of rooms.
+2.  **Updated the world data:** The `data/world.json` file was modified to change the generator for the "town" map from `"digger"` to `"uniform"`. This ensures that a sufficient number of rooms will be generated for the "town" map, allowing the portal placement logic to succeed.
+
 ## Inconsistent Portal Destinations
 
 -   **Date:** October 2025

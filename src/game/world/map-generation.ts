@@ -60,6 +60,52 @@ function generateDiggerMap(
   return { map, playerStart, rooms: createdRooms };
 }
 
+function generateUniformMap(
+  width: number,
+  height: number,
+  theme: any
+): { map: TileMap; playerStart: { x: number; y: number }; rooms: any[] } {
+  RNG.setSeed(Date.now() + randomInt(1, 10000));
+
+  const map = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => ({ char: theme.wall, walkable: false, transparent: false }))
+  );
+
+  const uniformOptions = {
+    roomWidth: [2, 4] as [number, number],
+    roomHeight: [2, 3] as [number, number],
+    roomDugPercentage: 1.0,
+  };
+
+  const uniform = new Map.Uniform(width, height, uniformOptions);
+
+  uniform.create((x, y, value) => {
+    if (value) {
+      return;
+    }
+    map[y][x] = { char: theme.floor, walkable: true, transparent: true };
+  });
+
+  const createdRooms = uniform.getRooms();
+
+  if (createdRooms.length === 0) {
+    throw new Error('Map generation failed: No rooms were created.');
+  }
+
+  for (const room of createdRooms) {
+    room.getDoors((x, y) => {
+      map[y][x] = { char: theme.floor, walkable: true, transparent: true };
+    });
+  }
+
+  const firstRoom = createdRooms[0];
+  const playerStart = { x: firstRoom.getCenter()[0], y: firstRoom.getCenter()[1] };
+
+  map[playerStart.y][playerStart.x] = { char: theme.floor, walkable: true, transparent: true };
+
+  return { map, playerStart, rooms: createdRooms };
+}
+
 export function generateMap(
   mapDefinition: MapDefinition,
   theme: any
@@ -69,6 +115,8 @@ export function generateMap(
   switch (generator.type) {
     case 'digger':
       return generateDiggerMap(width, height, theme);
+    case 'uniform':
+      return generateUniformMap(width, height, theme);
     default:
       throw new Error(`Unknown map generator type: ${generator.type}`);
   }

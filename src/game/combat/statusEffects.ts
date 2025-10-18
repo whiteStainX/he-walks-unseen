@@ -31,13 +31,21 @@ export function processStatusEffects(state: GameState): void {
             'damage'
           );
           break;
+        case 'defending':
+          // The effect of defending is handled in the combat resolution.
+          // Here we just let it expire.
+          break;
+        case 'berserk':
+          // The effect of berserk is handled in the combat resolution.
+          // Here we just let it expire.
+          break;
         // Other status effects can be handled here in the future
       }
 
       if (effectIsActive) {
         activeEffects.push({ ...effect, duration: newDuration });
       } else {
-        addLogMessage(state, `${actor.name} is no longer poisoned.`, 'info');
+        addLogMessage(state, `${actor.name} is no longer ${effect.type}.`, 'info');
       }
     });
 
