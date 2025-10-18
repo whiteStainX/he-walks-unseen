@@ -28,7 +28,7 @@ export const EntityPlacementSchema = z.object({
 });
 
 export const GeneratorSchema = z.object({
-  type: z.enum(['digger']),
+  type: z.enum(['digger', 'uniform']),
 });
 
 export const MapDefinitionSchema = z.object({

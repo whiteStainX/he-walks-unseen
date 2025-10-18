@@ -5,8 +5,8 @@
       "id": "town",
       "width": 20,
       "height": 20,
-      "theme": "town",
-      "generator": { "type": "digger" },
+"theme": "town",
+      "generator": { "type": "uniform" },
       "connections": [
         {
           "id": "town_to_forest",
