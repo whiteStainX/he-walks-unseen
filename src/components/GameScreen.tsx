@@ -8,6 +8,7 @@ import SkillsView from './SkillsView.js';
 import MessageLogView from './MessageLogView.js';
 import SkillTreeView from './SkillTreeView.js';
 import { CombatMenuView } from './CombatMenuView.js';
+import { CombatSceneView } from './CombatSceneView.js';
 import DialogueView from './DialogueView.js';
 import type { GameState, Skill } from '../engine/state.js';
 import { GameAction } from '../input/actions.js';
@@ -322,12 +323,26 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
       );
     }
 
+    if (state.phase === 'CombatMenu') {
+      return (
+        <TerminalBox
+          paddingX={1}
+          borderStyle="round"
+          borderColor={theme.accent}
+          height={VIEWPORT_HEIGHT + 3}
+          width={VIEWPORT_WIDTH * 2}
+          flexDirection="column"
+        >
+          <CombatSceneView state={state} />
+        </TerminalBox>
+      );
+    }
+
     return (
       <MapView
         state={state}
         isDimmed={
           state.phase === 'Inventory' ||
-          state.phase === 'CombatMenu' ||
           state.phase === 'IdentifyMenu'
         }
       />
