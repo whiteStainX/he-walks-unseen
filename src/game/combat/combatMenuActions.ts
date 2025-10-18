@@ -8,6 +8,7 @@ export interface CombatAction {
   id: string;
   name: string;
   apCost: number;
+  description?: string;
   effect: any; // Define a proper effect type later
 }
 
@@ -16,9 +17,9 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
   const allSkills = getResource<Record<string, Skill>>('skills');
 
   const availableActions: CombatAction[] = [
-    combatActions.attack,
-    combatActions.defend,
-    combatActions.flee,
+    { ...combatActions.attack, description: 'Attack the enemy with your equipped weapon.' },
+    { ...combatActions.defend, description: 'Increase your defense for one turn.' },
+    { ...combatActions.flee, description: 'Attempt to escape from combat.' },
   ];
 
   if (player.learnedSkills) {
@@ -27,13 +28,13 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
       if (skill?.type === 'active') {
         const action = combatActions[skill.id];
         if (action) {
-          availableActions.push(action);
+          availableActions.push({ ...action, description: skill.description });
         }
       }
     }
   }
 
-  availableActions.push(combatActions.cancel); // Always allow canceling
+  availableActions.push({ ...combatActions.cancel, description: 'Return to the game.' }); // Always allow canceling
   return availableActions;
 }
 

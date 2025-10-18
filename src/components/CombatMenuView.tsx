@@ -43,10 +43,15 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
           : theme.dim;
 
         return (
-          <Text key={action.id} color={optionColor}>
-            {isSelected ? '> ' : '  '}
-            {action.name} ({action.apCost} AP)
-          </Text>
+          <Box key={action.id} flexDirection="column">
+            <Text color={optionColor}>
+              {isSelected ? '> ' : '  '}
+              {action.name} ({action.apCost} AP)
+            </Text>
+            {isSelected && action.description && (
+              <Text color={theme.primary}>    {action.description}</Text>
+            )}
+          </Box>
         );
       })}
     </Box>
