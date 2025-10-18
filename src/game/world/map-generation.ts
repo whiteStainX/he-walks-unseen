@@ -1,6 +1,6 @@
 import { RNG, Map } from 'rot-js';
-import type { Tile } from '../engine/state.js';
-import type { MapDefinition } from '../engine/worldManager.js';
+import type { Tile } from '../../engine/state.js';
+import type { MapDefinition } from '../../engine/worldManager.js';
 
 export type TileMap = Tile[][];
 

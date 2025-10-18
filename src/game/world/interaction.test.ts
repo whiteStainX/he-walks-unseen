@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import type { GameState, Entity } from '../engine/state.js';
+import type { GameState, Entity } from '../../engine/state.js';
 import { handleInteraction } from './interaction.js';
 
 const createInitialState = (door: Entity): GameState => ({

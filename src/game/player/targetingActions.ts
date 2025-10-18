@@ -1,9 +1,9 @@
-import type { GameState } from '../engine/state.js';
-import { GameAction } from '../input/actions.js';
-import { applyEffect } from './itemEffects.js';
-import { processItemConsumption } from './inventoryActions.js';
-import { handleInteraction } from './interaction.js';
-import { addLogMessage } from '../lib/logger.js';;
+import type { GameState } from '../../engine/state.js';
+import { GameAction } from '../../input/actions.js';
+import { applyEffect } from '../items/itemEffects.js';
+import { processItemConsumption } from '../items/inventoryActions.js';
+import { handleInteraction } from '../world/interaction.js';
+import { addLogMessage } from '../../lib/logger.js';;
 
 // This is duplicated from updateState.ts. We should find a better home for it later.
 interface MovementDelta {

@@ -3,8 +3,8 @@ import { calculateDamage, resolveAttack } from './combat.js';
 import {
   setResource,
   clearResources,
-} from '../engine/resourceManager.js';
-import type { Actor, GameState, Item } from '../engine/state.js';
+} from '../../engine/resourceManager.js';
+import type { Actor, GameState, Item } from '../../engine/state.js';
 
 const mockItems: Partial<Item>[] = [
   {
@@ -119,7 +119,7 @@ const mockGameState: GameState = {
   activeTheme: 'amber',
 };
 
-import { recalculateDerivedStats } from './progression.js';
+import { recalculateDerivedStats } from '../character/progression.js';
 
 describe('calculateDamage', () => {
   let player: Actor;

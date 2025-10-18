@@ -1,7 +1,7 @@
-import type { GameState } from '../engine/state.js';
+import type { GameState } from '../../engine/state.js';
 import { runEnemyTurn } from './ai.js';
-import { processStatusEffects } from './statusEffects.js';
-import { addLogMessage } from '../lib/logger.js';;
+import { processStatusEffects } from '../combat/statusEffects.js';
+import { addLogMessage } from '../../lib/logger.js';;
 
 export function processEnemyTurns(state: GameState): void {
   if (state.phase !== 'EnemyTurn') {

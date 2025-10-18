@@ -1,7 +1,7 @@
-import { applyActionToState } from './updateState.js';
-import { GameAction } from '../input/actions.js';
-import type { GameState, Actor } from '../engine/state.js';
-import { setResource, clearResources } from '../engine/resourceManager.js';
+import { applyActionToState } from '../updateState.js';
+import { GameAction } from '../../input/actions.js';
+import type { GameState, Actor } from '../../engine/state.js';
+import { setResource, clearResources } from '../../engine/resourceManager.js';
 
 const mockPlayer: Actor = {
   id: 'player',

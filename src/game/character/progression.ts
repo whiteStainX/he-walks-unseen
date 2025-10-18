@@ -1,5 +1,5 @@
-import type { GameState, Actor, Attribute } from '../engine/state.js';
-import { addLogMessage } from '../lib/logger.js';
+import type { GameState, Actor, Attribute } from '../../engine/state.js';
+import { addLogMessage } from '../../lib/logger.js';
 
 const XP_TO_NEXT_LEVEL_MULTIPLIER = 1.5;
 const ATTRIBUTE_POINTS_PER_LEVEL = 2;

@@ -1,6 +1,6 @@
-import type { Actor, Ai, AiState, GameState, Point } from '../engine/state.js';
+import type { Actor, Ai, AiState, GameState, Point } from '../../engine/state.js';
 import { FOV, Path } from 'rot-js';
-import { resolveAttack } from './combat.js';
+import { resolveAttack } from '../combat/combat.js';
 
 function canSeePlayer(
   enemy: Actor,

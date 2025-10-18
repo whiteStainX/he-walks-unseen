@@ -4,13 +4,13 @@ import type {
   ChestInteraction,
   PortalInteraction,
   ConversationInteraction,
-} from '../engine/state.js';
-import { updateVisibility } from '../lib/visibility.js';;
-import { createInitialGameState } from './initialState.js';
-import { addLogMessage } from '../lib/logger.js';;
-import { replacer, reviver } from '../engine/persistence.js';
-import { beginConversation } from './conversation.js';
-import { generateLoot } from './loot.js';
+} from '../../engine/state.js';
+import { updateVisibility } from '../../lib/visibility.js';;
+import { createInitialGameState } from '../initialState.js';
+import { addLogMessage } from '../../lib/logger.js';;
+import { replacer, reviver } from '../../engine/persistence.js';
+import { beginConversation } from '../dialogue/conversation.js';
+import { generateLoot } from '../items/loot.js';
 
 export function handleInteraction(
   state: GameState,

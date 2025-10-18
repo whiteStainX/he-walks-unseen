@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
-import type { GameState, Actor, StatusEffect, Item } from '../engine/state.js';
+import type { GameState, Actor, StatusEffect, Item } from '../../engine/state.js';
 import { processStatusEffects } from './statusEffects.js';
 import { resolveAttack } from './combat.js';
-import { recalculateDerivedStats } from './progression.js';
+import { recalculateDerivedStats } from '../character/progression.js';
 
 import { produce } from 'immer';
 

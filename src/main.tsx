@@ -9,7 +9,7 @@ import { createInitialGameState } from './game/initialState.js';
 import { loadGame } from './engine/persistence.js';
 import { getCurrentState, initializeEngine } from './engine/narrativeEngine.js';
 import { loadWorldData } from './engine/worldManager.js';
-import { processEnemyTurns } from './game/enemyTurns.js';
+import { processEnemyTurns } from './game/ai/enemyTurns.js';
 import { produce } from 'immer';
 
 import { enableMapSet } from 'immer';
