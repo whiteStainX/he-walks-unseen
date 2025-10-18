@@ -76,7 +76,8 @@ export interface Actor extends Entity {
   attributePoints?: number;
 }
 
-export type StatusEffectType = 'poison';
+export type StatusEffectType = 'poison' | 'defending' | 'berserk';
+
 
 export interface StatusEffect {
   id: string;

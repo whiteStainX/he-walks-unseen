@@ -14,10 +14,24 @@ import { generateLoot } from '../items/loot.js';
 export function calculateDamage(
   attacker: Actor,
   defender: Actor,
-  state: GameState
+  state: GameState,
+  potency: number = 1
 ): number | null {
   const attackerStats = getActorStats(attacker);
   const defenderStats = getActorStats(defender);
+
+  // Apply status effects
+  if (attacker.statusEffects?.some(e => e.type === 'berserk')) {
+    attackerStats.attack *= 2;
+    attackerStats.defense /= 2;
+  }
+  if (defender.statusEffects?.some(e => e.type === 'defending')) {
+    defenderStats.defense *= 2;
+  }
+  if (defender.statusEffects?.some(e => e.type === 'berserk')) {
+    defenderStats.attack *= 2;
+    defenderStats.defense /= 2;
+  }
 
   // Accuracy check
   const hitChance = Math.min(
@@ -43,6 +57,8 @@ export function calculateDamage(
 
   let totalDamage = Math.max(0, baseDamage - defenderStats.defense);
 
+  totalDamage *= potency;
+
   // Apply damage resistance
   totalDamage *= 1 - defenderStats.damageResistance;
 
@@ -65,9 +81,10 @@ export function calculateDamage(
 export function resolveAttack(
   attacker: Actor,
   defender: Actor,
-  state: GameState
+  state: GameState,
+  potency: number = 1
 ): void {
-  const damage = calculateDamage(attacker, defender, state);
+  const damage = calculateDamage(attacker, defender, state, potency);
   const defenderInState = state.actors.find((a) => a.id === defender.id)!;
 
   if (damage === null) {

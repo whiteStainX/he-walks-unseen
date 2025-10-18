@@ -99,7 +99,7 @@ describe('Status Effects System', () => {
       expect(updatedPlayer?.hp.current).toBe(119);
       expect(updatedPlayer?.statusEffects?.length).toBe(0);
       expect(
-        nextState.log.some((m) => m.text.includes('Player is no longer poisoned.'))
+        nextState.log.some((m) => m.text.includes('Player is no longer poison.'))
       ).toBe(true);
     });
 
