@@ -72,9 +72,9 @@ function generateUniformMap(
   );
 
   const uniformOptions = {
-    roomWidth: [3, 9] as [number, number],
-    roomHeight: [3, 5] as [number, number],
-    roomDugPercentage: 0.8,
+    roomWidth: [2, 4] as [number, number],
+    roomHeight: [2, 3] as [number, number],
+    roomDugPercentage: 1.0,
   };
 
   const uniform = new Map.Uniform(width, height, uniformOptions);

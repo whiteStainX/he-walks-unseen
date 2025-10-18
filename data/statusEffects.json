@@ -1,0 +1,17 @@
+{
+  "poison": {
+    "id": "poison",
+    "name": "Poisoned",
+    "description": "Taking damage over time."
+  },
+  "defending": {
+    "id": "defending",
+    "name": "Defending",
+    "description": "Increased defense for a short duration."
+  },
+  "berserk": {
+    "id": "berserk",
+    "name": "Berserk",
+    "description": "Increased attack and decreased defense."
+  }
+}

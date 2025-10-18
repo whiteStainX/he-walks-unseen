@@ -9,8 +9,12 @@ import { addLogMessage } from '../../lib/logger.js';;
 function resolveHeal(
   target: Actor,
   state: GameState,
-  effect: { potency: number }
+  effect: Effect
 ): void {
+  if (effect.potency === undefined) {
+    addLogMessage(state, 'Invalid heal effect.', 'info');
+    return;
+  }
   const amountHealed = Math.min(
     target.hp.max - target.hp.current,
     effect.potency
@@ -28,8 +32,12 @@ function resolveHeal(
 function resolveDamage(
   target: Actor,
   state: GameState,
-  effect: { potency: number }
+  effect: Effect
 ): void {
+  if (effect.potency === undefined) {
+    addLogMessage(state, 'Invalid damage effect.', 'info');
+    return;
+  }
   // This will be expanded later to include combat calculations
   target.hp.current -= effect.potency;
   const message = `The ${target.name} takes ${effect.potency} damage.`;
@@ -40,8 +48,12 @@ function resolveDamage(
 function resolveFireball(
   targetPosition: Point,
   state: GameState,
-  effect: { radius: number; potency: number }
+  effect: Effect
 ): void {
+  if (effect.radius === undefined || effect.potency === undefined) {
+    addLogMessage(state, 'Invalid fireball effect.', 'info');
+    return;
+  }
   const { radius, potency } = effect;
 
   for (const actor of state.actors) {
@@ -69,8 +81,12 @@ function resolveRevealMap(state: GameState): void {
 function resolveIncreaseAttack(
   target: Actor,
   state: GameState,
-  effect: { potency: number }
+  effect: Effect
 ): void {
+  if (effect.potency === undefined) {
+    addLogMessage(state, 'Invalid increase attack effect.', 'info');
+    return;
+  }
   target.attack = (target.attack ?? 0) + effect.potency;
   addLogMessage(
     state,
@@ -82,8 +98,12 @@ function resolveIncreaseAttack(
 function resolveIncreaseMaxHp(
   target: Actor,
   state: GameState,
-  effect: { potency: number }
+  effect: Effect
 ): void {
+  if (effect.potency === undefined) {
+    addLogMessage(state, 'Invalid increase max hp effect.', 'info');
+    return;
+  }
   target.hp.max = (target.hp.max ?? 0) + effect.potency;
   target.hp.current += effect.potency; // Also increase current hp
   addLogMessage(
@@ -93,14 +113,6 @@ function resolveIncreaseMaxHp(
   );
 }
 
-import {
-  HealEffect,
-  DamageEffect,
-  FireballEffect,
-  IncreaseAttackEffect,
-  IncreaseMaxHpEffect,
-} from '../../engine/state.js';
-
 export function applyEffect(
   user: Actor,
   state: GameState,
@@ -109,7 +121,7 @@ export function applyEffect(
 ): void {
   switch (effect.type) {
     case 'heal':
-      resolveHeal(user, state, effect as HealEffect);
+      resolveHeal(user, state, effect);
       return;
     case 'damage':
       // For now, damage effects target the user unless a target is specified.
@@ -120,14 +132,14 @@ export function applyEffect(
           )
         : user;
       if (damageTarget) {
-        resolveDamage(damageTarget, state, effect as DamageEffect);
+        resolveDamage(damageTarget, state, effect);
         return;
       }
       addLogMessage(state, 'Invalid target.', 'info');
       return;
     case 'fireball':
       if (target) {
-        resolveFireball(target, state, effect as FireballEffect);
+        resolveFireball(target, state, effect);
         return;
       }
       addLogMessage(state, 'A target is required for the fireball.', 'info');
@@ -136,10 +148,10 @@ export function applyEffect(
       resolveRevealMap(state);
       return;
     case 'increase_attack':
-      resolveIncreaseAttack(user, state, effect as IncreaseAttackEffect);
+      resolveIncreaseAttack(user, state, effect);
       return;
     case 'increase_max_hp':
-      resolveIncreaseMaxHp(user, state, effect as IncreaseMaxHpEffect);
+      resolveIncreaseMaxHp(user, state, effect);
       return;
     // Other effects like applyStatus will be added here
     default:

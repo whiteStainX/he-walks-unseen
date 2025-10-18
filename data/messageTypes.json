@@ -1,0 +1,22 @@
+{
+  "info": {
+    "id": "info",
+    "description": "General information messages."
+  },
+  "damage": {
+    "id": "damage",
+    "description": "Messages related to damage dealt or received."
+  },
+  "heal": {
+    "id": "heal",
+    "description": "Messages related to healing."
+  },
+  "win": {
+    "id": "win",
+    "description": "Messages displayed upon winning the game."
+  },
+  "death": {
+    "id": "death",
+    "description": "Messages displayed upon character death."
+  }
+}

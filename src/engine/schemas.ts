@@ -45,3 +45,48 @@ export const WorldSchema = z.object({
   maps: z.array(MapDefinitionSchema),
   startMapId: z.string(),
 });
+
+export const StatusEffectDefinitionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export const StatusEffectsSchema = z.record(StatusEffectDefinitionSchema);
+
+export const EffectDefinitionSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+});
+
+export const EffectsSchema = z.record(EffectDefinitionSchema);
+
+export const AiStateDefinitionSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+});
+
+export const AiStatesSchema = z.record(AiStateDefinitionSchema);
+
+export const EquipmentSlotDefinitionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export const EquipmentSlotsSchema = z.record(EquipmentSlotDefinitionSchema);
+
+export const AttributeDefinitionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export const AttributesSchema = z.record(AttributeDefinitionSchema);
+
+export const MessageTypeDefinitionSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+});
+
+export const MessageTypesSchema = z.record(MessageTypeDefinitionSchema);

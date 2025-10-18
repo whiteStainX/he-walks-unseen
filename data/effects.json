@@ -1,0 +1,38 @@
+{
+  "heal": {
+    "id": "heal",
+    "description": "Restores HP."
+  },
+  "damage": {
+    "id": "damage",
+    "description": "Deals damage."
+  },
+  "fireball": {
+    "id": "fireball",
+    "description": "Deals area of effect damage."
+  },
+  "revealMap": {
+    "id": "revealMap",
+    "description": "Reveals the entire map."
+  },
+  "applyStatus": {
+    "id": "applyStatus",
+    "description": "Applies a status effect."
+  },
+  "identify": {
+    "id": "identify",
+    "description": "Identifies an item."
+  },
+  "increase_attack": {
+    "id": "increase_attack",
+    "description": "Permanently increases attack."
+  },
+  "increase_max_hp": {
+    "id": "increase_max_hp",
+    "description": "Permanently increases maximum HP."
+  },
+  "increase_attribute": {
+    "id": "increase_attribute",
+    "description": "Permanently increases an attribute."
+  }
+}
