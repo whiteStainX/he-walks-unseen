@@ -29,6 +29,17 @@
     "apCost": 3,
     "effect": { "type": "apply_status", "status": "berserk", "duration": 3 }
   },
+  "fireball": {
+    "id": "fireball",
+    "name": "Fireball",
+    "apCost": 2,
+    "effect": {
+      "type": "fireball",
+      "potency": 10,
+      "radius": 3,
+      "requiresTarget": true
+    }
+  },
   "cancel": {
     "id": "cancel",
     "name": "Cancel",

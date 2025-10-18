@@ -24,8 +24,8 @@ export function getAvailableCombatActions(player: Actor): CombatAction[] {
   if (player.learnedSkills) {
     for (const skillId in player.learnedSkills) {
       const skill = allSkills[skillId];
-      if (skill?.type === 'active' && skill.combatActionId) {
-        const action = combatActions[skill.combatActionId];
+      if (skill?.type === 'active') {
+        const action = combatActions[skill.id];
         if (action) {
           availableActions.push(action);
         }
