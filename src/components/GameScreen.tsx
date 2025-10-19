@@ -235,6 +235,9 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
   );
 
   const player = state.actors.find((a) => a.isPlayer);
+  const isCombatActive =
+    state.phase === 'CombatMenu' ||
+    (state.phase === 'EnemyTurn' && Boolean(state.combatTargetId));
 
   if (state.phase === 'Win') {
     return (
@@ -323,7 +326,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
       );
     }
 
-    if (state.phase === 'CombatMenu') {
+    if (isCombatActive) {
       return (
         <TerminalBox
           paddingX={1}
@@ -378,7 +381,7 @@ const GameScreen: React.FC<Props> = ({ gameState: state }) => {
             borderColor={theme.border}
             width={40}
           >
-            {state.phase === 'CombatMenu' ? (
+            {isCombatActive ? (
               <CombatMenuView state={state} />
             ) : (
               <>

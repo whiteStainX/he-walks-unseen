@@ -4,6 +4,7 @@ import { render } from 'ink-testing-library';
 import { GameAction } from '../input/actions.js';
 import GameScreen, { isActionDefined } from './GameScreen.js';
 import { createInitialGameState } from '../game/initialState.js';
+import type { Actor } from '../engine/state.js';
 import { setResource, clearResources } from '../engine/resourceManager.js';
 import { loadWorldData } from '../engine/worldManager.js';
 
@@ -49,6 +50,12 @@ describe('GameScreen', () => {
           floor: '.',
         },
       },
+    });
+    setResource('combatActions', {
+      attack: { id: 'attack', name: 'Attack', apCost: 1 },
+      defend: { id: 'defend', name: 'Defend', apCost: 1 },
+      flee: { id: 'flee', name: 'Flee', apCost: 1 },
+      cancel: { id: 'cancel', name: 'Cancel', apCost: 0 },
     });
     setResource('player_idle', 'player_idle');
     setResource('profiles', { 'player_idle': 'player_idle' });
@@ -129,6 +136,42 @@ describe('GameScreen', () => {
     expect(lastFrame()).toContain('Log');
     // The message might be truncated, so we check for the start of it.
     expect(lastFrame()).toContain('Welcome');
+    unmount();
+  });
+
+  it('keeps combat views visible during the enemy turn when combat is active', () => {
+    const state = createInitialGameState();
+    const player = state.actors.find((actor) => actor.isPlayer);
+    expect(player).toBeDefined();
+    if (!player) {
+      throw new Error('Player not found in game state');
+    }
+
+    player.actionPoints = { current: 0, max: 3 };
+
+    const enemy: Actor = {
+      id: 'enemy-1',
+      name: 'Goblin',
+      char: 'g',
+      position: { x: player.position.x + 1, y: player.position.y },
+      hp: { current: 5, max: 5 },
+      attack: 3,
+      defense: 1,
+    };
+
+    state.actors.push(enemy);
+    state.combatTargetId = enemy.id;
+    state.selectedCombatMenuIndex = 0;
+    state.phase = 'EnemyTurn';
+
+    const { lastFrame, unmount } = render(
+      <GameScreen gameState={state} />
+    );
+
+    const frame = lastFrame();
+    expect(frame).toContain('Engaging: Goblin');
+    expect(frame).toContain('Enemy is taking actions...');
+
     unmount();
   });
 
