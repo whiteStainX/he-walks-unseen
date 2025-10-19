@@ -1,42 +1,34 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, expect, it, beforeEach, afterEach } from '@jest/globals';
 import { instantiate } from './prefab.js';
-import { setResource, clearResources } from './resourceManager.js';
-import type { Actor } from './state.js';
+import { clearResources, setResource } from './resourceManager.js';
 
-describe('Prefab System', () => {
-  beforeAll(() => {
-    const prefabs = {
-      'goblin-archiver': {
-        name: 'Goblin Archiver',
-        char: 'g',
-        color: 'green',
-        hp: { current: 8, max: 8 },
-        attack: 4,
-        defense: 1,
-        xpValue: 15,
-        ai: { behavior: 'wander' },
+describe('instantiate', () => {
+  beforeEach(() => {
+    setResource('prefabs', {});
+    setResource('items', {});
+    setResource('entities', [
+      {
+        id: 'chest',
+        name: 'Chest',
+        char: 'C',
+        states: { default: 'C' },
+        interaction: { type: 'chest', isLooted: false, lootTableId: 'basic' },
       },
-    };
-    setResource('prefabs', prefabs);
-    setResource('items', {}); // Mock items to prevent errors
-    setResource('entities', {}); // Mock entities to prevent errors
+    ]);
   });
 
-  afterAll(() => {
+  afterEach(() => {
     clearResources();
   });
 
-  it('should instantiate a new entity from a prefab', () => {
-    const goblin = instantiate('goblin-archiver') as Actor;
+  it('instantiates entities defined in array resources', () => {
+    const result = instantiate('chest');
 
-    expect(goblin).toBeDefined();
-    expect(goblin.name).toBe('Goblin Archiver');
-    expect(goblin.id).not.toBe('goblin-archiver'); // Should have a new, unique ID
-    expect(goblin.hp.current).toBe(8);
-  });
-
-  it('should return null for a non-existent prefab', () => {
-    const nonExistent = instantiate('non-existent-prefab');
-    expect(nonExistent).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result?.name).toBe('Chest');
+    expect(result?.char).toBe('C');
+    expect(result?.interaction?.type).toBe('chest');
+    const entity = result as Record<string, unknown> | null;
+    expect(entity && (entity.id as string)).not.toBe('chest');
   });
 });

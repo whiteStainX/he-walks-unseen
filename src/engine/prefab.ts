@@ -2,12 +2,23 @@ import { getResource } from './resourceManager.js';
 import { nanoid } from 'nanoid';
 import type { Entity, DefinitionCollection } from './state.js';
 
-export function instantiate(id: string): Omit<Entity, 'id' | 'position'> | null {
-  const prefabs = getResource<DefinitionCollection>('prefabs');
-  const items = getResource<DefinitionCollection>('items');
-  const entities = getResource<DefinitionCollection>('entities');
+type DefinitionSource = DefinitionCollection | Array<Record<string, any>>;
 
-  let definition = prefabs[id] ?? items[id] ?? entities[id];
+function getDefinition(source: DefinitionSource | undefined, id: string) {
+  if (!source) return undefined;
+  if (Array.isArray(source)) {
+    return source.find((definition) => definition.id === id);
+  }
+  return source[id];
+}
+
+export function instantiate(id: string): Omit<Entity, 'id' | 'position'> | null {
+  const prefabs = getResource<DefinitionSource>('prefabs');
+  const items = getResource<DefinitionSource>('items');
+  const entities = getResource<DefinitionSource>('entities');
+
+  const definition =
+    getDefinition(prefabs, id) ?? getDefinition(items, id) ?? getDefinition(entities, id);
 
   if (!definition) {
     console.warn(`Definition with id "${id}" not found.`);
