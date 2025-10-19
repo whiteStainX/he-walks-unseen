@@ -123,6 +123,7 @@ export function handleInteraction(
           player: playerForNewState,
           mapId: targetMapId,
           mapStates,
+          theme: state.activeTheme,
         });
 
         const newPlayer = newState.actors.find((a) => a.isPlayer);
@@ -135,6 +136,8 @@ export function handleInteraction(
           throw new Error(`Could not place player in new map "${targetMapId}" at portal "${targetPortalId}"`);
         }
       }
+
+      newState.activeTheme = state.activeTheme;
 
       // Preserve the master mapStates object. The newState (whether from cache or
       // new creation) might have an outdated copy.
