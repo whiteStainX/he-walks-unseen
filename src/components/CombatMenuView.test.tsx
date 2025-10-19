@@ -86,4 +86,10 @@ describe('CombatMenuView', () => {
     const { lastFrame } = render(<CombatMenuView state={stateInPlayerTurn} />);
     expect(lastFrame()).toBe('');
   });
+
+  it('should render during the enemy turn while combat is active', () => {
+    const stateInEnemyTurn = { ...mockGameState, phase: 'EnemyTurn' as const };
+    const { lastFrame } = render(<CombatMenuView state={stateInEnemyTurn} />);
+    expect(lastFrame()).toContain('Enemy is taking actions...');
+  });
 });

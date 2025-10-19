@@ -125,9 +125,21 @@ export function handleCombatMenuAction(
           break;
       }
 
-      if (player.actionPoints.current <= 0 || state.combatTargetId === undefined) {
-        state.phase = 'EnemyTurn';
+      const currentTarget = state.combatTargetId
+        ? state.actors.find((a) => a.id === state.combatTargetId)
+        : undefined;
+
+      if (!currentTarget || currentTarget.hp.current <= 0) {
         state.combatTargetId = undefined;
+        state.phase = 'PlayerTurn';
+        if (player.actionPoints) {
+          player.actionPoints.current = player.actionPoints.max;
+        }
+        return;
+      }
+
+      if (player.actionPoints.current <= 0) {
+        state.phase = 'EnemyTurn';
       }
       break;
     }

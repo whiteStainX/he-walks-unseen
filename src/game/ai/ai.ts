@@ -1,4 +1,4 @@
-import type { Actor, Ai, AiState, GameState, Point } from '../../engine/state.js';
+import type { Actor, AiState, GameState, Point } from '../../engine/state.js';
 import { FOV, Path } from 'rot-js';
 import { resolveAttack } from '../combat/combat.js';
 
@@ -21,7 +21,7 @@ function canSeePlayer(
   return seesPlayer;
 }
 
-function chasePlayer(enemy: Actor, player: Actor, state: GameState): void {
+function chasePlayer(enemy: Actor, player: Actor, state: GameState): boolean {
   const astar = new Path.AStar(
     player.position.x,
     player.position.y,
@@ -46,16 +46,19 @@ function chasePlayer(enemy: Actor, player: Actor, state: GameState): void {
     const nextStep = path[1];
     if (nextStep.x === player.position.x && nextStep.y === player.position.y) {
       resolveAttack(enemy, player, state);
-    } else {
-      const enemyInState = state.actors.find(e => e.id === enemy.id);
-      if (enemyInState) {
-        enemyInState.position = nextStep;
-      }
+      return true;
+    }
+    const enemyInState = state.actors.find(e => e.id === enemy.id);
+    if (enemyInState) {
+      enemyInState.position = nextStep;
+      return true;
     }
   }
+
+  return false;
 }
 
-function flee(enemy: Actor, player: Actor, state: GameState): void {
+function flee(enemy: Actor, player: Actor, state: GameState): boolean {
   const dx = enemy.position.x - player.position.x;
   const dy = enemy.position.y - player.position.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
@@ -64,7 +67,7 @@ function flee(enemy: Actor, player: Actor, state: GameState): void {
     if (enemy.ai) {
       enemy.ai.state = enemy.ai.patrolPoints ? 'patrol' : 'wander';
     }
-    return;
+    return false;
   }
 
   const moveX = enemy.position.x + Math.sign(dx);
@@ -81,18 +84,19 @@ function flee(enemy: Actor, player: Actor, state: GameState): void {
     const enemyInState = state.actors.find(e => e.id === enemy.id);
     if (enemyInState) {
       enemyInState.position = { x: moveX, y: moveY };
+      return true;
     }
-  } else {
-    wander(enemy, state);
   }
+
+  return wander(enemy, state);
 }
 
-function wander(enemy: Actor, state: GameState): void {
+function wander(enemy: Actor, state: GameState): boolean {
   const dx = Math.floor(Math.random() * 3) - 1;
   const dy = Math.floor(Math.random() * 3) - 1;
 
   if (dx === 0 && dy === 0) {
-    return;
+    return false;
   }
 
   const targetX = enemy.position.x + dx;
@@ -108,20 +112,22 @@ function wander(enemy: Actor, state: GameState): void {
       (a) => a.id !== enemy.id && a.position.x === targetX && a.position.y === targetY
     )
   ) {
-    return;
+    return false;
   }
 
   const enemyInState = state.actors.find(e => e.id === enemy.id);
   if (enemyInState) {
     enemyInState.position = { x: targetX, y: targetY };
+    return true;
   }
+
+  return false;
 }
 
-function patrol(enemy: Actor, state: GameState): void {
+function patrol(enemy: Actor, state: GameState): boolean {
   const ai = enemy.ai;
   if (!ai?.patrolPoints || ai.patrolPoints.length === 0) {
-    wander(enemy, state);
-    return;
+    return wander(enemy, state);
   }
 
   let currentIndex = ai.currentPatrolIndex ?? 0;
@@ -162,13 +168,16 @@ function patrol(enemy: Actor, state: GameState): void {
     if (enemyInState.ai) {
       enemyInState.ai.currentPatrolIndex = currentIndex;
     }
+    return true;
   }
+
+  return false;
 }
 
-export function runEnemyTurn(enemy: Actor, state: GameState): void {
+export function runEnemyTurn(enemy: Actor, state: GameState): boolean {
   const player = state.actors.find((a) => a.isPlayer);
   if (!player || !enemy.ai) {
-    return;
+    return false;
   }
 
   const seesPlayer = canSeePlayer(enemy, player, state);
@@ -187,16 +196,14 @@ export function runEnemyTurn(enemy: Actor, state: GameState): void {
 
   switch (enemy.ai.state) {
     case 'chase':
-      chasePlayer(enemy, player, state);
-      break;
+      return chasePlayer(enemy, player, state);
     case 'flee':
-      flee(enemy, player, state);
-      break;
+      return flee(enemy, player, state);
     case 'wander':
-      wander(enemy, state);
-      break;
+      return wander(enemy, state);
     case 'patrol':
-      patrol(enemy, state);
-      break;
+      return patrol(enemy, state);
   }
+
+  return false;
 }
