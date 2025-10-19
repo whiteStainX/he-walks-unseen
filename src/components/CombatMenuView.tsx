@@ -10,7 +10,11 @@ interface CombatMenuViewProps {
 export function CombatMenuView({ state }: CombatMenuViewProps) {
   const theme = useTheme();
 
-  if (state.phase !== 'CombatMenu') {
+  const isCombatActive =
+    state.phase === 'CombatMenu' ||
+    (state.phase === 'EnemyTurn' && state.combatTargetId);
+
+  if (!isCombatActive) {
     return null;
   }
 
@@ -25,12 +29,17 @@ export function CombatMenuView({ state }: CombatMenuViewProps) {
 
   const availableActions = getAvailableCombatActions(player);
 
+  const isPlayerTurn = state.phase === 'CombatMenu';
+
   return (
     <Box flexDirection="column">
       <Text color={theme.primary}>Engaging: {targetEnemy.name}</Text>
       <Text color={theme.primary}>
         AP: {player.actionPoints.current}/{player.actionPoints.max}
       </Text>
+      {!isPlayerTurn && (
+        <Text color={theme.warning}>Enemy is taking actions...</Text>
+      )}
       <Box height={1} />
       {availableActions.map((action, index) => {
         if (typeof action.apCost !== 'number') return null;

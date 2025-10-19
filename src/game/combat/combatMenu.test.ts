@@ -99,6 +99,24 @@ describe('Combat Menu Logic', () => {
     expect(nextState.phase).toBe('EnemyTurn');
     const updatedEnemy = nextState.actors.find((a: Actor) => a.id === 'enemy-1');
     expect(updatedEnemy?.hp.current).toBeLessThan(mockEnemy.hp.current);
+    expect(nextState.combatTargetId).toBe('enemy-1');
+  });
+
+  it('should end combat when the enemy is defeated', () => {
+    const lethalState = {
+      ...mockGameState,
+      actors: [
+        { ...mockPlayer, actionPoints: { current: 2, max: 2 } },
+        { ...mockEnemy, hp: { current: 1, max: 5 } },
+      ],
+    };
+
+    const nextState = produce(lethalState, (draft) => {
+      applyActionToState(draft, GameAction.CONFIRM_COMBAT_ACTION);
+    });
+
+    expect(nextState.phase).toBe('PlayerTurn');
+    expect(nextState.combatTargetId).toBeUndefined();
   });
 
   it('should transition to PlayerTurn when "Cancel" is confirmed', () => {

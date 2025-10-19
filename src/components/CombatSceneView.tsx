@@ -44,6 +44,14 @@ function prepareArtForDisplay(artLines: string[]): string[] {
 export function CombatSceneView({ state }: CombatSceneViewProps) {
   const theme = useTheme();
 
+  const isCombatActive =
+    state.phase === 'CombatMenu' ||
+    (state.phase === 'EnemyTurn' && state.combatTargetId);
+
+  if (!isCombatActive) {
+    return null;
+  }
+
   const player = state.actors.find((a) => a.isPlayer);
   const targetEnemy = state.actors.find(
     (actor) => actor.id === state.combatTargetId

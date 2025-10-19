@@ -29,6 +29,7 @@
     "xpValue": 10,
     "profile": "goblin_shaman",
     "ai": { "state": "wander" },
+    "actionPoints": { "current": 2, "max": 2 },
     "strength": 3,
     "dexterity": 3,
     "intelligence": 1,
@@ -43,7 +44,8 @@
     "defense": 0,
     "xpValue": 15,
     "profile": "goblin_shaman",
-    "ai": { "state": "wander" }
+    "ai": { "state": "wander" },
+    "actionPoints": { "current": 3, "max": 3 }
   },
   "goblin-ambusher": {
     "name": "Goblin Ambusher",
@@ -54,7 +56,8 @@
     "defense": 1,
     "xpValue": 12,
     "profile": "goblin_shaman",
-    "ai": { "state": "wander" }
+    "ai": { "state": "wander" },
+    "actionPoints": { "current": 3, "max": 3 }
   },
   "skeleton": {
     "name": "Skeleton",
@@ -65,7 +68,8 @@
     "defense": 2,
     "xpValue": 20,
     "profile": "goblin_shaman",
-    "ai": { "state": "wander" }
+    "ai": { "state": "wander" },
+    "actionPoints": { "current": 2, "max": 2 }
   },
   "ghost": {
     "name": "Ghost",
@@ -76,7 +80,8 @@
     "defense": 0,
     "xpValue": 18,
     "profile": "goblin_shaman",
-    "ai": { "state": "wander", "canPassThroughWalls": true }
+    "ai": { "state": "wander", "canPassThroughWalls": true },
+    "actionPoints": { "current": 4, "max": 4 }
   },
   "guard": {
     "name": "Guard",
@@ -87,7 +92,8 @@
     "defense": 3,
     "xpValue": 25,
     "profile": "goblin_shaman",
-    "ai": { "state": "patrol", "patrolPoints": [{"x":10,"y":10},{"x":15,"y":10},{"x":15,"y":15},{"x":10,"y":15}] }
+    "ai": { "state": "patrol", "patrolPoints": [{"x":10,"y":10},{"x":15,"y":10},{"x":15,"y":15},{"x":10,"y":15}] },
+    "actionPoints": { "current": 3, "max": 3 }
   },
   "friendly-npc": {
     "name": "Old Man",

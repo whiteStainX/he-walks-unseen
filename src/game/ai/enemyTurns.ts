@@ -1,19 +1,52 @@
-import type { GameState } from '../../engine/state.js';
+import type { Actor, GameState } from '../../engine/state.js';
 import { runEnemyTurn } from './ai.js';
 import { processStatusEffects } from '../combat/statusEffects.js';
-import { addLogMessage } from '../../lib/logger.js';;
+import { addLogMessage } from '../../lib/logger.js';
 
 export function processEnemyTurns(state: GameState): void {
   if (state.phase !== 'EnemyTurn') {
     return;
   }
 
+  const player = state.actors.find((a) => a.isPlayer);
+  if (!player) {
+    return;
+  }
+
   const enemies = state.actors.filter((a) => !a.isPlayer);
 
   for (const enemy of enemies) {
-    // Check if the enemy is still alive before its turn
-    if (state.actors.find((a) => a.id === enemy.id)) {
-      runEnemyTurn(enemy, state);
+    const enemyInState = state.actors.find((a) => a.id === enemy.id);
+    if (!enemyInState) {
+      continue;
+    }
+
+    const maxAp = enemyInState.actionPoints?.max ?? 1;
+    enemyInState.actionPoints = enemyInState.actionPoints ?? { current: maxAp, max: maxAp };
+    enemyInState.actionPoints.max = enemyInState.actionPoints.max ?? maxAp;
+    enemyInState.actionPoints.current = enemyInState.actionPoints.max;
+
+    while (enemyInState.actionPoints.current > 0) {
+      const actionTaken = runEnemyTurn(enemyInState, state);
+      if (!actionTaken) {
+        enemyInState.actionPoints.current = 0;
+        break;
+      }
+
+      enemyInState.actionPoints.current -= 1;
+
+      const currentPlayer = state.actors.find((a) => a.isPlayer);
+      if (!currentPlayer || currentPlayer.hp.current <= 0) {
+        break;
+      }
+
+      if (!state.actors.find((a) => a.id === enemyInState.id)) {
+        break;
+      }
+    }
+
+    if (enemyInState.actionPoints) {
+      enemyInState.actionPoints.current = 0;
     }
   }
 
@@ -21,30 +54,28 @@ export function processEnemyTurns(state: GameState): void {
   processStatusEffects(state);
 
   // Check for player death after status effects have been processed
-  const player = state.actors.find((a) => a.isPlayer);
-  if (!player || player.hp.current <= 0) {
+  const updatedPlayer = state.actors.find((a) => a.isPlayer);
+  if (!updatedPlayer || updatedPlayer.hp.current <= 0) {
     // The processStatusEffects function might have already set the 'Loss' phase
-    if (state.phase !== 'Loss') {
+    if ((state.phase as string) !== 'Loss') {
       addLogMessage(state, 'You have been defeated.', 'death');
-      state.phase = 'Loss';
     }
+    state.phase = 'Loss';
     return;
   }
 
-  if (player) {
-    player.actionPoints = player.actionPoints ?? { current: 0, max: 0 };
-    player.actionPoints.current = player.actionPoints.max;
+  updatedPlayer.actionPoints = updatedPlayer.actionPoints ?? { current: 0, max: 0 };
+  updatedPlayer.actionPoints.current = updatedPlayer.actionPoints.max;
+
+  const currentTarget: Actor | undefined = state.combatTargetId
+    ? state.actors.find((a) => a.id === state.combatTargetId)
+    : undefined;
+
+  if (currentTarget && currentTarget.hp.current > 0) {
+    state.phase = 'CombatMenu';
+    return;
   }
 
-  // Only transition to PlayerTurn if not in a UI-driven phase
-  if (
-    state.phase !== 'Inventory' &&
-    state.phase !== 'Targeting' &&
-    state.phase !== 'CombatMenu' &&
-    state.phase !== 'IdentifyMenu' &&
-    state.phase !== 'MessageLog' &&
-    state.phase !== 'Dialogue'
-  ) {
-    state.phase = 'PlayerTurn';
-  }
+  state.combatTargetId = undefined;
+  state.phase = 'PlayerTurn';
 }

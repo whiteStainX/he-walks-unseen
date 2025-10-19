@@ -8,6 +8,7 @@ export const themes = {
     critical: '#FF4500',  // A stark orange-red for low HP, etc.
     dim: '#805800',       // A very dark amber for dim/unexplored areas
     textOnPrimary: '#000000', // Black text for use on a primary-colored background
+    warning: '#FF8C00',   // Bright indicator for enemy actions
   },
   green: {
     primary: '#00FF41',    // A vibrant "Matrix" green
@@ -16,6 +17,7 @@ export const themes = {
     critical: '#90EE90',  // A washed-out, pale green for alerts
     dim: '#00641a',       // A very dark green for dim/unexplored areas
     textOnPrimary: '#000000', // Black text for use on a primary-colored background
+    warning: '#FFD700',   // Highlight for enemy actions
   },
 };
 
