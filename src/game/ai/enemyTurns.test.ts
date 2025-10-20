@@ -1,7 +1,13 @@
+
 import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
-import { produce } from 'immer';
 import { processEnemyTurns } from './enemyTurns.js';
 import type { Actor, GameState, Tile } from '../../engine/state.js';
+import { eventBus } from '../../engine/events.js';
+import { getCurrentState } from '../../engine/narrativeEngine.js';
+
+jest.mock('../../engine/narrativeEngine.js', () => ({
+  getCurrentState: jest.fn(),
+}));
 
 describe('processEnemyTurns', () => {
   const createTile = (): Tile => ({ char: '.', walkable: true, transparent: true });
@@ -56,44 +62,47 @@ describe('processEnemyTurns', () => {
   };
 
   let randomSpy: jest.SpiedFunction<typeof Math.random>;
+  let state: GameState;
 
   beforeAll(() => {
     randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.1);
+    (getCurrentState as jest.Mock).mockImplementation(() => state);
+    jest.spyOn(eventBus, 'emit').mockImplementation((event, newState) => {
+      state = newState as GameState;
+      return true;
+    });
   });
 
   afterAll(() => {
     randomSpy.mockRestore();
+    jest.restoreAllMocks();
   });
 
-  it('should return to the combat menu after enemies finish acting', () => {
-    const state: GameState = {
+  it('should return to the combat menu after enemies finish acting', async () => {
+    state = {
       ...baseState,
       actors: [player, enemy],
       combatTargetId: 'enemy',
     };
 
-    const nextState = produce(state, (draft) => {
-      processEnemyTurns(draft);
-    });
+    await processEnemyTurns();
 
-    expect(nextState.phase).toBe('CombatMenu');
-    const updatedPlayer = nextState.actors.find((actor) => actor.id === 'player');
+    expect(state.phase).toBe('CombatMenu');
+    const updatedPlayer = state.actors.find((actor) => actor.id === 'player');
     expect(updatedPlayer?.actionPoints?.current).toBe(updatedPlayer?.actionPoints?.max);
-    const updatedEnemy = nextState.actors.find((actor) => actor.id === 'enemy');
+    const updatedEnemy = state.actors.find((actor) => actor.id === 'enemy');
     expect(updatedEnemy?.actionPoints?.current).toBe(0);
   });
 
-  it('should transition back to player turn when not in combat', () => {
+  it('should transition back to player turn when not in combat', async () => {
     const roamingEnemy: Actor = { ...enemy, position: { x: 3, y: 1 } };
-    const state: GameState = {
+    state = {
       ...baseState,
       actors: [player, roamingEnemy],
     };
 
-    const nextState = produce(state, (draft) => {
-      processEnemyTurns(draft);
-    });
+    await processEnemyTurns();
 
-    expect(nextState.phase).toBe('PlayerTurn');
+    expect(state.phase).toBe('PlayerTurn');
   });
 });
