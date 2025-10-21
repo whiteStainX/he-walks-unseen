@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # Game saves
 /saves
+
+# MacOS
+.DS_Store
