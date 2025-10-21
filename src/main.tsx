@@ -67,9 +67,15 @@ const App = () => {
 
   useEffect(() => {
     if (gameState?.phase === 'EnemyTurn') {
-      processEnemyTurns();
+      const timer = setTimeout(() => {
+        const nextState = produce(gameState, (draft) => {
+          processEnemyTurns(draft);
+        });
+        eventBus.emit('stateChanged', nextState);
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [gameState?.phase]);
+  }, [gameState]);
 
   if (error) {
     return (
