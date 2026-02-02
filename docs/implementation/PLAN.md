@@ -48,6 +48,10 @@ src/
 - [ ] `Component` enum: `Position`, `BlocksMovement`, `BlocksVision`, `Pushable`, `Pullable`, `TimePersistent`, `Patrol`, `VisionCone`, `Rift`
 - [ ] `WorldLine`: Player path tracking with self-intersection check
 - [ ] Unit tests for all structures
+ - [ ] Enforce uniqueness for data-bearing components (rift/patrol/vision)
+ - [ ] Allow wait moves as valid steps (t + 1, same x/y)
+ - [ ] `TimeSlice::add_entity` overwrites existing IDs for simplicity
+ - [ ] `spawn_or_replace` replaces in target slice only (no propagation)
 
 ### Files Created
 ```
