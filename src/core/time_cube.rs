@@ -3,6 +3,8 @@
 use crate::core::components::EntityId;
 use crate::core::entity::Entity;
 use crate::core::position::Position;
+use crate::core::propagation;
+use crate::core::propagation::PropagationResult;
 use crate::core::time_slice::TimeSlice;
 
 /// The complete Space-Time Cube.
@@ -304,44 +306,21 @@ impl TimeCube {
     }
 
     /// Propagate all time-persistent entities from t to t+1.
-    pub fn propagate_slice(&mut self, from_t: i32) -> Result<(), CubeError> {
-        let to_t = from_t + 1;
-        if to_t >= self.time_depth || from_t < 0 {
-            return Err(CubeError::TimeSliceNotFound(to_t));
-        }
-        let source = self
-            .slice(from_t)
-            .ok_or(CubeError::TimeSliceNotFound(from_t))?;
-        let mut to_add = Vec::new();
-        for entity in source.all_entities() {
-            if entity.is_time_persistent() {
-                to_add.push(entity.clone().at_time(to_t));
-            }
-        }
-        if let Some(target) = self.slice(to_t) {
-            for entity in &to_add {
-                if target.entity(entity.id).is_some() {
-                    return Err(CubeError::EntityAlreadyExists {
-                        id: entity.id,
-                        t: to_t,
-                    });
-                }
-            }
-        }
-        if let Some(target) = self.slice_mut(to_t) {
-            for entity in to_add {
-                target.add_entity(entity);
-            }
-        }
-        Ok(())
+    pub fn propagate_slice(&mut self, from_t: i32) -> Result<usize, CubeError> {
+        let result = propagation::propagate_from_with_options(
+            self,
+            from_t,
+            propagation::PropagationOptions {
+                stop_at: Some(from_t + 1),
+                ..Default::default()
+            },
+        )?;
+        Ok(result.context.slices_updated)
     }
 
     /// Propagate all time-persistent entities from t=0 to time_depth-1.
-    pub fn propagate_all(&mut self) {
-        let last = self.time_depth - 1;
-        for t in 0..last {
-            let _ = self.propagate_slice(t);
-        }
+    pub fn propagate_all(&mut self) -> Result<PropagationResult, CubeError> {
+        propagation::propagate_from(self, 0)
     }
 
     /// Iterator over all time slices.
@@ -584,7 +563,7 @@ mod tests {
         let entity = Entity::wall(Position::new(1, 1, 0));
         let id = entity.id;
         cube.spawn(entity).unwrap();
-        cube.propagate_all();
+        cube.propagate_all().unwrap();
         assert!(cube.entity_at_time(id, 1).is_some());
         assert!(cube.entity_at_time(id, 2).is_some());
     }
