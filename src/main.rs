@@ -71,12 +71,12 @@ fn run_game_loop(
         terminal.draw(|frame| render(frame, app))?;
 
         // Handle input (with 16ms timeout for ~60fps)
-        if event::poll(Duration::from_millis(16))? {
-            if let Event::Key(key) = event::read()? {
-                // Only handle key press events (not release)
-                if key.kind == KeyEventKind::Press {
-                    app.handle_key(key.code);
-                }
+        if event::poll(Duration::from_millis(16))?
+            && let Event::Key(key) = event::read()?
+        {
+            // Only handle key press events (not release)
+            if key.kind == KeyEventKind::Press {
+                app.handle_key(key.code);
             }
         }
 

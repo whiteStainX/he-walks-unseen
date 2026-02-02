@@ -8,8 +8,8 @@
 #![warn(clippy::all)]
 #![warn(missing_docs)]
 
-// Core modules will be added in Phase 2
-// pub mod core;
+/// Core game data structures (Phase 2)
+pub mod core;
 
 // Game modules will be added in Phase 3
 // pub mod game;
