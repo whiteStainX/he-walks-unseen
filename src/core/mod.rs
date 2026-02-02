@@ -14,6 +14,7 @@ pub mod entity;
 pub mod time_slice;
 pub mod time_cube;
 pub mod world_line;
+pub mod propagation;
 
 pub use position::{Direction, Position, SpatialPos};
 pub use components::{Component, EntityId, PatrolData, RiftData, VisionData};
@@ -21,3 +22,6 @@ pub use entity::{Entity, EntityBuilder, EntityType};
 pub use time_slice::TimeSlice;
 pub use time_cube::{CubeError, TimeCube};
 pub use world_line::{WorldLine, WorldLineError};
+pub use propagation::{
+    PropagationContext, PropagationOptions, PropagationResult, PropagationWarning,
+};
