@@ -14,8 +14,8 @@ pub mod core;
 /// Game logic (Phase 3)
 pub mod game;
 
-// Render modules will be added in Phase 4
-// pub mod render;
+/// Rendering modules (Phase 4)
+pub mod render;
 
 // Data modules will be added in Phase 6
 // pub mod data;
