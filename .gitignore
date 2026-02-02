@@ -1,5 +1,6 @@
 # Rust
 /target/
+target/
 # Note: Cargo.lock IS committed for binary projects (reproducible builds)
 
 # IDE
