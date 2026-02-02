@@ -4,40 +4,15 @@ use std::io::{self, stdout};
 use std::time::Duration;
 
 use crossterm::{
-    event::{self, Event, KeyCode, KeyEventKind},
+    event::{self, Event, KeyEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use ratatui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
-    widgets::{Block, Borders, Paragraph},
-    Frame, Terminal,
-};
+use ratatui::{backend::CrosstermBackend, Terminal};
 
-/// Application state
-struct App {
-    /// Whether the app should exit
-    should_quit: bool,
-}
-
-impl App {
-    fn new() -> Self {
-        Self { should_quit: false }
-    }
-
-    /// Handle key events
-    fn handle_key(&mut self, key: KeyCode) {
-        match key {
-            KeyCode::Char('q') | KeyCode::Esc => {
-                self.should_quit = true;
-            }
-            // Future: WASD movement, etc.
-            _ => {}
-        }
-    }
-}
+use he_walks_unseen::core::{Entity, Position, TimeCube};
+use he_walks_unseen::game::{GameConfig, GameState};
+use he_walks_unseen::render::RenderApp;
 
 fn main() -> io::Result<()> {
     // Setup terminal
@@ -48,7 +23,8 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // Create app state
-    let mut app = App::new();
+    let game_state = build_demo_state();
+    let mut app = RenderApp::new(game_state);
 
     // Main game loop
     let result = run_game_loop(&mut terminal, &mut app);
@@ -64,24 +40,20 @@ fn main() -> io::Result<()> {
 /// Main game loop
 fn run_game_loop(
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
-    app: &mut App,
+    app: &mut RenderApp,
 ) -> io::Result<()> {
     loop {
-        // Render
-        terminal.draw(|frame| render(frame, app))?;
+        terminal.draw(|frame| app.render(frame))?;
 
-        // Handle input (with 16ms timeout for ~60fps)
         if event::poll(Duration::from_millis(16))?
             && let Event::Key(key) = event::read()?
+            && key.kind == KeyEventKind::Press
         {
-            // Only handle key press events (not release)
-            if key.kind == KeyEventKind::Press {
-                app.handle_key(key.code);
-            }
+            app.handle_key(key.code);
+            let _ = app.update();
         }
 
-        // Check exit condition
-        if app.should_quit {
+        if app.should_quit() {
             break;
         }
     }
@@ -89,113 +61,50 @@ fn run_game_loop(
     Ok(())
 }
 
-/// Render the UI
-fn render(frame: &mut Frame, _app: &App) {
-    let area = frame.area();
+fn build_demo_state() -> GameState {
+    let mut cube = TimeCube::new(12, 10, 30);
 
-    // Create main layout: game area + sidebar
-    let main_layout = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Min(20),    // Game grid (flexible)
-            Constraint::Length(15), // Sidebar (fixed width)
-        ])
-        .split(area);
-
-    // Create vertical layout for game area + bottom bar
-    let game_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Min(10),   // Game grid
-            Constraint::Length(3), // Bottom bar
-        ])
-        .split(main_layout[0]);
-
-    // Render game grid placeholder
-    render_game_grid(frame, game_layout[0]);
-
-    // Render sidebar placeholder
-    render_sidebar(frame, main_layout[1]);
-
-    // Render bottom bar
-    render_bottom_bar(frame, game_layout[1]);
-}
-
-/// Render the game grid area
-fn render_game_grid(frame: &mut Frame, area: Rect) {
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::DarkGray))
-        .title(" He Walks Unseen ");
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
-
-    // Placeholder text
-    let placeholder = Paragraph::new("Game grid will render here\n\nPhase 1: Foundation Complete")
-        .style(Style::default().fg(Color::DarkGray));
-    frame.render_widget(placeholder, inner);
-}
-
-/// Render the sidebar
-fn render_sidebar(frame: &mut Frame, area: Rect) {
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::DarkGray))
-        .title(" Time ");
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
-
-    // Time indicator placeholder
-    let time_text = Paragraph::new("t = 0\n████████")
-        .style(Style::default().fg(Color::Cyan));
-    frame.render_widget(time_text, inner);
-}
-
-/// Render the bottom bar
-fn render_bottom_bar(frame: &mut Frame, area: Rect) {
-    let block = Block::default()
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::DarkGray));
-
-    let inner = block.inner(area);
-    frame.render_widget(block, area);
-
-    // Help text
-    let help = Paragraph::new(" Q: Quit | WASD: Move (coming soon) | R: Restart (coming soon)")
-        .style(Style::default().fg(Color::DarkGray));
-    frame.render_widget(help, inner);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_app_creation() {
-        let app = App::new();
-        assert!(!app.should_quit);
+    // Border walls
+    for x in 0..cube.width {
+        let top = Position::new(x, 0, 0);
+        let bottom = Position::new(x, cube.height - 1, 0);
+        cube.spawn_and_propagate(Entity::wall(top)).unwrap();
+        cube.spawn_and_propagate(Entity::wall(bottom)).unwrap();
+    }
+    for y in 0..cube.height {
+        let left = Position::new(0, y, 0);
+        let right = Position::new(cube.width - 1, y, 0);
+        cube.spawn_and_propagate(Entity::wall(left)).unwrap();
+        cube.spawn_and_propagate(Entity::wall(right)).unwrap();
     }
 
-    #[test]
-    fn test_quit_on_q() {
-        let mut app = App::new();
-        app.handle_key(KeyCode::Char('q'));
-        assert!(app.should_quit);
-    }
+    // Player + exit
+    cube.spawn(Entity::player(Position::new(1, 1, 0)))
+        .unwrap();
+    cube.spawn_and_propagate(Entity::exit(Position::new(10, 8, 0)))
+        .unwrap();
 
-    #[test]
-    fn test_quit_on_esc() {
-        let mut app = App::new();
-        app.handle_key(KeyCode::Esc);
-        assert!(app.should_quit);
-    }
+    // Simple obstacles
+    cube.spawn_and_propagate(Entity::wall(Position::new(5, 3, 0)))
+        .unwrap();
+    cube.spawn_and_propagate(Entity::wall(Position::new(5, 4, 0)))
+        .unwrap();
+    cube.spawn_and_propagate(Entity::pushable_box(Position::new(3, 3, 0)))
+        .unwrap();
 
-    #[test]
-    fn test_other_keys_dont_quit() {
-        let mut app = App::new();
-        app.handle_key(KeyCode::Char('w'));
-        assert!(!app.should_quit);
-    }
+    // Rift demo
+    cube.spawn_and_propagate(Entity::rift(
+        Position::new(2, 2, 0),
+        Position::new(8, 2, 2),
+        true,
+    ))
+    .unwrap();
+
+    let config = GameConfig {
+        level_name: String::from("Phase 4 Prototype"),
+        level_id: String::from("phase4-demo"),
+        ..GameConfig::default()
+    };
+
+    GameState::new(cube, config).unwrap()
 }
