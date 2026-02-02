@@ -47,11 +47,10 @@ fn run_game_loop(
 
         if event::poll(Duration::from_millis(16))?
             && let Event::Key(key) = event::read()?
+            && key.kind == KeyEventKind::Press
         {
-            if key.kind == KeyEventKind::Press {
-                app.handle_key(key.code);
-                let _ = app.update();
-            }
+            app.handle_key(key.code);
+            let _ = app.update();
         }
 
         if app.should_quit() {
@@ -63,7 +62,7 @@ fn run_game_loop(
 }
 
 fn build_demo_state() -> GameState {
-    let mut cube = TimeCube::new(12, 10, 6);
+    let mut cube = TimeCube::new(12, 10, 30);
 
     // Border walls
     for x in 0..cube.width {

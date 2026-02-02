@@ -25,9 +25,8 @@ pub struct Theme {
     pub accent: Color,
 }
 
-impl Theme {
-    /// Default Phase 4 palette.
-    pub fn default() -> Self {
+impl Default for Theme {
+    fn default() -> Self {
         Self {
             bg: Color::Black,
             fg: Color::Gray,

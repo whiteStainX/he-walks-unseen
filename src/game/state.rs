@@ -277,7 +277,7 @@ impl GameState {
     pub fn reset_to_initial(&mut self) {
         self.cube = self.initial_cube.clone();
         self.world_line = self.initial_world_line.clone();
-        self.phase = GamePhase::Restarted;
+        self.phase = GamePhase::Playing;
         self.turn = 0;
         self.history.clear();
     }
