@@ -1,0 +1,33 @@
+# Rust
+/target/
+# Note: Cargo.lock IS committed for binary projects (reproducible builds)
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.node
+*.so
+*.dylib
+*.dll
+
+# npm (for future distribution)
+node_modules/
+package-lock.json
+
+# Local config (user-specific)
+.env
+.env.local
+
+# Test coverage
+*.profraw
+*.profdata
+coverage/
