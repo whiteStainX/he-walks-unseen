@@ -82,6 +82,13 @@ pub fn validate_rift(state: &GameState) -> Result<Position, ActionError> {
 }
 
 /// Validate a push action.
+/// Validate a push action.
+///
+/// # Time Slice Semantics
+///
+/// - Chain computation scans the current slice (`t = current_time`).
+/// - Target validation checks pushed entities at `t + 1`.
+/// - Player movement also advances to `t + 1`.
 pub fn validate_push(
     state: &GameState,
     direction: Direction,
@@ -118,6 +125,11 @@ pub fn validate_push(
 }
 
 /// Validate a pull action.
+///
+/// # Time Slice Semantics
+///
+/// - Entity lookup uses the current slice (`t`).
+/// - Target validation checks the next slice (`t + 1`).
 pub fn validate_pull(
     state: &GameState,
     direction: Direction,
@@ -344,5 +356,51 @@ mod tests {
         let state = state_with_player();
         let chain = compute_push_chain(state.cube(), state.player_position(), Direction::East, 3);
         assert!(chain.is_empty());
+    }
+
+    #[test]
+    fn test_validate_push_chain() {
+        let mut cube = TimeCube::new(10, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        cube.spawn(Entity::pushable_box(Position::new(2, 1, 0)))
+            .unwrap();
+        cube.spawn(Entity::pushable_box(Position::new(3, 1, 0)))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let chain = validate_push(&state, Direction::East).unwrap();
+        assert_eq!(chain.len(), 2);
+    }
+
+    #[test]
+    fn test_validate_push_chain_limit() {
+        let mut cube = TimeCube::new(10, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        for x in 2..6 {
+            cube.spawn(Entity::pushable_box(Position::new(x, 1, 0)))
+                .unwrap();
+        }
+        let state = GameState::from_cube(cube).unwrap();
+        let err = validate_push(&state, Direction::East).unwrap_err();
+        assert!(matches!(err, ActionError::PushChainTooLong { .. }));
+    }
+
+    #[test]
+    fn test_validate_pull_not_pullable() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(2, 1, 0))).unwrap();
+        cube.spawn(Entity::pushable_box(Position::new(1, 1, 0)))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let err = validate_pull(&state, Direction::East).unwrap_err();
+        assert!(matches!(err, ActionError::NotPullable { .. }));
+    }
+
+    #[test]
+    fn test_validate_pull_nothing_there() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(2, 1, 0))).unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let err = validate_pull(&state, Direction::East).unwrap_err();
+        assert!(matches!(err, ActionError::NothingToPull { .. }));
     }
 }

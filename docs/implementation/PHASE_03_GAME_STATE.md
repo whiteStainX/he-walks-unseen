@@ -123,15 +123,18 @@ enum ActionError {
 ```
 Phase 2 (existing):                    Phase 3 (authoritative):
 ┌─────────────────────────┐            ┌─────────────────────────────────┐
-│ TimeCube::propagate_slice() ────────►│ propagation::propagate_slice() │
-│ TimeCube::propagate_all()   ────────►│ propagation::propagate_from()  │
+│ TimeCube::propagate_slice() ────────►│ propagation::propagate_from()  │
+│   (stop_at: from_t + 1)              │   with PropagationOptions       │
+│                                      │                                 │
+│ TimeCube::propagate_all()   ────────►│ propagation::propagate_from()   │
+│   (from t=0)                         │   with defaults                 │
 └─────────────────────────┘            └─────────────────────────────────┘
 ```
 
 **API Relationship:**
 - `propagation::propagate_from(cube, t)` — canonical implementation with tracking and options
-- `TimeCube::propagate_slice()` — wrapper: calls propagation with defaults
-- `TimeCube::propagate_all()` — wrapper: calls propagation with defaults
+- `TimeCube::propagate_slice()` — wrapper: uses `propagate_from_with_options` with `stop_at`
+- `TimeCube::propagate_all()` — wrapper: calls `propagate_from` with defaults
 
 **Propagation Rules (unchanged):**
 1. **TimePersistent entities:** Clone forward with updated `t` coordinate

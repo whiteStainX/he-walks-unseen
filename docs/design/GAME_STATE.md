@@ -229,9 +229,12 @@ ActionResult {
 `Action::Restart` resets the game to initial snapshots:
 - `cube = initial_cube.clone()`
 - `world_line = initial_world_line.clone()`
-- `phase = Restarted`
+- `phase = Playing`
 - `turn = 0`
 - `history` cleared
+
+Note: `ActionOutcome::Restarted` is returned for UI feedback, but the game
+phase is set to `Playing` to allow immediate play.
 
 ---
 

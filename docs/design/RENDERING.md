@@ -84,6 +84,7 @@ struct RenderState {
 | Key | Action |
 |-----|--------|
 | `W/A/S/D` | Move | 
+| `Arrow Keys` | Move |
 | `Space` | Use rift |
 | `R` | Restart |
 | `P` | Toggle preview |
@@ -215,7 +216,7 @@ Sidebar content lines:
 ## Preview Overlay (Phase 4)
 
 Preview is a placeholder only:
-- If enabled, shows `[Preview]` label inside the grid area.
+- If enabled, shows `[Preview]` label in the top-right of the grid area.
 - No action prediction yet (Phase 6).
 
 ---

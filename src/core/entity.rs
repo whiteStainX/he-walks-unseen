@@ -272,6 +272,19 @@ impl Entity {
         )
     }
 
+    /// Create a pullable (and pushable) box (blocks movement, time-persistent).
+    pub fn pullable_box(position: Position) -> Self {
+        Self::new(
+            position,
+            vec![
+                Component::Pushable,
+                Component::Pullable,
+                Component::BlocksMovement,
+                Component::TimePersistent,
+            ],
+        )
+    }
+
     /// Create a rift (time-persistent — exists at all future time slices).
     pub fn rift(position: Position, target: Position, bidirectional: bool) -> Self {
         let rift = if bidirectional {

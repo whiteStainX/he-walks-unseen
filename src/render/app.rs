@@ -59,16 +59,16 @@ impl RenderApp {
             KeyCode::Char('q') | KeyCode::Esc => {
                 self.should_quit = true;
             }
-            KeyCode::Char('w') | KeyCode::Char('W') => {
+            KeyCode::Char('w') | KeyCode::Char('W') | KeyCode::Up => {
                 self.pending_action = Some(Action::Move(MoveDir::North));
             }
-            KeyCode::Char('a') | KeyCode::Char('A') => {
+            KeyCode::Char('a') | KeyCode::Char('A') | KeyCode::Left => {
                 self.pending_action = Some(Action::Move(MoveDir::West));
             }
-            KeyCode::Char('s') | KeyCode::Char('S') => {
+            KeyCode::Char('s') | KeyCode::Char('S') | KeyCode::Down => {
                 self.pending_action = Some(Action::Move(MoveDir::South));
             }
-            KeyCode::Char('d') | KeyCode::Char('D') => {
+            KeyCode::Char('d') | KeyCode::Char('D') | KeyCode::Right => {
                 self.pending_action = Some(Action::Move(MoveDir::East));
             }
             KeyCode::Char(' ') => {
@@ -143,7 +143,8 @@ fn render_bottom_bar(area: Rect, frame: &mut Frame, theme: &Theme) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let help = Paragraph::new(" Q: Quit | WASD: Move | Space: Rift | R: Restart | P: Preview ")
+    let help =
+        Paragraph::new(" Q: Quit | WASD/Arrows: Move | Space: Rift | R: Restart | P: Preview ")
         .style(Style::default().fg(Color::DarkGray));
     frame.render_widget(help, inner);
 }
@@ -175,6 +176,12 @@ mod tests {
         GameState::from_cube(cube).unwrap()
     }
 
+    fn state_centered() -> GameState {
+        let mut cube = TimeCube::new(3, 3, 2);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        GameState::from_cube(cube).unwrap()
+    }
+
     #[test]
     fn test_preview_toggle() {
         let mut app = RenderApp::new(state());
@@ -189,5 +196,21 @@ mod tests {
         app.handle_key(KeyCode::Char('a'));
         let _ = app.update();
         assert!(app.render_state.status.is_some());
+    }
+
+    #[test]
+    fn test_arrow_key_up_moves_north() {
+        let mut app = RenderApp::new(state_centered());
+        app.handle_key(KeyCode::Up);
+        let _ = app.update();
+        assert_eq!(app.game.player_position(), Position::new(1, 0, 1));
+    }
+
+    #[test]
+    fn test_arrow_key_left_moves_west() {
+        let mut app = RenderApp::new(state_centered());
+        app.handle_key(KeyCode::Left);
+        let _ = app.update();
+        assert_eq!(app.game.player_position(), Position::new(0, 1, 1));
     }
 }
