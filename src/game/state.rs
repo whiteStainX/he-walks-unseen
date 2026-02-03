@@ -339,6 +339,7 @@ impl Default for GameStateBuilder {
 mod tests {
     use super::*;
     use crate::core::{Entity, Position, TimeCube};
+    use crate::game::{apply_action, Action};
 
     fn basic_cube_with_player() -> TimeCube {
         let mut cube = TimeCube::new(5, 5, 3);
@@ -394,6 +395,18 @@ mod tests {
     }
 
     #[test]
+    fn test_is_active_false_when_won() {
+        let mut cube = TimeCube::new(5, 5, 3);
+        let start = Position::new(1, 1, 0);
+        cube.spawn(Entity::player(start)).unwrap();
+        cube.spawn_and_propagate(Entity::exit(start)).unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let result = apply_action(&state, Action::Wait).unwrap();
+        assert!(!result.state.is_active());
+        assert!(result.state.has_won());
+    }
+
+    #[test]
     fn test_can_move_to_empty_space() {
         let cube = basic_cube_with_player();
         let state = GameState::from_cube(cube).unwrap();
@@ -426,6 +439,17 @@ mod tests {
             .unwrap();
         let state = GameState::from_cube(cube).unwrap();
         assert!(state.at_rift());
+    }
+
+    #[test]
+    fn test_valid_actions_at_rift() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        cube.spawn(Entity::rift(Position::new(1, 1, 0), Position::new(2, 2, 2), false))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let actions = state.valid_actions();
+        assert!(actions.contains(&Action::UseRift));
     }
 
     #[test]

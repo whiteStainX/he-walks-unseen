@@ -458,7 +458,7 @@ fn apply_player_move(
 
 fn finalize_action(
     mut state: GameState,
-    outcome: ActionOutcome,
+    mut outcome: ActionOutcome,
     moved_entities: Vec<(EntityId, Position, Position)>,
     propagation: Option<propagation::PropagationResult>,
 ) -> Result<ActionResult, ActionError> {
@@ -470,6 +470,9 @@ fn finalize_action(
         && state.at_exit()
     {
         state.set_phase(GamePhase::Won);
+        outcome = ActionOutcome::Won {
+            at: state.player_position(),
+        };
     }
 
     Ok(ActionResult {
@@ -483,7 +486,7 @@ fn finalize_action(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{Entity, Position, TimeCube};
+    use crate::core::{Entity, EntityType, Position, TimeCube};
     use crate::game::GameState;
 
     fn basic_state() -> GameState {
@@ -525,5 +528,72 @@ mod tests {
     fn test_validate_action() {
         let state = basic_state();
         assert!(validate_action(&state, Action::Move(Direction::East)).is_ok());
+    }
+
+    #[test]
+    fn test_apply_move_extends_world_line() {
+        let state = basic_state();
+        assert_eq!(state.world_line().len(), 1);
+        let result = apply_action(&state, Action::Move(Direction::East)).unwrap();
+        assert_eq!(result.state.world_line().len(), 2);
+    }
+
+    #[test]
+    fn test_apply_push_single_box() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        cube.spawn(Entity::pushable_box(Position::new(2, 1, 0)))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let result = apply_action(&state, Action::Push(Direction::East)).unwrap();
+        assert_eq!(result.state.player_position(), Position::new(2, 1, 1));
+        assert!(result
+            .state
+            .cube()
+            .entities_at(Position::new(3, 1, 1))
+            .iter()
+            .any(|e| e.entity_type() == EntityType::Box));
+    }
+
+    #[test]
+    fn test_apply_push_blocked_by_wall() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        cube.spawn(Entity::pushable_box(Position::new(2, 1, 0)))
+            .unwrap();
+        // Wall is intentionally placed at t=1 (next slice) to block the push.
+        cube.spawn(Entity::wall(Position::new(3, 1, 1))).unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let err = apply_action(&state, Action::Push(Direction::East)).unwrap_err();
+        assert!(matches!(err, ActionError::PushBlocked { .. }));
+    }
+
+    #[test]
+    fn test_apply_pull_success() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(2, 1, 0))).unwrap();
+        cube.spawn(Entity::pullable_box(Position::new(1, 1, 0)))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let result = apply_action(&state, Action::Pull(Direction::East)).unwrap();
+        assert_eq!(result.state.player_position(), Position::new(3, 1, 1));
+        assert!(result
+            .state
+            .cube()
+            .entities_at(Position::new(2, 1, 1))
+            .iter()
+            .any(|e| e.entity_type() == EntityType::Box));
+    }
+
+    #[test]
+    fn test_win_on_exit() {
+        let mut cube = TimeCube::new(5, 5, 5);
+        cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+        cube.spawn_and_propagate(Entity::exit(Position::new(2, 1, 0)))
+            .unwrap();
+        let state = GameState::from_cube(cube).unwrap();
+        let result = apply_action(&state, Action::Move(Direction::East)).unwrap();
+        assert!(result.state.has_won());
+        assert!(matches!(result.outcome, ActionOutcome::Won { .. }));
     }
 }

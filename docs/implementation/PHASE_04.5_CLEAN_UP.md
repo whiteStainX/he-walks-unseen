@@ -17,61 +17,36 @@ This phase addresses technical debt, documentation inconsistencies, and missing 
 
 ## Task List
 
-### 1. Propagation API Consolidation
+### 1. ~~Propagation API Consolidation~~ ✅ COMPLETED
 
-**Priority:** High
-**Files:** `src/core/time_cube.rs`, `src/core/propagation.rs`
+**Status:** Already implemented.
 
-**Problem:** Phase 2 `TimeCube::propagate_slice()` and `propagate_all()` have standalone implementations. Phase 3 introduced `propagation.rs` as the "authoritative" module, but Phase 2 methods weren't updated to wrap it.
+`TimeCube::propagate_slice` and `propagate_all` already delegate to `core/propagation.rs` (see `src/core/time_cube.rs:309-324`).
 
-**Current State:**
-- `time_cube.rs:306-345` has independent propagation logic
-- `actions.rs` directly calls `propagation::propagate_from_with_options()`
-- Two parallel code paths exist
-
-**Solution:** Update Phase 2 methods to delegate to the propagation module.
-
-**Implementation:**
-
+**Verified implementation:**
 ```rust
-// src/core/time_cube.rs
+pub fn propagate_slice(&mut self, from_t: i32) -> Result<usize, CubeError> {
+    let result = propagation::propagate_from_with_options(
+        self,
+        from_t,
+        propagation::PropagationOptions {
+            stop_at: Some(from_t + 1),
+            ..Default::default()
+        },
+    )?;
+    Ok(result.context.slices_updated)
+}
 
-impl TimeCube {
-    /// Propagate all time-persistent entities from t to t+1.
-    ///
-    /// Wrapper around `propagation::propagate_from` for single-slice propagation.
-    pub fn propagate_slice(&mut self, from_t: i32) -> Result<usize, CubeError> {
-        let result = crate::core::propagation::propagate_from_with_options(
-            self,
-            from_t,
-            crate::core::propagation::PropagationOptions {
-                stop_at: Some(from_t + 1),
-                ..Default::default()
-            },
-        )?;
-        Ok(result.context.slices_updated)
-    }
-
-    /// Propagate all time-persistent entities from t=0 to time_depth-1.
-    ///
-    /// Wrapper around `propagation::propagate_from`.
-    pub fn propagate_all(&mut self) -> Result<crate::core::propagation::PropagationResult, CubeError> {
-        crate::core::propagation::propagate_from(self, 0)
-    }
+pub fn propagate_all(&mut self) -> Result<PropagationResult, CubeError> {
+    propagation::propagate_from(self, 0)
 }
 ```
 
-**Tests to Add:**
-- `test_propagate_slice_wrapper_matches_module`
-- `test_propagate_all_wrapper_matches_module`
-
-**Verification:**
-- Existing tests still pass
-- `propagate_slice` returns count consistent with `PropagationResult.slices_updated`
+**No action needed.**
 
 ---
 
-### 2. Arrow Key Support
+### 2. Arrow Key Support ✅ COMPLETED
 
 **Priority:** Medium
 **Files:** `src/render/app.rs`
@@ -106,8 +81,39 @@ pub fn handle_key(&mut self, key: KeyCode) {
 ```
 
 **Tests to Add:**
-- `test_arrow_key_up_moves_north`
-- `test_arrow_key_left_moves_west`
+
+Note: Existing `state()` helper in `render/app.rs` starts player at `(0,0,0)`, making north/west out-of-bounds. Use East/South or update the helper.
+
+```rust
+// Option A: Use valid directions from (0,0,0)
+#[test]
+fn test_arrow_key_down_moves_south() {
+    let mut app = RenderApp::new(state());
+    app.handle_key(KeyCode::Down);
+    assert_eq!(app.pending_action, Some(Action::Move(MoveDir::South)));
+}
+
+#[test]
+fn test_arrow_key_right_moves_east() {
+    let mut app = RenderApp::new(state());
+    app.handle_key(KeyCode::Right);
+    assert_eq!(app.pending_action, Some(Action::Move(MoveDir::East)));
+}
+
+// Option B: Update helper to start at (1,1,0) for full coverage
+fn state_centered() -> GameState {
+    let mut cube = TimeCube::new(3, 3, 2);
+    cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
+    GameState::from_cube(cube).unwrap()
+}
+
+#[test]
+fn test_arrow_key_up_moves_north() {
+    let mut app = RenderApp::new(state_centered());
+    app.handle_key(KeyCode::Up);
+    assert_eq!(app.pending_action, Some(Action::Move(MoveDir::North)));
+}
+```
 
 **Update:** Bottom bar help text to include arrows:
 ```rust
@@ -116,7 +122,7 @@ pub fn handle_key(&mut self, key: KeyCode) {
 
 ---
 
-### 3. Fix Preview Overlay Positioning
+### 3. Fix Preview Overlay Positioning ✅ COMPLETED
 
 **Priority:** Low
 **Files:** `src/render/preview.rs`
@@ -158,14 +164,16 @@ pub fn render_preview_overlay(area: Rect, frame: &mut Frame, enabled: bool) {
 ```
 
 **Tests to Add:**
-- `test_preview_overlay_does_not_panic_small_area`
+- `test_preview_overlay_does_not_panic_small_area` (minimal, no render assertions)
 
 ---
 
-### 4. Add Missing Test Coverage
+### 4. Add Missing Test Coverage ✅ COMPLETED
 
 **Priority:** Medium
 **Files:** `src/game/state.rs`, `src/game/actions.rs`, `src/game/validation.rs`
+
+**Dependency:** Task 7 (`Entity::pullable_box`) must be completed first — pull tests reference it.
 
 **Missing Tests from Spec:**
 
@@ -174,10 +182,12 @@ pub fn render_preview_overlay(area: Rect, frame: &mut Frame, enabled: bool) {
 #[test]
 fn test_is_active_false_when_won() {
     let mut cube = TimeCube::new(5, 5, 3);
-    cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
-    cube.spawn(Entity::exit(Position::new(1, 1, 0))).unwrap();
+    let start = Position::new(1, 1, 0);
+    cube.spawn(Entity::player(start)).unwrap();
+    // Exit must be propagated so it exists at t=1 when player arrives
+    cube.spawn_and_propagate(Entity::exit(start)).unwrap();
     let state = GameState::from_cube(cube).unwrap();
-    // Player starts on exit
+    // Player starts on exit, wait advances time to t=1 and triggers win
     let result = apply_action(&state, Action::Wait).unwrap();
     assert!(!result.state.is_active());
     assert!(result.state.has_won());
@@ -195,17 +205,14 @@ fn test_valid_actions_at_rift() {
 ```
 
 #### actions.rs
-```rust
-#[test]
-fn test_apply_move_advances_time() {
-    let state = basic_state();
-    let result = apply_action(&state, Action::Move(Direction::East)).unwrap();
-    assert_eq!(result.state.current_time(), 1);
-}
 
+**Note:** `test_apply_move_east` already verifies time advances to `t=1`. These additional tests add explicit coverage for world_line length:
+
+```rust
 #[test]
 fn test_apply_move_extends_world_line() {
     let state = basic_state();
+    assert_eq!(state.world_line().len(), 1);
     let result = apply_action(&state, Action::Move(Direction::East)).unwrap();
     assert_eq!(result.state.world_line().len(), 2);
 }
@@ -228,6 +235,8 @@ fn test_apply_push_blocked_by_wall() {
     let mut cube = TimeCube::new(5, 5, 5);
     cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
     cube.spawn(Entity::pushable_box(Position::new(2, 1, 0))).unwrap();
+    // Wall spawned directly at t=1 (not propagated from t=0)
+    // Push validation checks target positions at t+1, so wall blocks the box
     cube.spawn(Entity::wall(Position::new(3, 1, 1))).unwrap();
     let state = GameState::from_cube(cube).unwrap();
     let err = apply_action(&state, Action::Push(Direction::East)).unwrap_err();
@@ -251,7 +260,8 @@ fn test_apply_pull_success() {
 fn test_win_on_exit() {
     let mut cube = TimeCube::new(5, 5, 5);
     cube.spawn(Entity::player(Position::new(1, 1, 0))).unwrap();
-    cube.spawn(Entity::exit(Position::new(2, 1, 0))).unwrap();
+    // Exit must be propagated so it exists at t=1 when player arrives
+    cube.spawn_and_propagate(Entity::exit(Position::new(2, 1, 0))).unwrap();
     let state = GameState::from_cube(cube).unwrap();
     let result = apply_action(&state, Action::Move(Direction::East)).unwrap();
     assert!(result.state.has_won());
@@ -260,6 +270,9 @@ fn test_win_on_exit() {
 ```
 
 #### validation.rs
+
+**IMPORTANT:** `test_validate_pull_not_pullable` - current logic returns `NotPullable` when entity exists but lacks Pullable component. Update expected error accordingly:
+
 ```rust
 #[test]
 fn test_validate_push_chain() {
@@ -289,8 +302,19 @@ fn test_validate_push_chain_limit() {
 fn test_validate_pull_not_pullable() {
     let mut cube = TimeCube::new(5, 5, 5);
     cube.spawn(Entity::player(Position::new(2, 1, 0))).unwrap();
-    // Wall is not pullable
-    cube.spawn(Entity::wall(Position::new(1, 1, 0))).unwrap();
+    // Pushable box (not pullable) - current code returns NotPullable
+    cube.spawn(Entity::pushable_box(Position::new(1, 1, 0))).unwrap();
+    let state = GameState::from_cube(cube).unwrap();
+    let err = validate_pull(&state, Direction::East).unwrap_err();
+    // Note: Returns NotPullable (entity exists but lacks Pullable component)
+    assert!(matches!(err, ActionError::NotPullable { .. }));
+}
+
+#[test]
+fn test_validate_pull_nothing_there() {
+    let mut cube = TimeCube::new(5, 5, 5);
+    cube.spawn(Entity::player(Position::new(2, 1, 0))).unwrap();
+    // Nothing at pull position
     let state = GameState::from_cube(cube).unwrap();
     let err = validate_pull(&state, Direction::East).unwrap_err();
     assert!(matches!(err, ActionError::NothingToPull { .. }));
@@ -299,14 +323,17 @@ fn test_validate_pull_not_pullable() {
 
 ---
 
-### 5. Update Documentation
+### 5. Update Documentation ✅ COMPLETED
 
 **Priority:** Low
-**Files:** `docs/design/GAME_STATE.md`, `docs/implementation/PHASE_03_GAME_STATE.md`
+**Files:**
+- `docs/design/GAME_STATE.md` (required)
+- `docs/implementation/PHASE_03_GAME_STATE.md` (required)
+- `docs/design/RENDERING.md` (optional — if arrow keys and preview positioning are documented there)
 
-#### GAME_STATE.md Line 233
+#### GAME_STATE.md - Restart Behavior
 **Current:** `phase = Restarted`
-**Update to:** `phase = Playing` (with note that Restarted is for UI feedback only)
+**Update to:** `phase = Playing`
 
 ```markdown
 ### Restart Behavior
@@ -322,10 +349,11 @@ Note: `ActionOutcome::Restarted` is returned for UI feedback, but the game
 phase is set to `Playing` to allow immediate play.
 ```
 
-#### PHASE_03_GAME_STATE.md Propagation Section
-**Update:** Clarify the actual relationship between Phase 2 wrappers and Phase 3 module.
+#### PHASE_03_GAME_STATE.md - Propagation Diagram
 
-After completing Task 1 (propagation consolidation), update the diagram:
+**Current (incorrect):** References `propagation::propagate_slice()` which doesn't exist.
+
+**Update to:**
 
 ```markdown
 ### Propagation: Replace & Wrap (Single Source of Truth)
@@ -337,14 +365,17 @@ that delegate to `core/propagation.rs`:
 Phase 2 (wrappers):                    Phase 3 (implementation):
 ┌─────────────────────────┐            ┌─────────────────────────────────┐
 │ TimeCube::propagate_slice() ────────►│ propagation::propagate_from()   │
-│ TimeCube::propagate_all()   ────────►│   with stop_at option           │
+│   (stop_at: from_t + 1)              │   with PropagationOptions       │
+│                                      │                                 │
+│ TimeCube::propagate_all()   ────────►│ propagation::propagate_from()   │
+│   (from t=0)                         │   with defaults                 │
 └─────────────────────────┘            └─────────────────────────────────┘
 ```
 ```
 
 ---
 
-### 6. Add Code Comments for Time Semantics
+### 6. Add Code Comments for Time Semantics ✅ COMPLETED
 
 **Priority:** Low
 **Files:** `src/game/validation.rs`
@@ -364,12 +395,6 @@ Phase 2 (wrappers):                    Phase 3 (implementation):
 /// - **Player movement:** Player also moves to `t + 1`.
 ///
 /// This ensures push validation reflects the state *after* time advances.
-pub fn validate_push(
-    state: &GameState,
-    direction: Direction,
-) -> Result<Vec<(EntityId, Position, Position)>, ActionError> {
-    // ... implementation
-}
 ```
 
 **Add to `validate_pull`:**
@@ -383,26 +408,24 @@ pub fn validate_push(
 ///   the position opposite to the movement direction.
 /// - **Target validation:** Validates player and pulled entity positions at
 ///   **next slice** (`t + 1`).
-pub fn validate_pull(
-    state: &GameState,
-    direction: Direction,
-) -> Result<(EntityId, Position, Position), ActionError> {
-    // ... implementation
-}
 ```
 
 ---
 
-### 7. Add Entity::pullable_box Constructor (If Missing)
+### 7. Add Entity::pullable_box Constructor ✅ COMPLETED
 
-**Priority:** Medium
+**Priority:** Medium (required for pull tests)
 **Files:** `src/core/entity.rs`
 
-**Check:** Verify `Entity::pullable_box()` exists for test cases. If not:
+**Problem:** `Entity::pullable_box()` does not exist. Tests referencing it will fail.
+
+**Implementation:**
 
 ```rust
 impl Entity {
-    /// Create a pullable box entity.
+    /// Create a pullable (and pushable) box entity.
+    ///
+    /// This box can be both pushed and pulled by the player.
     pub fn pullable_box(position: Position) -> Self {
         Self::new(
             position,
@@ -422,29 +445,31 @@ impl Entity {
 ## Implementation Order
 
 ```
-1. Task 7: Entity::pullable_box (if needed for tests)
-2. Task 4: Add missing tests (some may fail initially)
-3. Task 1: Propagation API consolidation
-4. Task 2: Arrow key support
-5. Task 3: Preview overlay fix
-6. Task 5: Documentation updates
-7. Task 6: Code comments
-8. Final: Run all tests, clippy check
+1. Task 7: Entity::pullable_box (required for tests) ✅
+2. Task 4: Add missing tests ✅
+3. Task 2: Arrow key support ✅
+4. Task 3: Preview overlay fix ✅
+5. Task 5: Documentation updates ✅
+6. Task 6: Code comments ✅
+7. Final: Run all tests, clippy check ✅
 ```
+
+**Note:** Task 1 is already complete — no action needed.
 
 ---
 
 ## Exit Criteria
 
-- [ ] `TimeCube::propagate_slice` delegates to `propagation` module
-- [ ] `TimeCube::propagate_all` delegates to `propagation` module
-- [ ] Arrow keys (Up/Down/Left/Right) work for movement
-- [ ] Preview overlay positioned in corner, not overlapping grid
-- [ ] All new tests pass (push chain, pull, win detection)
-- [ ] Documentation updated (GAME_STATE.md, PHASE_03)
-- [ ] `cargo test` passes
-- [ ] `cargo clippy` clean
-- [ ] Total test count increased by ~15+
+- [x] `TimeCube::propagate_slice` delegates to `propagation` module ✅
+- [x] `TimeCube::propagate_all` delegates to `propagation` module ✅
+- [x] Arrow keys (Up/Down/Left/Right) work for movement ✅
+- [x] Preview overlay positioned in corner, not overlapping grid ✅
+- [x] `Entity::pullable_box()` constructor exists ✅
+- [x] All new tests pass (push chain, pull, win detection) ✅
+- [x] Documentation updated (GAME_STATE.md, PHASE_03) ✅
+- [x] `cargo test` passes ✅
+- [x] `cargo clippy` clean ✅
+- [x] Total test count increased by ~12+ ✅
 
 ---
 
@@ -458,8 +483,10 @@ cargo test
 cargo test test_is_active_false_when_won
 cargo test test_valid_actions_at_rift
 cargo test test_apply_push
+cargo test test_apply_pull
 cargo test test_win_on_exit
 cargo test test_arrow_key
+cargo test test_validate_pull
 
 # Clippy check
 cargo clippy
@@ -467,6 +494,17 @@ cargo clippy
 # Run game to manually verify arrow keys and preview
 cargo run
 ```
+
+---
+
+## Test Expectations Summary
+
+| Test | Expected Error/Result |
+|------|----------------------|
+| `test_validate_pull_not_pullable` | `ActionError::NotPullable { .. }` |
+| `test_validate_pull_nothing_there` | `ActionError::NothingToPull { .. }` |
+| `test_apply_push_blocked_by_wall` | `ActionError::PushBlocked { .. }` |
+| `test_validate_push_chain_limit` | `ActionError::PushChainTooLong { .. }` |
 
 ---
 
