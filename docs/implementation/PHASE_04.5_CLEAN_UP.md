@@ -46,7 +46,7 @@ pub fn propagate_all(&mut self) -> Result<PropagationResult, CubeError> {
 
 ---
 
-### 2. Arrow Key Support
+### 2. Arrow Key Support ✅ COMPLETED
 
 **Priority:** Medium
 **Files:** `src/render/app.rs`
@@ -122,7 +122,7 @@ fn test_arrow_key_up_moves_north() {
 
 ---
 
-### 3. Fix Preview Overlay Positioning
+### 3. Fix Preview Overlay Positioning ✅ COMPLETED
 
 **Priority:** Low
 **Files:** `src/render/preview.rs`
@@ -168,7 +168,7 @@ pub fn render_preview_overlay(area: Rect, frame: &mut Frame, enabled: bool) {
 
 ---
 
-### 4. Add Missing Test Coverage
+### 4. Add Missing Test Coverage ✅ COMPLETED
 
 **Priority:** Medium
 **Files:** `src/game/state.rs`, `src/game/actions.rs`, `src/game/validation.rs`
@@ -323,7 +323,7 @@ fn test_validate_pull_nothing_there() {
 
 ---
 
-### 5. Update Documentation
+### 5. Update Documentation ✅ COMPLETED
 
 **Priority:** Low
 **Files:**
@@ -375,7 +375,7 @@ Phase 2 (wrappers):                    Phase 3 (implementation):
 
 ---
 
-### 6. Add Code Comments for Time Semantics
+### 6. Add Code Comments for Time Semantics ✅ COMPLETED
 
 **Priority:** Low
 **Files:** `src/game/validation.rs`
@@ -412,7 +412,7 @@ Phase 2 (wrappers):                    Phase 3 (implementation):
 
 ---
 
-### 7. Add Entity::pullable_box Constructor
+### 7. Add Entity::pullable_box Constructor ✅ COMPLETED
 
 **Priority:** Medium (required for pull tests)
 **Files:** `src/core/entity.rs`
@@ -445,13 +445,13 @@ impl Entity {
 ## Implementation Order
 
 ```
-1. Task 7: Entity::pullable_box (required for tests)
-2. Task 4: Add missing tests
-3. Task 2: Arrow key support
-4. Task 3: Preview overlay fix
-5. Task 5: Documentation updates
-6. Task 6: Code comments
-7. Final: Run all tests, clippy check
+1. Task 7: Entity::pullable_box (required for tests) ✅
+2. Task 4: Add missing tests ✅
+3. Task 2: Arrow key support ✅
+4. Task 3: Preview overlay fix ✅
+5. Task 5: Documentation updates ✅
+6. Task 6: Code comments ✅
+7. Final: Run all tests, clippy check ✅
 ```
 
 **Note:** Task 1 is already complete — no action needed.
@@ -462,14 +462,14 @@ impl Entity {
 
 - [x] `TimeCube::propagate_slice` delegates to `propagation` module ✅
 - [x] `TimeCube::propagate_all` delegates to `propagation` module ✅
-- [ ] Arrow keys (Up/Down/Left/Right) work for movement
-- [ ] Preview overlay positioned in corner, not overlapping grid
-- [ ] `Entity::pullable_box()` constructor exists
-- [ ] All new tests pass (push chain, pull, win detection)
-- [ ] Documentation updated (GAME_STATE.md, PHASE_03)
-- [ ] `cargo test` passes
-- [ ] `cargo clippy` clean
-- [ ] Total test count increased by ~12+
+- [x] Arrow keys (Up/Down/Left/Right) work for movement ✅
+- [x] Preview overlay positioned in corner, not overlapping grid ✅
+- [x] `Entity::pullable_box()` constructor exists ✅
+- [x] All new tests pass (push chain, pull, win detection) ✅
+- [x] Documentation updated (GAME_STATE.md, PHASE_03) ✅
+- [x] `cargo test` passes ✅
+- [x] `cargo clippy` clean ✅
+- [x] Total test count increased by ~12+ ✅
 
 ---
 
