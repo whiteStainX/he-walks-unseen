@@ -1,7 +1,7 @@
 # Phase 3: Game State & Movement
 
 > **Depends on:** Phase 2 (Core Data Structures)
-> **Enables:** Phase 4 (Rendering), Phase 5 (Light Cone Vision)
+> **Enables:** Phase 4 (Rendering), Phase 5 (Light Cone Vision & World Line Visualization)
 
 ---
 

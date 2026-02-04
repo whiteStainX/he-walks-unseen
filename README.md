@@ -1,6 +1,6 @@
 # He Walks Unseen
 
-A terminal-based, turn-based puzzle stealth game where **time is a spatial dimension**.
+A web-based, turn-based puzzle stealth game where **time is a spatial dimension**.
 
 Navigate a 3D Space-Time Cube to reach the exit without being detected by enemies who perceive through causal light cones.
 
@@ -15,41 +15,37 @@ Exploit causality. Move faster than light. Walk unseen.
 
 ## Status
 
-🚧 **In Development** — Phase 1 (Foundation) complete.
+In development. Web rewrite in progress.
 
 ## Requirements
 
-- Rust 2026 edition
-- A terminal with Unicode support (ASCII fallback available)
+- Node.js 18+
+- npm, pnpm, or yarn
 
-## Build & Run
+## Quick Start
 
 ```bash
-# Build
-cargo build
-
-# Run
-cargo run
-
-# Test
-cargo test
+cd frontend
+npm install
+npm run dev
 ```
-
-Press `q` to quit.
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
-| `W/A/S/D` | Move in space |
-| `Space` | Interact (rift/push) |
+| `W/A/S/D` / Arrow Keys | Move in space |
+| `Space` | Use rift |
 | `Q` / `Esc` | Quit |
 | `R` | Restart level |
+| `P` | Toggle preview |
 
 ## Documentation
 
-- [Design Document](docs/design/OVERALL.md)
-- [Implementation Plan](docs/implementation/PLAN.md)
+- [Web Design Docs](docs/web-design/OVERALL.md)
+- [Math Model (Core)](docs/web-design/MATH_MODEL.md)
+- [Web Implementation Plan](docs/web-implementation/PLAN.md)
+- [Agent Guide](AGENTS.md)
 
 ## License
 

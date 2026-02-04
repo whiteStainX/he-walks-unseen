@@ -1,7 +1,7 @@
 # Phase 4: Basic Rendering (TUI)
 
 > **Depends on:** Phase 3 (Game State & Movement)
-> **Enables:** Phase 5 (Light Cone Vision), Phase 6 (Data Loading)
+> **Enables:** Phase 5 (Light Cone Vision & World Line Visualization), Phase 6 (Data Loading)
 
 ---
 
@@ -16,6 +16,7 @@ This phase builds the terminal UI using Ratatui. The goal is to render the curre
 
 **Non-Goals (Phase 4):**
 - Vision cone rendering (Phase 5)
+- Past-turn selves rendering (Phase 5)
 - Data-driven themes (Phase 6)
 - Full move preview (Phase 6)
 - Animations (Phase 10)

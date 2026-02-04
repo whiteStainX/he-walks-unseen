@@ -1,7 +1,7 @@
 # Phase 4.5: Cleanup & Consolidation
 
 > **Depends on:** Phase 4 (Rendering)
-> **Enables:** Phase 5 (Light Cone Vision)
+> **Enables:** Phase 5 (Light Cone Vision & World Line Visualization)
 
 ---
 

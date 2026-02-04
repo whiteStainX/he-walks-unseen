@@ -1,34 +1,42 @@
-# Rust
-/target/
-target/
-# Note: Cargo.lock IS committed for binary projects (reproducible builds)
+# Node / Vite
+node_modules/
+.pnpm-store/
+.yarn/
+.yarnrc.yml
+.pnp.*
 
-# IDE
+# Build output
+dist/
+build/
+
+# Vite cache
+.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+
+# Testing / coverage
+coverage/
+*.lcov
+
+# IDE / OS
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Build artifacts
-*.node
-*.so
-*.dylib
-*.dll
+# Optional tooling
+.eslintcache
 
-# npm (for future distribution)
-node_modules/
-package-lock.json
-
-# Local config (user-specific)
-.env
-.env.local
-
-# Test coverage
-*.profraw
-*.profdata
-coverage/
+# Local config (app-specific)
+.local/
