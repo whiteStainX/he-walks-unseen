@@ -187,6 +187,43 @@ entity type is selected; player is forced on top using `GameState::player_positi
 - Non-ASCII glyphs (`█`, `□`) are used; terminals without full Unicode support
   may render imperfectly. ASCII fallbacks can be added later via theme/config.
 
+### Past-Turn Selves (Phase 5)
+
+> **Implementation:** See `docs/implementation/PHASE_05_LIGHT_CONE.md` Section 5.1
+
+When the player uses rifts to revisit a time slice `t` they've already visited,
+multiple world line points may share the same `t` coordinate. The renderer must:
+
+1. **Query all world line points at current `t`:**
+   ```rust
+   let positions_at_t: Vec<(Position, usize)> = world_line
+       .positions()
+       .enumerate()
+       .filter(|(_, pos)| pos.t == current_t)
+       .map(|(turn, pos)| (*pos, turn))
+       .collect();
+   ```
+
+2. **Identify current-turn self:** The position with the highest turn index.
+
+3. **Render distinctly:**
+   - **Current-turn self:** `theme.player` (bright cyan) — controllable
+   - **Past-turn selves:** `theme.player_ghost` (dim cyan) — fixed echoes
+
+**Example:** Player visits `t=7` at turn 1, then rifts back to `t=7` at turn 5:
+```
+Time slice t=7:
+
+  . . . . . . . . .
+  . . . @ . . . . .   ← Past-turn self (dim) from turn 1
+  . . . . . . . . .
+  . . . . . . @ . .   ← Current-turn self (bright) from turn 5
+  . . . . . . . . .
+```
+
+**Note:** This is implemented in Phase 5. Phase 4 assumes at most one player
+position per time slice.
+
 ---
 
 ## Sidebar Rendering
@@ -299,6 +336,7 @@ state (no lingering `GameNotActive` errors).
 ## Known Deferred Features
 
 - Vision cone rendering (Phase 5)
+- Past-turn selves rendering (Phase 5)
 - Time-stack visualization
 - Move previews
 - Undo/redo UI

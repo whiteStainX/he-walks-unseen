@@ -141,7 +141,8 @@ Since the terminal is 2D, we project the 3D data creatively.
 ### 4.1 Core Visual Elements
 
 - **Main View:** The Current Time Slice (`t = current`).
-- **Ghosting:** Objects from `t-1` (immediate past) or `t+1` (immediate future) rendered in dim colors to show trajectory.
+- **Adjacent Slice Ghosting:** Objects from `t-1` (immediate past) or `t+1` (immediate future) rendered in dim colors to show trajectory across adjacent time slices.
+- **Past-Turn Selves:** When the player revisits a time slice via rift, multiple player positions appear on the same slice. The current-turn self (controllable) is bright; past-turn selves (fixed echoes) are dim. See MATH_MODEL.md Section 10.
 - **The "Stack" Indicator:** A sidebar gauge showing the player's current depth in the Z-axis (Time).
 - **Rifts:** Glitched characters representing tiles where Time Travel is possible.
 - **Light Cone Preview:** Before committing a move, show which enemy light cones the player's new position would enter.
@@ -160,8 +161,8 @@ Since the terminal is 2D, we project the 3D data creatively.
 | Element | Color | Rationale |
 |---------|-------|-----------|
 | Background | Near-black (`#0a0a0a`) | Maximum contrast base |
-| Player | Cyan | Protagonist — must stand out |
-| Player Ghost | Dim Cyan | Fading presence |
+| Player | Cyan | Protagonist — current-turn self, must stand out |
+| Player Ghost | Dim Cyan | Past-turn selves and adjacent-slice ghosts |
 | Enemy | Red | Danger — universal signal |
 | Enemy Vision | Dim Red | Subtle threat zone |
 | Wall | Gray | Solid, neutral |

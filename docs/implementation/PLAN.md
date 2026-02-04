@@ -161,48 +161,72 @@ src/render/
 
 ---
 
-## Phase 5: Light Cone Vision
+## Phase 5: Light Cone Vision & World Line Visualization
 
-**Goal:** Enemies with vision cones, fail state when detected.
+**Goal:** Enemies with vision cones, fail state when detected, past-turn selves rendering.
+
+> **Design Reference:** `docs/design/MATH_MODEL.md` (Sections 9, 10, 12)
+> **Detailed Plan:** `docs/implementation/PHASE_05_LIGHT_CONE.md`
 
 ### Deliverables
+
+#### 5.1 World Line Visualization (Past-Turn Selves)
+- [ ] `WorldLine::positions_at(t)`: query all positions at a given cube-time
+- [ ] Past-turn selves rendering: dim ghosts for non-current positions at same `t`
+- [ ] Current-turn self identification: highest turn index at current `t`
+
+#### 5.2 Light Cone Detection
 - [ ] `LightCone` calculation: given enemy position, which past player positions are visible?
 - [ ] `check_detection()`: returns true if any enemy sees the player
-- [ ] Vision rendering: show danger zones on grid
-- [ ] Fail state: game over when detected
-- [ ] Enemy patrol: enemies follow `Patrol` component paths
-- [ ] `BlocksVision` support: walls block line of sight
+- [ ] Detection model: start with discrete delay (`k` turns), configurable per level
+- [ ] `BlocksVision` support: walls block line of sight (ray casting)
 
-### Files Created
+#### 5.3 Enemy Patrol
+- [ ] `Patrol` component execution: enemies follow deterministic paths
+- [ ] Patrol position lookup: `enemy_position_at(t)` for any cube-time
+
+#### 5.4 Vision Rendering
+- [ ] Danger zone rendering: show light cone coverage on grid
+- [ ] Detection preview: warn before committing to detected position
+- [ ] Fail state: game over when detected, show which enemy and where
+
+### Files Created/Modified
 ```
 src/core/
-  light_cone.rs
-  patrol.rs
+  light_cone.rs      # Light cone geometry and detection
+  detection.rs       # Detection checking logic
+  patrol.rs          # Patrol path execution
+src/game/
+  state.rs           # Add detection check to action flow
 src/render/
-  vision.rs
+  grid.rs            # Past-turn selves rendering
+  vision.rs          # Danger zone overlay
 ```
 
-### Key Algorithm
+### Key Types
 ```rust
-fn is_visible(
-    player_pos: Position,      // (px, py, tp)
-    enemy_pos: Position,       // (ex, ey, te)
-    light_speed: i32,          // c
-    blockers: &[Position],     // BlocksVision entities
-) -> bool {
-    if te <= tp { return false; }
-    let distance = manhattan(player_pos, enemy_pos);
-    let time_delta = te - tp;
-    if distance > light_speed * time_delta { return false; }
-    !is_blocked(player_pos, enemy_pos, blockers)
+/// Result of detection check
+pub struct DetectionResult {
+    pub detected: bool,
+    pub by_enemy: Option<EntityId>,
+    pub seen_at: Option<Position>,      // Player position that was seen
+    pub enemy_at: Option<Position>,     // Enemy position when they saw
+}
+
+/// World line query for positions at a specific cube-time
+impl WorldLine {
+    pub fn positions_at(&self, t: i32) -> Vec<(Position, usize)>;  // (pos, turn_index)
+    pub fn current_position_at(&self, t: i32) -> Option<Position>; // highest turn
 }
 ```
 
 ### Exit Criteria
-- Enemies patrol their paths
-- Vision cones render on grid
-- Walking into vision = game over
-- Walls block enemy sight
+- [ ] Past-turn selves render dimly when player revisits a time slice
+- [ ] Enemies patrol their paths correctly
+- [ ] Vision cones render on grid (danger zones)
+- [ ] Walking into vision = game over with feedback
+- [ ] Walls block enemy sight
+- [ ] Detection check runs after each action
 
 ---
 
@@ -282,7 +306,7 @@ Phase 3 (Movement)   Phase 4 (Rendering)
     │                  │
     └────────┬─────────┘
              ▼
-      Phase 5 (Light Cone)
+      Phase 5 (Light Cone & World Line)
              │
              ▼
       Phase 6 (Data Loading)

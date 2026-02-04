@@ -598,35 +598,106 @@ The rift doesn't "save" the player from detection — it just adds another point
 
 ---
 
-## 10. Resolved Design Decisions
+## 10. Past-Turn Selves: Multiple Positions on Same Time Slice
 
-Based on the two-times clarification:
+### 10.1 The Scenario
 
-### 10.1 Detection is Immediate Game Over
+When the player uses a rift to revisit a cube-time `t` they've already visited, multiple world line points share the same `t` coordinate:
+
+```
+Turn n=1: Player at (3, 5, t=7)
+Turn n=2: Player moves to (3, 5, t=8)
+Turn n=3: Player moves to (4, 5, t=9)
+...
+Turn n=5: Player rifts to (6, 2, t=7)  ← Same t, different (x, y)
+```
+
+**Result:** The world line contains TWO points at `t=7`:
+- `(3, 5, t=7)` — from turn n=1 (past-turn self)
+- `(6, 2, t=7)` — from turn n=5 (current-turn self)
+
+### 10.2 Terminology
+
+| Term | Definition |
+|------|------------|
+| **Current-turn self** | The player position at the current turn `n`. This is the controllable entity. |
+| **Past-turn self** | Any player position from an earlier turn `n' < n`. These are fixed, uncontrollable "echoes." |
+| **Same time slice** | Multiple selves can exist at the same cube-time `t` as long as they occupy different spatial positions `(x, y)`. |
+
+**Critical distinction:**
+- "Past" and "current" refer to **turn time** (`n`), not cube-time (`t`)
+- Selves on the same time slice share the same cube-time but differ in turn time
+- The self-intersection rule prevents selves from sharing `(x, y, t)`, not just `t`
+
+### 10.3 Rendering Implications
+
+When rendering a time slice `t`, the renderer must:
+
+1. **Query all world line points at `t`:** There may be 0, 1, or many.
+2. **Identify the current-turn self:** The most recent point in turn order.
+3. **Render distinctly:**
+   - Current-turn self: bright color (e.g., cyan `#00ffff`)
+   - Past-turn selves: dim color (e.g., dim cyan `#004444`)
+
+```
+Time slice t=7:
+
+  . . . . . . . . .
+  . . . @ . . . . .   ← Past-turn self (dim) at (3, 5)
+  . . . . . . . . .
+  . . . . . . @ . .   ← Current-turn self (bright) at (6, 2)
+  . . . . . . . . .
+```
+
+### 10.4 Gameplay Implications
+
+This mechanic creates strategic depth:
+
+1. **Spatial planning:** Past-turn selves block future movement to those positions (self-intersection rule).
+2. **Mental model burden:** The player must track their own world line — this IS the puzzle.
+3. **Visual feedback:** Seeing past-turn selves helps players understand their committed path.
+
+### 10.5 Interaction Rules
+
+Past-turn selves are **inert** — they cannot be interacted with:
+
+- Cannot push past-turn self
+- Cannot be blocked by past-turn self (they already occupy that space-time point)
+- Past-turn self does not trigger enemy detection separately (the world line point already exists)
+
+The only constraint is **prevention**: you cannot move to a position occupied by a past-turn self.
+
+---
+
+## 11. Resolved Design Decisions
+
+Based on the two-times clarification (Section 9) and past-turn selves (Section 10):
+
+### 11.1 Detection is Immediate Game Over
 
 **Decision:** Detection cannot be undone. Any world line point inside any light cone = failure.
 
 **Rationale:** The world line is a permanent record. There's no "undo" because the position is committed to the cube.
 
-### 10.2 Walls Block Light Cones
+### 11.2 Walls Block Light Cones
 
 **Decision:** Walls are static vertical surfaces in the cube. Light cones cannot penetrate them.
 
 **Implementation:** Ray-cast from enemy position to player position, checking for `BlocksVision` entities along the path.
 
-### 10.3 Any Detection = Failure
+### 11.3 Any Detection = Failure
 
 **Decision:** Multiple detections don't compound. First detection ends the level.
 
 **Rationale:** Detection is a binary state (seen/unseen). Being seen by multiple enemies isn't "more" seen.
 
-### 10.4 No "Alert Phase" (Deferred)
+### 11.4 No "Alert Phase" (Deferred)
 
 **Decision:** Alert concept is deferred. It introduces turn-time mechanics that complicate the pure cube-time model.
 
 **Note:** Alert would mean "player has N turns (turn-time) to fix their world line before detection becomes permanent." This is a different game mode that could be added later.
 
-### 10.5 Rift Safety is Geometric
+### 11.5 Rift Safety is Geometric
 
 **Decision:** Whether a rift "saves" the player depends entirely on the geometry of the new world line point relative to enemy light cones.
 
@@ -637,11 +708,11 @@ Based on the two-times clarification:
 
 ---
 
-## 11. The Pure Geometric Model
+## 12. The Pure Geometric Model
 
 With the two-times clarification, detection becomes a **pure geometry problem**:
 
-### 11.1 Static Cube View
+### 12.1 Static Cube View
 
 The space-time cube is a static 3D sculpture containing:
 
@@ -649,7 +720,7 @@ The space-time cube is a static 3D sculpture containing:
 2. **Player world line:** A path through the cube (potentially non-monotonic in `t`)
 3. **Enemy light cones:** Backward-pointing cones from each enemy position
 
-### 11.2 Detection as Intersection
+### 12.2 Detection as Intersection
 
 ```
 Detection = WorldLine ∩ (⋃ LightCones) ≠ ∅
@@ -657,7 +728,7 @@ Detection = WorldLine ∩ (⋃ LightCones) ≠ ∅
 
 In words: Detection occurs if the player's world line intersects the union of all enemy light cones.
 
-### 11.3 Light Cone Geometry
+### 12.3 Light Cone Geometry
 
 For enemy at `(ex, ey, te)` with vision speed `c`:
 
@@ -684,7 +755,7 @@ t ↑
   └────────────────────────→ space (x, y)
 ```
 
-### 11.4 Patrol Enemies Create Cone Trails
+### 12.4 Patrol Enemies Create Cone Trails
 
 A patrolling enemy traces a path through the cube:
 ```
@@ -695,7 +766,7 @@ Each point on this path generates its own backward light cone. The union of thes
 
 ---
 
-## 12. Simplified Model Decision
+## 13. Simplified Model Decision
 
 Given the complexity of full light cones, we propose **starting simple**:
 
@@ -726,7 +797,7 @@ max_radius = 12       # for light_cone
 
 ---
 
-## 13. Summary
+## 14. Summary
 
 | Aspect | Discrete Delay | Full Light Cone |
 |--------|---------------|-----------------|
@@ -766,3 +837,6 @@ max_radius = 12       # for light_cone
 | **Backward Cone** | Light cone pointing toward lower `t` values (into the "past"). |
 | **Detection** | Intersection of player's world line with any enemy light cone. |
 | **Explored Boundary** | The range of `t` values the player has visited (0 to T_max). |
+| **Current-Turn Self** | The player position at turn `n` (current). Controllable. |
+| **Past-Turn Self** | Player positions from turns `n' < n`. Fixed, uncontrollable echoes. |
+| **Same Time Slice** | Multiple world line points sharing cube-time `t` but differing in `(x, y)`. |
