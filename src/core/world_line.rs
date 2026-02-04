@@ -187,6 +187,29 @@ impl WorldLine {
         self.path.iter().copied().filter(|pos| pos.t == t).collect()
     }
 
+    /// Returns all positions at cube-time t with their turn indices.
+    pub fn positions_at_time_with_turn(&self, t: i32) -> Vec<(Position, usize)> {
+        self.path
+            .iter()
+            .enumerate()
+            .filter(|(_, pos)| pos.t == t)
+            .map(|(turn, pos)| (*pos, turn))
+            .collect()
+    }
+
+    /// Returns the current position at cube-time t (highest turn index).
+    pub fn current_position_at_time(&self, t: i32) -> Option<Position> {
+        self.positions_at_time_with_turn(t)
+            .into_iter()
+            .max_by_key(|(_, turn)| *turn)
+            .map(|(pos, _)| pos)
+    }
+
+    /// Returns the maximum t value in the world line.
+    pub fn max_t(&self) -> Option<i32> {
+        self.time_range().map(|(_, max)| max)
+    }
+
     /// Get the time range (min_t, max_t) across all positions, or None if empty.
     pub fn time_range(&self) -> Option<(i32, i32)> {
         let mut iter = self.path.iter();
@@ -360,6 +383,35 @@ mod tests {
         let wl = WorldLine::new(Position::new(0, 0, 0));
         let positions = wl.positions_at_time(5);
         assert!(positions.is_empty());
+    }
+
+    #[test]
+    fn test_positions_at_time_with_turn_multiple() {
+        let mut wl = WorldLine::new(Position::new(3, 5, 7));
+        wl.extend(Position::new(3, 5, 8)).unwrap();
+        wl.extend_via_rift(Position::new(6, 2, 7)).unwrap();
+
+        let positions = wl.positions_at_time_with_turn(7);
+        assert_eq!(positions.len(), 2);
+        assert_eq!(positions[0], (Position::new(3, 5, 7), 0));
+        assert_eq!(positions[1], (Position::new(6, 2, 7), 2));
+    }
+
+    #[test]
+    fn test_current_position_at_time() {
+        let mut wl = WorldLine::new(Position::new(3, 5, 7));
+        wl.extend(Position::new(3, 5, 8)).unwrap();
+        wl.extend_via_rift(Position::new(6, 2, 7)).unwrap();
+
+        let current = wl.current_position_at_time(7).unwrap();
+        assert_eq!(current, Position::new(6, 2, 7));
+    }
+
+    #[test]
+    fn test_max_t() {
+        let mut wl = WorldLine::new(Position::new(0, 0, 5));
+        wl.extend_via_rift(Position::new(1, 1, 2)).unwrap();
+        assert_eq!(wl.max_t(), Some(5));
     }
 
     #[test]

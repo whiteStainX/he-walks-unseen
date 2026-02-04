@@ -15,6 +15,8 @@ pub mod time_slice;
 pub mod time_cube;
 pub mod world_line;
 pub mod propagation;
+pub mod light_cone;
+pub mod detection;
 
 pub use position::{Direction, Position, SpatialPos};
 pub use components::{Component, EntityId, PatrolData, RiftData, VisionData};
@@ -25,3 +27,5 @@ pub use world_line::{WorldLine, WorldLineError};
 pub use propagation::{
     PropagationContext, PropagationOptions, PropagationResult, PropagationWarning,
 };
+pub use light_cone::{bresenham_line, is_line_blocked, manhattan_distance};
+pub use detection::{check_detection, DetectionConfig, DetectionModel, DetectionResult};

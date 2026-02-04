@@ -6,6 +6,8 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
 
+use std::collections::HashMap;
+
 use crate::core::{EntityType, Position};
 use crate::game::GameState;
 use crate::render::theme::Theme;
@@ -27,13 +29,30 @@ pub fn render_grid(area: Rect, frame: &mut Frame, state: &GameState, theme: &The
     let max_x = (inner.width as i32).min(state.cube().width);
     let max_y = (inner.height as i32).min(state.cube().height);
     let t = state.current_time();
+    let world_line = state.world_line();
+    let current_turn = world_line.current_turn().unwrap_or(0);
+    let player_positions: HashMap<(i32, i32), bool> = world_line
+        .positions_at_time_with_turn(t)
+        .into_iter()
+        .map(|(pos, turn)| ((pos.x, pos.y), turn == current_turn))
+        .collect();
 
     let mut lines = Vec::with_capacity(max_y as usize);
     for y in 0..max_y {
         let mut spans = Vec::with_capacity(max_x as usize);
         for x in 0..max_x {
+            if let Some(&is_current) = player_positions.get(&(x, y)) {
+                let color = if is_current {
+                    theme.player
+                } else {
+                    theme.player_ghost
+                };
+                spans.push(Span::styled("@", Style::default().fg(color)));
+                continue;
+            }
+
             let pos = Position::new(x, y, t);
-            let (glyph, color) = cell_glyph_and_color(state, pos, theme);
+            let (glyph, color) = cell_glyph_and_color_no_player(state, pos, theme);
             spans.push(Span::styled(glyph.to_string(), Style::default().fg(color)));
         }
         lines.push(Line::from(spans));
@@ -42,11 +61,7 @@ pub fn render_grid(area: Rect, frame: &mut Frame, state: &GameState, theme: &The
     frame.render_widget(Paragraph::new(lines), inner);
 }
 
-fn cell_glyph_and_color(state: &GameState, pos: Position, theme: &Theme) -> (char, Color) {
-    if pos == state.player_position() {
-        return ('@', theme.player);
-    }
-
+fn cell_glyph_and_color_no_player(state: &GameState, pos: Position, theme: &Theme) -> (char, Color) {
     if !state.cube().in_bounds(pos) {
         return ('.', theme.fg);
     }
@@ -109,7 +124,7 @@ mod tests {
         cube.spawn(Entity::player(player_pos)).unwrap();
         cube.spawn(Entity::wall(player_pos)).unwrap();
         let state = GameState::from_cube(cube).unwrap();
-        let (glyph, _) = cell_glyph_and_color(&state, player_pos, &theme());
+        let (glyph, _) = cell_glyph_and_color_no_player(&state, player_pos, &theme());
         assert_eq!(glyph, '@');
     }
 
@@ -121,7 +136,7 @@ mod tests {
         let wall_pos = Position::new(0, 0, 0);
         cube.spawn(Entity::wall(wall_pos)).unwrap();
         let state = GameState::from_cube(cube).unwrap();
-        let (glyph, _) = cell_glyph_and_color(&state, wall_pos, &theme());
+        let (glyph, _) = cell_glyph_and_color_no_player(&state, wall_pos, &theme());
         assert_eq!(glyph, '█');
     }
 
@@ -137,7 +152,7 @@ mod tests {
         cube.spawn(Entity::rift(pos, Position::new(2, 2, 0), false))
             .unwrap();
         let state = GameState::from_cube(cube).unwrap();
-        let (glyph, _) = cell_glyph_and_color(&state, pos, &theme());
+        let (glyph, _) = cell_glyph_and_color_no_player(&state, pos, &theme());
         assert_eq!(glyph, 'E');
     }
 }

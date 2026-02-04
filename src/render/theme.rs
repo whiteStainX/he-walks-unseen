@@ -13,8 +13,12 @@ pub struct Theme {
     pub wall: Color,
     /// Player color.
     pub player: Color,
+    /// Past-turn player color.
+    pub player_ghost: Color,
     /// Enemy color.
     pub enemy: Color,
+    /// Enemy vision/danger zone color.
+    pub enemy_vision: Color,
     /// Exit color.
     pub exit: Color,
     /// Rift color.
@@ -32,7 +36,9 @@ impl Default for Theme {
             fg: Color::Gray,
             wall: Color::DarkGray,
             player: Color::Cyan,
+            player_ghost: Color::DarkGray,
             enemy: Color::Red,
+            enemy_vision: Color::Rgb(51, 17, 17),
             exit: Color::Green,
             rift: Color::Magenta,
             box_: Color::Yellow,

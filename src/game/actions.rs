@@ -3,7 +3,7 @@
 use std::collections::HashSet;
 
 use crate::core::propagation;
-use crate::core::{Component, Direction, Entity, EntityId, Position};
+use crate::core::{check_detection, Component, Direction, Entity, EntityId, Position};
 use crate::game::state::{GamePhase, GameState};
 use crate::game::validation::{
     validate_directional_move, validate_pull, validate_push, validate_rift, validate_wait,
@@ -467,12 +467,20 @@ fn finalize_action(
         | ActionOutcome::Rifted { .. }
         | ActionOutcome::Pushed { .. }
         | ActionOutcome::Pulled { .. })
-        && state.at_exit()
     {
-        state.set_phase(GamePhase::Won);
-        outcome = ActionOutcome::Won {
-            at: state.player_position(),
-        };
+        let detection = check_detection(state.cube(), state.world_line(), &state.config().detection);
+        if let Some(result) = detection {
+            state.set_phase(GamePhase::Detected);
+            outcome = ActionOutcome::Detected {
+                by: result.enemy_id,
+                seen_at: result.player_position,
+            };
+        } else if state.at_exit() {
+            state.set_phase(GamePhase::Won);
+            outcome = ActionOutcome::Won {
+                at: state.player_position(),
+            };
+        }
     }
 
     Ok(ActionResult {

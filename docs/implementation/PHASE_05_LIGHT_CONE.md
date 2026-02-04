@@ -1042,33 +1042,33 @@ fn test_detection_scenario() {
 ## Exit Criteria
 
 ### Core (no game dependency)
-- [ ] `DetectionConfig`, `DetectionModel` defined in `core::detection`
-- [ ] `check_detection(cube, world_line, config)` — pure API, no GameState
-- [ ] `WorldLine::positions_at_time_with_turn(t)` returns `Vec<(Position, usize)>`
-- [ ] `WorldLine::current_position_at_time(t)` returns highest-turn position at t
-- [ ] `WorldLine::max_t()` returns explored boundary
-- [ ] `bresenham_line()` and `is_line_blocked()` in `core::light_cone`
-- [ ] Discrete delay model works with configurable `k` and radius
-- [ ] Walls block enemy line of sight (`cube.blocks_vision`)
-- [ ] Patrol enemies use existing `PatrolData::position_at(t)`
+- [x] `DetectionConfig`, `DetectionModel` defined in `core::detection` ✅
+- [x] `check_detection(cube, world_line, config)` — pure API, no GameState ✅
+- [x] `WorldLine::positions_at_time_with_turn(t)` returns `Vec<(Position, usize)>` ✅
+- [x] `WorldLine::current_position_at_time(t)` returns highest-turn position at t ✅
+- [x] `WorldLine::max_t()` returns explored boundary ✅
+- [x] `bresenham_line()` and `is_line_blocked()` in `core::light_cone` ✅
+- [x] Discrete delay model works with configurable `k` and radius ✅
+- [x] Walls block enemy line of sight (`cube.blocks_vision`) ✅
+- [x] Patrol enemies use existing `PatrolData::position_at(t)` ✅
 
 ### Game
-- [ ] `GameConfig.detection: DetectionConfig` field added
-- [ ] Detection check runs in `finalize_action` before win check
-- [ ] `ActionOutcome::Detected { by, seen_at }` variant exists
-- [ ] `GamePhase::Detected` triggers on detection
+- [x] `GameConfig.detection: DetectionConfig` field added ✅
+- [x] Detection check runs in `finalize_action` before win check ✅
+- [x] `ActionOutcome::Detected { by, seen_at }` variant exists ✅
+- [x] `GamePhase::Detected` triggers on detection ✅
 
 ### Render
-- [ ] `Theme` has `player_ghost` and `enemy_vision` colors
-- [ ] Past-turn selves render in dim color (`player_ghost`) on same time slice
-- [ ] Current-turn self renders in bright color (`player`)
-- [ ] Grid rendering uses Paragraph/Line/Span approach (not Buffer)
+- [x] `Theme` has `player_ghost` and `enemy_vision` colors ✅
+- [x] Past-turn selves render in dim color (`player_ghost`) on same time slice ✅
+- [x] Current-turn self renders in bright color (`player`) ✅
+- [x] Grid rendering uses Paragraph/Line/Span approach (not Buffer) ✅
 
 ### Tests
-- [ ] WorldLine new methods have unit tests
-- [ ] Bresenham ray casting has unit tests
-- [ ] Detection logic has integration test
-- [ ] All existing tests still pass
+- [x] WorldLine new methods have unit tests ✅
+- [x] Bresenham ray casting has unit tests ✅
+- [x] Detection logic has integration test ✅
+- [x] All existing tests still pass ✅
 
 ---
 

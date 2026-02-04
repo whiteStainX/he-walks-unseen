@@ -15,7 +15,7 @@ Exploit causality. Move faster than light. Walk unseen.
 
 ## Status
 
-🚧 **In Development** — Phase 1 (Foundation) complete.
+🚧 **In Development** — Phase 5 (Light Cone Detection) complete.
 
 ## Requirements
 
@@ -41,10 +41,11 @@ Press `q` to quit.
 
 | Key | Action |
 |-----|--------|
-| `W/A/S/D` | Move in space |
-| `Space` | Interact (rift/push) |
+| `W/A/S/D` / Arrow Keys | Move in space |
+| `Space` | Use rift |
 | `Q` / `Esc` | Quit |
 | `R` | Restart level |
+| `P` | Toggle preview |
 
 ## Documentation
 

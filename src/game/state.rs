@@ -1,6 +1,6 @@
 //! Game state container and configuration.
 
-use crate::core::{CubeError, Entity, EntityId, Position, TimeCube, WorldLine};
+use crate::core::{CubeError, DetectionConfig, Entity, EntityId, Position, TimeCube, WorldLine};
 use crate::game::{Action, MoveError};
 
 /// Current phase of the game.
@@ -31,6 +31,8 @@ pub struct GameConfig {
     pub level_id: String,
     /// Allow undo actions (Phase 6).
     pub allow_undo: bool,
+    /// Detection configuration.
+    pub detection: DetectionConfig,
 }
 
 impl Default for GameConfig {
@@ -41,6 +43,7 @@ impl Default for GameConfig {
             level_name: String::from("Unnamed"),
             level_id: String::from("unknown"),
             allow_undo: false,
+            detection: DetectionConfig::default(),
         }
     }
 }
