@@ -137,6 +137,8 @@ box = "#FFFF00"
 accent = "#0000FF"
 
 [glyphs]
+# NOTE: Glyphs are defined in TOML for future support.
+# Phase 6 does not apply glyph overrides yet (render uses hardcoded glyphs).
 player = "@"
 wall = "█"
 floor = "."
@@ -211,6 +213,19 @@ pub use level::{LevelData, load_level};
 pub use theme::{ThemeData, load_theme};
 ```
 
+### 6.1a Render Theme Injection (Required)
+
+**Problem:** `RenderApp` currently owns `Theme` internally and cannot accept a loaded theme.
+
+**Task:** Add a constructor or setter to inject a theme, e.g.:
+```rust
+impl RenderApp {
+    pub fn with_theme(game: GameState, theme: Theme) -> Self { /* ... */ }
+}
+```
+
+Update `main.rs` wiring to pass the loaded theme.
+
 ### 6.2 Level Parser
 
 **File:** `src/data/level.rs`
@@ -221,10 +236,10 @@ pub use theme::{ThemeData, load_theme};
 use std::path::Path;
 use serde::Deserialize;
 use crate::core::{
-    Entity, PatrolData, Position, RiftData, SpatialPos,
-    TimeCube, VisionData, Direction,
+    DetectionConfig, DetectionModel, Entity, PatrolData, Position, RiftData, SpatialPos, TimeCube,
+    VisionData, Direction,
 };
-use crate::game::{DetectionConfig, DetectionModel, GameConfig};
+use crate::game::GameConfig;
 
 /// Raw level data from TOML.
 #[derive(Debug, Deserialize)]
@@ -374,7 +389,7 @@ pub fn build_level(data: &LevelData) -> Result<(TimeCube, GameConfig), LevelErro
             .map_err(|e| LevelError::InvalidMap(e.to_string()))?;
     }
 
-    // Spawn enemies
+    // Spawn enemies (time-persistent; propagated below)
     for enemy_data in &data.enemies {
         let patrol_path: Vec<SpatialPos> = enemy_data.patrol
             .iter()
@@ -412,7 +427,7 @@ pub fn build_level(data: &LevelData) -> Result<(TimeCube, GameConfig), LevelErro
             .map_err(|e| LevelError::InvalidMap(e.to_string()))?;
     }
 
-    // Propagate all time-persistent entities
+    // Propagate all time-persistent entities (required for enemies/boxes)
     cube.propagate_all()
         .map_err(|e| LevelError::InvalidMap(e.to_string()))?;
 
@@ -472,7 +487,8 @@ fn parse_map(data: &str, width: i32, height: i32) -> Result<(Position, Position,
                     // Enemies, rifts, boxes handled separately
                 }
                 _ => {
-                    // Unknown character, treat as floor
+                    // Unknown character: treat as floor, but record a warning.
+                    // Plan: return warnings alongside parse result (Vec<String>).
                 }
             }
         }
@@ -1020,8 +1036,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let state = GameState::new(cube, game_config)?;
-    let mut app = App::new(state, theme);
-    app.run()?;
+    // NOTE: RenderApp currently owns Theme internally.
+    // Phase 6 should extend RenderApp to accept an injected Theme
+    // (e.g., RenderApp::with_theme) before wiring this in.
+    let mut app = RenderApp::new(state);
+    app.run()?; // replace with run_game_loop as needed
 
     Ok(())
 }
@@ -1041,6 +1060,7 @@ serde = { version = "1.0", features = ["derive"] }
 directories = "5.0"
 clap = { version = "4.4", features = ["derive"] }
 ```
+Note: `toml` and `serde` are already present in the current codebase; only add missing crates.
 
 ---
 
@@ -1092,6 +1112,10 @@ clap = { version = "4.4", features = ["derive"] }
 | Hot-reload themes | Phase 10 | Polish feature |
 | Entity definitions file | Future | Hardcoded entities work |
 | Level validation tool | Future | Manual testing for now |
+| Glyph overrides in themes | Future | Theme glyphs not yet applied in renderer |
+| Campaign flow helpers (find_next_level) | Future | Plan uses placeholders; implement later |
+| Map parsing diagnostics display | Future | Warning collection not yet surfaced in UI |
+| light_speed integration | Future | Detection uses VisionData; config wiring deferred |
 
 ---
 
