@@ -161,7 +161,7 @@ src/render/
 
 ---
 
-## Phase 5: Light Cone Vision & World Line Visualization
+## Phase 5: Light Cone Vision & World Line Visualization ✅
 
 **Goal:** Enemies with vision cones, fail state when detected, past-turn selves rendering.
 
@@ -171,62 +171,74 @@ src/render/
 ### Deliverables
 
 #### 5.1 World Line Visualization (Past-Turn Selves)
-- [ ] `WorldLine::positions_at(t)`: query all positions at a given cube-time
-- [ ] Past-turn selves rendering: dim ghosts for non-current positions at same `t`
-- [ ] Current-turn self identification: highest turn index at current `t`
+- [x] `WorldLine::positions_at_time_with_turn(t)`: query all positions at a given cube-time with turn indices
+- [x] Past-turn selves rendering: dim ghosts for non-current positions at same `t`
+- [x] Current-turn self identification: highest turn index at current `t`
 
 #### 5.2 Light Cone Detection
-- [ ] `LightCone` calculation: given enemy position, which past player positions are visible?
-- [ ] `check_detection()`: returns true if any enemy sees the player
-- [ ] Detection model: start with discrete delay (`k` turns), configurable per level
-- [ ] `BlocksVision` support: walls block line of sight (ray casting)
+- [x] `check_detection()`: pure API in `core::detection` (no GameState dependency)
+- [x] Detection models: DiscreteDelay (default) and LightCone (configurable)
+- [x] `DetectionConfig`: configurable delay_turns and vision_radius per level
+- [x] `BlocksVision` support: walls block line of sight via Bresenham ray casting
 
 #### 5.3 Enemy Patrol
-- [ ] `Patrol` component execution: enemies follow deterministic paths
-- [ ] Patrol position lookup: `enemy_position_at(t)` for any cube-time
+- [x] `PatrolData::position_at(t)`: existing API works for detection
+- [x] Patrol-aware enemy positioning in detection and rendering
 
 #### 5.4 Vision Rendering
-- [ ] Danger zone rendering: show light cone coverage on grid
-- [ ] Detection preview: warn before committing to detected position
-- [ ] Fail state: game over when detected, show which enemy and where
+- [x] Danger zone rendering: enemy vision zones shown with background color
+- [x] Enemy positions rendered patrol-aware (correct position at time t)
+- [x] Fail state: `GamePhase::Detected` triggers on detection
+- [x] `ActionOutcome::Detected { by, seen_at }` provides feedback
 
 ### Files Created/Modified
 ```
 src/core/
-  light_cone.rs      # Light cone geometry and detection
-  detection.rs       # Detection checking logic
-  patrol.rs          # Patrol path execution
+  light_cone.rs      # Bresenham ray casting, manhattan_distance, is_line_blocked
+  detection.rs       # DetectionConfig, DetectionModel, check_detection()
+  world_line.rs      # positions_at_time_with_turn, current_position_at_time, max_t
+  mod.rs             # Re-exports for new modules
 src/game/
-  state.rs           # Add detection check to action flow
+  state.rs           # GameConfig.detection field
+  actions.rs         # Detection check in finalize_action, integration test
 src/render/
-  grid.rs            # Past-turn selves rendering
-  vision.rs          # Danger zone overlay
+  grid.rs            # Past-turn selves, enemy vision zones, patrol-aware enemies
+  theme.rs           # player_ghost, enemy_vision colors
+tests/
+  detection_integration.rs  # End-to-end detection test
 ```
 
-### Key Types
+### Key Types (Implemented)
 ```rust
-/// Result of detection check
-pub struct DetectionResult {
-    pub detected: bool,
-    pub by_enemy: Option<EntityId>,
-    pub seen_at: Option<Position>,      // Player position that was seen
-    pub enemy_at: Option<Position>,     // Enemy position when they saw
+/// Detection configuration (in core::detection)
+pub struct DetectionConfig {
+    pub model: DetectionModel,      // DiscreteDelay or LightCone
+    pub delay_turns: i32,           // k value for discrete delay
+    pub vision_radius: i32,         // max detection distance
 }
 
-/// World line query for positions at a specific cube-time
+/// Result of detection check
+pub struct DetectionResult {
+    pub enemy_id: EntityId,
+    pub enemy_position: Position,
+    pub player_position: Position,
+}
+
+/// World line extensions
 impl WorldLine {
-    pub fn positions_at(&self, t: i32) -> Vec<(Position, usize)>;  // (pos, turn_index)
-    pub fn current_position_at(&self, t: i32) -> Option<Position>; // highest turn
+    pub fn positions_at_time_with_turn(&self, t: i32) -> Vec<(Position, usize)>;
+    pub fn current_position_at_time(&self, t: i32) -> Option<Position>;
+    pub fn max_t(&self) -> Option<i32>;
 }
 ```
 
 ### Exit Criteria
-- [ ] Past-turn selves render dimly when player revisits a time slice
-- [ ] Enemies patrol their paths correctly
-- [ ] Vision cones render on grid (danger zones)
-- [ ] Walking into vision = game over with feedback
-- [ ] Walls block enemy sight
-- [ ] Detection check runs after each action
+- [x] Past-turn selves render dimly when player revisits a time slice
+- [x] Enemies patrol their paths correctly (via existing PatrolData)
+- [x] Vision zones render on grid (danger zones with background color)
+- [x] Walking into vision = game over with `Detected` outcome
+- [x] Walls block enemy sight (Bresenham + blocks_vision)
+- [x] Detection check runs after each action (in finalize_action)
 
 ---
 
@@ -234,36 +246,56 @@ impl WorldLine {
 
 **Goal:** Load levels/themes from files, complete game loop.
 
+> **Detailed Plan:** `docs/implementation/PHASE_06_DATA_LOADING.md`
+
 ### Deliverables
-- [ ] TOML level parser
-- [ ] TOML theme parser
-- [ ] Config file support (`~/.config/he-walks-unseen/`)
-- [ ] Bundled default levels and theme
-- [ ] Level select menu (or sequential progression)
-- [ ] Win condition: reach exit tile
-- [ ] Ghosting: show `t-1` and `t+1` entities dimly
-- [ ] Move preview: show outcome before committing
-- [ ] ASCII/Unicode mode toggle
+
+#### 6.1 Level Loading
+- [ ] TOML level parser with ASCII map support
+- [ ] Level metadata (id, name, author, description)
+- [ ] Level config (width, height, max_time, light_speed)
+- [ ] Detection config per level (model, delay, radius)
+- [ ] Enemy, rift, and box entity definitions in level files
+
+#### 6.2 Theme Loading
+- [ ] TOML theme parser with hex colors (#RRGGBB)
+- [ ] Theme metadata (name, author)
+- [ ] Glyph customization (optional)
+
+#### 6.3 Configuration
+- [ ] XDG-compliant config paths (~/.config/he-walks-unseen/)
+- [ ] App config (theme, ascii_mode, show_preview, show_danger_zones)
+- [ ] Progress tracking (completed levels)
+
+#### 6.4 Bundled Content
+- [ ] Default noir theme
+- [ ] Tutorial levels: 001_first_steps, 002_the_watcher, 003_time_loop
+
+#### 6.5 CLI Integration
+- [ ] `--level <path>` loads specific level
+- [ ] `--theme <name>` applies custom theme
+- [ ] `--campaign` starts sequential progression
 
 ### Files Created
 ```
 src/data/
-  mod.rs
-  config.rs
-  level.rs
-  theme.rs
-  entity_defs.rs
+  mod.rs           # Module exports
+  config.rs        # App config, progress, paths
+  level.rs         # Level TOML parser
+  theme.rs         # Theme TOML parser
 data/
-  entities.toml
   themes/noir.toml
   levels/001_first_steps.toml
+  levels/002_the_watcher.toml
+  levels/003_time_loop.toml
 ```
 
 ### Exit Criteria
-- Game loads level from TOML file
-- Theme colors apply correctly
-- Completing a level shows success
-- User can create custom levels
+- [ ] Game loads level from TOML file
+- [ ] Theme colors apply from TOML file
+- [ ] ASCII map parsing creates correct TimeCube
+- [ ] Detection config from level applies to game
+- [ ] User can create custom levels with documentation
 
 ---
 
