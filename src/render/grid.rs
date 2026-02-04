@@ -6,9 +6,9 @@ use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::Frame;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::core::{EntityType, Position};
+use crate::core::{is_line_blocked, manhattan_distance, EntityType, Position, SpatialPos};
 use crate::game::GameState;
 use crate::render::theme::Theme;
 
@@ -37,28 +37,109 @@ pub fn render_grid(area: Rect, frame: &mut Frame, state: &GameState, theme: &The
         .map(|(pos, turn)| ((pos.x, pos.y), turn == current_turn))
         .collect();
 
+    let enemy_positions = compute_enemy_positions(state, t);
+
+    // Compute enemy vision zones
+    let vision_zone = compute_enemy_vision_zone(state, t, max_x, max_y);
+
     let mut lines = Vec::with_capacity(max_y as usize);
     for y in 0..max_y {
         let mut spans = Vec::with_capacity(max_x as usize);
         for x in 0..max_x {
+            let in_vision = vision_zone.contains(&(x, y));
+
             if let Some(&is_current) = player_positions.get(&(x, y)) {
-                let color = if is_current {
+                let fg_color = if is_current {
                     theme.player
                 } else {
                     theme.player_ghost
                 };
-                spans.push(Span::styled("@", Style::default().fg(color)));
+                let style = if in_vision {
+                    Style::default().fg(fg_color).bg(theme.enemy_vision)
+                } else {
+                    Style::default().fg(fg_color)
+                };
+                spans.push(Span::styled("@", style));
+                continue;
+            }
+
+            if enemy_positions.contains(&(x, y)) {
+                let fg_color = theme.enemy;
+                let style = if in_vision {
+                    Style::default().fg(fg_color).bg(theme.enemy_vision)
+                } else {
+                    Style::default().fg(fg_color)
+                };
+                spans.push(Span::styled("E", style));
                 continue;
             }
 
             let pos = Position::new(x, y, t);
-            let (glyph, color) = cell_glyph_and_color_no_player(state, pos, theme);
-            spans.push(Span::styled(glyph.to_string(), Style::default().fg(color)));
+            let (glyph, fg_color) = cell_glyph_and_color_no_player(state, pos, theme);
+            let style = if in_vision {
+                Style::default().fg(fg_color).bg(theme.enemy_vision)
+            } else {
+                Style::default().fg(fg_color)
+            };
+            spans.push(Span::styled(glyph.to_string(), style));
         }
         lines.push(Line::from(spans));
     }
 
     frame.render_widget(Paragraph::new(lines), inner);
+}
+
+/// Compute the set of cells visible to any enemy at time t.
+fn compute_enemy_vision_zone(state: &GameState, t: i32, max_x: i32, max_y: i32) -> HashSet<(i32, i32)> {
+    let mut zone = HashSet::new();
+    let cube = state.cube();
+    let vision_radius = state.config().detection.vision_radius;
+
+    for enemy in cube.enemies_at(t) {
+        let enemy_spatial = if let Some(patrol) = enemy.patrol_data() {
+            patrol.position_at(t)
+        } else {
+            enemy.position.spatial()
+        };
+
+        // Check cells within vision radius
+        for dy in -vision_radius..=vision_radius {
+            for dx in -vision_radius..=vision_radius {
+                let x = enemy_spatial.x + dx;
+                let y = enemy_spatial.y + dy;
+
+                if x < 0 || y < 0 || x >= max_x || y >= max_y {
+                    continue;
+                }
+
+                let target = SpatialPos::new(x, y);
+                let distance = manhattan_distance(enemy_spatial, target);
+
+                if distance <= vision_radius && !is_line_blocked(cube, enemy_spatial, target, t) {
+                    zone.insert((x, y));
+                }
+            }
+        }
+    }
+
+    zone
+}
+
+/// Compute the set of enemy positions at time t (patrol-aware).
+fn compute_enemy_positions(state: &GameState, t: i32) -> HashSet<(i32, i32)> {
+    let mut positions = HashSet::new();
+    let cube = state.cube();
+
+    for enemy in cube.enemies_at(t) {
+        let enemy_spatial = if let Some(patrol) = enemy.patrol_data() {
+            patrol.position_at(t)
+        } else {
+            enemy.position.spatial()
+        };
+        positions.insert((enemy_spatial.x, enemy_spatial.y));
+    }
+
+    positions
 }
 
 fn cell_glyph_and_color_no_player(state: &GameState, pos: Position, theme: &Theme) -> (char, Color) {
@@ -152,7 +233,6 @@ mod tests {
         cube.spawn(Entity::rift(pos, Position::new(2, 2, 0), false))
             .unwrap();
         let state = GameState::from_cube(cube).unwrap();
-        let (glyph, _) = cell_glyph_and_color_no_player(&state, pos, &theme());
-        assert_eq!(glyph, 'E');
+        assert!(compute_enemy_positions(&state, 0).contains(&(1, 1)));
     }
 }

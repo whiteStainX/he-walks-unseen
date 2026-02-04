@@ -604,4 +604,44 @@ mod tests {
         assert!(result.state.has_won());
         assert!(matches!(result.outcome, ActionOutcome::Won { .. }));
     }
+
+    #[test]
+    fn test_detection_by_enemy() {
+        use crate::core::{DetectionConfig, DetectionModel, PatrolData, SpatialPos, VisionData};
+        use crate::game::state::GameConfig;
+
+        let mut cube = TimeCube::new(10, 10, 10);
+        // Player at (2, 2, 0)
+        cube.spawn(Entity::player(Position::new(2, 2, 0))).unwrap();
+
+        // Enemy at (5, 2, 0) with omnidirectional vision, stationary patrol
+        let patrol = PatrolData::new(vec![SpatialPos::new(5, 2)], true);
+        let vision = VisionData::omnidirectional(3);
+        let enemy = Entity::enemy(Position::new(5, 2, 0), patrol, vision);
+        cube.spawn(enemy).unwrap();
+        cube.propagate_all().unwrap();
+
+        // Configure detection with delay_turns = 2
+        let config = GameConfig {
+            detection: DetectionConfig {
+                model: DetectionModel::DiscreteDelay,
+                delay_turns: 2,
+                vision_radius: 5,
+            },
+            ..Default::default()
+        };
+
+        let state = GameState::new(cube, config).unwrap();
+
+        // Move player: stay at (2, 2) for turns 0->1->2
+        // At t=2, enemy sees player position from t=0 (delay=2)
+        // Distance from (5,2) to (2,2) = 3, within vision_radius=5
+        let result = apply_action(&state, Action::Wait).unwrap(); // t=0 -> t=1
+        assert!(result.state.is_active(), "Should still be active after first wait");
+
+        let result = apply_action(&result.state, Action::Wait).unwrap(); // t=1 -> t=2
+        assert!(!result.state.is_active(), "Should be detected at t=2");
+        assert_eq!(result.state.phase(), GamePhase::Detected);
+        assert!(matches!(result.outcome, ActionOutcome::Detected { .. }));
+    }
 }
