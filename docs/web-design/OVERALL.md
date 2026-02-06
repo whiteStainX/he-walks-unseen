@@ -38,6 +38,8 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 - **Language:** TypeScript
 - **Rendering:** HTML Canvas (primary) with React UI overlays
 - **State:** Immutable core logic; UI reads derived state
+ - **State Management:** Redux Toolkit (explicit actions + predictable updates)
+ - **Backend:** None (client-only)
 
 ### 3.2 Module Separation (Web)
 - `core/`: pure logic (no React imports)
@@ -48,6 +50,10 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 
 **Rule:** The core logic must remain UI-agnostic so it can be unit-tested independently and reused in non-UI contexts.
 
+### 3.3 Detection Model (V1)
+- **Discrete Delay**: enemy at `te` sees player at `te - k`
+- Rationale: bounded cost, clear player intuition, deterministic UI feedback
+
 ---
 
 ## 4. UI & UX Principles (Web)
@@ -56,12 +62,19 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 - Make temporal mechanics visually obvious
 - Emphasize **past-turn selves**, **light cones**, and **time depth**
 - Keep readability high at small grid sizes
+- Favor **lines, shapes, and solid colors** for fast parsing
 
-### 4.2 Input
+### 4.2 Visual Style
+- **Main board:** flat 2D grid, crisp lines, solid fills, minimal gradients
+- **Palette:** low saturation base with high-contrast accent colors
+- **Icons:** simple geometric glyphs, no texture noise
+- **Hints (optional):** an isometric cube view that shows the 3D structure using line/mesh plotting
+
+### 4.3 Input
 - **Keyboard:** WASD / Arrows, Space (rift), R (restart)
 - **Pointer:** optional click-to-move (future)
 
-### 4.3 Layout (Web)
+### 4.4 Layout (Web)
 ```
 +-----------------------------------+------------------+
 |             Canvas                |    Sidebar       |
@@ -73,35 +86,81 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 
 ---
 
-## 5. Data-Driven Content
+## 5. Performance Model (Web)
 
-### 5.1 Formats
+### 5.1 What Gets Computed Per Turn
+- **Render:** one time slice only (cheap)
+- **Validate:** local checks (bounds, blocking, self-intersection)
+- **Propagate:** only forward from the modified time slice
+- **Detect:** bounded by explored time range `[T_min, T_max]`
+
+### 5.2 Practical Constraints
+- Avoid full-cube scans per action
+- Use spatial indices for entity lookup
+- Use time-indexed player positions for detection
+- Start with **discrete delay detection** to keep checks bounded
+
+**Conclusion:** JavaScript is sufficient if detection and propagation are bounded and indexed. The cost per turn stays stable even for larger grids.
+
+---
+
+## 6. Data-Driven Content
+
+### 6.1 Formats
 - Prefer **JSON** for web runtime
 - **TOML** is allowed if shipped with a parser and preprocessed at build time
 
-### 5.2 Loading Strategy
+### 6.2 Loading Strategy
 - Bundled levels/themes via Vite assets
 - Hot-reload in dev via Vite HMR
 - Optional user-level overrides via `localStorage` or import
 
 ---
 
-## 6. Performance Targets (Web)
+## 7. Modularity and Configuration
+
+### 7.1 Invariant (Core Rules)
+- Cube-time geometry and world line rules
+- Self-intersection and paradox constraints
+- Propagation semantics
+
+### 7.2 Configurable (Per Level / Theme)
+- Grid size, time depth
+- Detection model and parameters
+- Entity placements and patrol paths
+- UI theme and visual toggles
+
+---
+
+## 8. Procedural Generation (Future)
+
+Goal: enable room layout + patrol + rift generation while guaranteeing solvability.
+
+**Phased approach:**
+- **Phase A:** scripted pattern generators (safe templates)
+- **Phase B:** reverse construction (solution path → obstacles → tools)
+- **Phase C:** detection-aware constraints (light cones, paradox limits)
+
+This is out of MVP scope but should inform data formats and tooling.
+
+---
+
+## 9. Performance Targets (Web)
 - 60 FPS grid rendering on typical laptops
 - <2ms per move validation for standard grid sizes
 - Smooth playback for fast action sequences
 
 ---
 
-## 7. Non-Goals (Initial Web MVP)
+## 10. Non-Goals (Initial Web MVP)
 - Multiplayer
-- Procedural generation
+- Procedural generation (deferred)
 - Online sharing
 - Mobile-first touch UX (defer to Phase 2)
 
 ---
 
-## 8. References
+## 11. References
 - `MATH_MODEL.md` (core geometry and detection)
 - `CORE_DATA.md` (TS data structures)
 - `GAME_STATE.md` (action pipeline and validation)

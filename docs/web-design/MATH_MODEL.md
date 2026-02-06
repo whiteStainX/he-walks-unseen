@@ -273,6 +273,39 @@ The light cone extends **backward in cube time**.
 ### 9.5 Implications for Rifts
 Rifting adds points to the world line; those points must be checked against all enemy cones.
 
+### 9.6 Committed Prefix Semantics (Implementation Rule)
+
+To remove ambiguity between cube-time geometry and turn-time progression, the engine
+uses two explicit objects:
+
+1. `P_n`: committed player world-line prefix up to turn `n`
+2. `S_n(t)`: realized slice at cube-time `t`, computed from `P_n` plus propagation
+
+At turn `n`, gameplay and rendering use `S_n`, not an unknown future-complete timeline.
+
+### 9.7 Same Slice, Different Turns (Tricky Case)
+
+Scenario:
+- At `(n1, t1)`, player is at `(x1, y1)`
+- Later at `(n2, t1)` with `n2 > n1`, player rifts back and is at `(x2, y2)`
+
+Result under committed prefix semantics:
+- `S_n1(t1)` shows only the `n1` self
+- `S_n2(t1)` shows both `n1` self and `n2` self
+
+This is intentional. The future self is not rendered at turn `n1` because it is not yet
+committed in `P_n1`.
+
+### 9.8 Optional Strict Consistency Mode (Deferred)
+
+If a strict "future self was always observable" mode is desired:
+
+1. Record observable cells/entities each turn
+2. After a past-rift action, recompute affected slices
+3. Reject action if prior observations would be contradicted
+
+This is a harder paradox system and is not part of baseline v1 rules.
+
 ---
 
 ## 10. Past-Turn Selves (Same Time Slice)
@@ -282,6 +315,7 @@ Rifting to a cube-time already visited creates multiple positions at the same `t
 
 - Past-turn self: earlier turn index
 - Current-turn self: latest turn index
+- Visibility is evaluated against current committed prefix `P_n`
 
 ### 10.2 Rendering Implications
 - Current-turn self rendered bright
@@ -300,6 +334,7 @@ Rifting to a cube-time already visited creates multiple positions at the same `t
 3. **Any detection = failure** (no stacking)
 4. **No alert phase** (deferred)
 5. **Rift safety is geometric**
+6. **Turn-time semantics are committed-prefix (`P_n`, `S_n`)**
 
 ---
 
@@ -332,12 +367,14 @@ Start with **Discrete Delay**, then upgrade to full light cone later if needed.
 | `W` | World (space-time cube) |
 | `(x, y, t)` | Cube coordinate |
 | `P` | Player world line |
+| `P_n` | Player world-line prefix committed at turn `n` |
 | `E` | Set of enemies |
 | `c` | Speed of light |
 | `k` | Fixed delay (discrete model) |
 | `T` | Time depth |
 | `T_max` | Explored frontier |
 | `n` | Turn number |
+| `S_n(t)` | Realized slice at cube-time `t` under committed prefix `P_n` |
 
 ### Glossary
 | Term | Definition |
@@ -350,3 +387,4 @@ Start with **Discrete Delay**, then upgrade to full light cone later if needed.
 | Explored Boundary | `[T_min, T_max]` from world line |
 | Current-Turn Self | Latest turn position |
 | Past-Turn Self | Earlier turn positions |
+| Committed Prefix | World-line history fixed up to current turn `n` |
