@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif;
+  font-family: 'Orbitron', 'Rajdhani', 'Avenir Next', sans-serif;
   line-height: 1.4;
   font-weight: 400;
   font-synthesis: none;
@@ -7,11 +7,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --ink: #1f2937;
-  --paper: #fdf8ef;
-  --panel: #efe8dc;
-  --accent: #0f766e;
-  --grid: #1e293b;
+  --ink: #b9fff8;
+  --paper: #070a12;
+  --panel: #0c1120;
+  --accent: #24f5ff;
+  --grid: #1f2a45;
+  --border-neon: #ff2bd6;
 }
 
 * {
@@ -21,8 +22,9 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
   color: var(--ink);
+  overflow: hidden;
   background:
-    radial-gradient(circle at 12% 18%, #fffdf8 0%, #f7f1e6 32%, #ede5d8 100%);
+    radial-gradient(circle at 12% 12%, #172340 0%, #0a1124 36%, #050910 100%);
 }

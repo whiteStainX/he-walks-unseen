@@ -1,13 +1,15 @@
 #root {
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .game-shell {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 100vh;
-  padding: 20px;
-  gap: 16px;
+  height: 100dvh;
+  padding: 12px;
+  gap: 10px;
+  overflow: hidden;
 }
 
 .game-header {
@@ -15,8 +17,8 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 2px solid var(--ink);
-  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-neon);
+  padding-bottom: 8px;
 }
 
 .game-header h1 {
@@ -29,28 +31,34 @@
 .game-header p {
   margin: 0;
   font-size: 0.9rem;
+  color: #7ed8ff;
 }
 
 .game-layout {
   display: grid;
-  grid-template-columns: minmax(300px, 620px) minmax(220px, 1fr);
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 10px;
+  align-items: stretch;
+  min-height: 0;
 }
 
 .board-panel,
 .sidebar-panel {
-  border: 2px solid var(--ink);
+  border: 1px solid var(--border-neon);
   background: var(--panel);
-  box-shadow: 6px 6px 0 #c8beb0;
 }
 
 .board-panel {
-  padding: 12px;
+  padding: 8px;
+  display: grid;
+  place-items: center;
+  min-height: 0;
 }
 
 .sidebar-panel {
-  padding: 14px;
+  padding: 10px;
+  overflow: auto;
+  min-height: 0;
 }
 
 .sidebar-panel h2 {
@@ -66,9 +74,10 @@
 
 .board-canvas {
   display: block;
-  width: min(100%, 560px);
+  width: min(calc(100dvh - 150px), 100%);
+  aspect-ratio: 1 / 1;
   height: auto;
-  border: 2px solid var(--grid);
+  border: 1px solid var(--grid);
   image-rendering: pixelated;
   background: var(--paper);
 }
@@ -77,21 +86,27 @@
   display: flex;
   gap: 18px;
   flex-wrap: wrap;
-  border: 2px solid var(--ink);
+  border: 1px solid var(--border-neon);
   background: var(--panel);
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   letter-spacing: 0.05em;
+  color: #81ffd8;
 }
 
 @media (max-width: 980px) {
   .game-layout {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
   }
 
   .game-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .board-canvas {
+    width: min(calc(100dvh - 230px), 100%);
   }
 }
