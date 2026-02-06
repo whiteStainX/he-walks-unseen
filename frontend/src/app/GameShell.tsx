@@ -3,7 +3,14 @@ import { useEffect } from 'react'
 import type { Direction2D } from '../core/position'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
-import { movePlayer2D, restart, riftToTime, setStatus, waitTurn } from '../game/gameSlice'
+import {
+  applyRift,
+  configureRiftSettings,
+  movePlayer2D,
+  restart,
+  setStatus,
+  waitTurn,
+} from '../game/gameSlice'
 import { GameBoardCanvas } from '../render/GameBoardCanvas'
 
 function directionForKey(key: string): Direction2D | null {
@@ -36,6 +43,7 @@ export function GameShell() {
   const currentTime = useAppSelector((state) => state.game.currentTime)
   const turn = useAppSelector((state) => state.game.turn)
   const timeDepth = useAppSelector((state) => state.game.timeDepth)
+  const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
@@ -56,7 +64,19 @@ export function GameShell() {
 
       if (event.key === ' ') {
         event.preventDefault()
-        dispatch(riftToTime(undefined))
+        dispatch(applyRift(undefined))
+        return
+      }
+
+      if (event.key === '[') {
+        event.preventDefault()
+        dispatch(configureRiftSettings({ defaultDelta: Math.max(1, riftDefaultDelta - 1) }))
+        return
+      }
+
+      if (event.key === ']') {
+        event.preventDefault()
+        dispatch(configureRiftSettings({ defaultDelta: riftDefaultDelta + 1 }))
         return
       }
 
@@ -83,7 +103,7 @@ export function GameShell() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [dispatch])
+  }, [dispatch, riftDefaultDelta])
 
   return (
     <div className="game-shell">
@@ -107,6 +127,7 @@ export function GameShell() {
           <p>Turn (n): {turn}</p>
           <p>Time (t): {currentTime}</p>
           <p>Time depth: {timeDepth}</p>
+          <p>Rift default delta: -{riftDefaultDelta}</p>
           <p>World line length: {worldLine.path.length}</p>
           <p>
             Player: {player ? `(${player.x}, ${player.y}, t=${player.t})` : 'N/A'}
@@ -118,7 +139,8 @@ export function GameShell() {
 
       <footer className="bottom-bar">
         <span>WASD / Arrows: Move</span>
-        <span>Space: Rift (t - 3)</span>
+        <span>Space: Rift (configurable)</span>
+        <span>[ / ]: Rift delta -/+</span>
         <span>Enter: Wait</span>
         <span>R: Restart</span>
         <span>Q / Esc: Status only</span>

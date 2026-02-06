@@ -57,6 +57,10 @@ Phase 2 adds temporal state and world-line constraints, but still avoids object 
    - `extendNormal(next: Position3D): Result<void, WorldLineError>`
    - `extendViaRift(next: Position3D): Result<void, WorldLineError>`
    - `positionsAtTime(t: number): Array<{ position: Position3D; turn: number }>`
+4. `Rift` resolver module
+   - `RiftInstruction`: `default | delta | tunnel`
+   - `resolveRift(input): Result<RiftResolution, RiftResolveError>`
+   - supports configurable delta and explicit space-time tunnel targets
 
 ### Game State (`frontend/src/game/`)
 
@@ -67,12 +71,13 @@ Phase 2 adds temporal state and world-line constraints, but still avoids object 
 2. Actions
    - `movePlayer2D(direction)`
    - `waitTurn()`
-   - `useRift(targetTime)` (target coordinates may be fixed in Phase 2)
+   - `applyRift(instruction?)`
+   - `configureRiftSettings(partialSettings)`
 3. Validations
    - Bounds on `(x, y, t)`
    - Self-intersection via `worldLine.visited`
    - Normal move requires `t + 1`
-   - Rift move can set arbitrary valid `t`
+   - Rift move can set arbitrary valid `(x, y, t)` through tunnel instructions
 
 ### Render (`frontend/src/render/`)
 
@@ -119,4 +124,3 @@ Phase 2 adds temporal state and world-line constraints, but still avoids object 
 3. Self-intersection at `(x, y, t)` is always blocked.
 4. Sidebar reflects `n` and `t` separately.
 5. Lint passes and Phase 2 tests pass.
-
