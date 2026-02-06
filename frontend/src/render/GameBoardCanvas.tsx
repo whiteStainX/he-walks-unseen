@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 
 import type { Position2D } from '../core/position'
+import { minimalMonoTheme } from './theme'
 
 interface GameBoardCanvasProps {
   boardSize: number
@@ -26,13 +27,14 @@ export function GameBoardCanvas({ boardSize, player }: GameBoardCanvasProps) {
     }
 
     const cellSize = CANVAS_SIZE / boardSize
+    const theme = minimalMonoTheme.canvas
 
     context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
-    context.fillStyle = '#070a12'
+    context.fillStyle = theme.boardBackground
     context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
-    context.fillStyle = '#24f5ff'
+    context.fillStyle = theme.playerFill
     context.fillRect(
       player.x * cellSize + cellSize * 0.15,
       player.y * cellSize + cellSize * 0.15,
@@ -40,7 +42,7 @@ export function GameBoardCanvas({ boardSize, player }: GameBoardCanvasProps) {
       cellSize * 0.7,
     )
 
-    context.strokeStyle = '#ff2bd6'
+    context.strokeStyle = theme.playerStroke
     context.lineWidth = 2
     context.strokeRect(
       player.x * cellSize + cellSize * 0.15,

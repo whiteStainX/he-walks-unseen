@@ -15,10 +15,16 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 1: Minimal Board + Movement
 
 **Goal:** Create the React + Vite shell and a minimal board with player movement. No time travel yet.
+**Implementation Detail:** `docs/web-implementation/PHASE_01_MINIMAL_BOARD.md`
 
 ### Deliverables
 - [ ] Vite + React + TypeScript app boots
-- [ ] Canvas renders a square grid\n+- [ ] Basic layout: canvas + sidebar + bottom bar\n+- [ ] Player renders on grid\n+- [ ] Player moves in 2D (no time axis)\n+- [ ] Input loop wired (keyboard events only)\n+- [ ] Redux Toolkit store scaffolded
+- [ ] Canvas renders a square grid
+- [ ] Basic layout: canvas + sidebar + bottom bar
+- [ ] Player renders on grid
+- [ ] Player moves in 2D (no time axis)
+- [ ] Input loop wired (keyboard events only)
+- [ ] Redux Toolkit store scaffolded
 
 ### Exit Criteria
 - `npm run dev` renders a layout
@@ -32,7 +38,11 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Goal:** Introduce the time axis and rift-based time travel.
 
 ### Deliverables
-- [ ] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`\n+- [ ] `TimeSlice`, `TimeCube`\n+- [ ] Rift moves enabled\n+- [ ] Self-intersection prevention in time\n+- [ ] Unit tests for world line and time travel
+- [ ] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
+- [ ] `TimeSlice`, `TimeCube`
+- [ ] Rift moves enabled
+- [ ] Self-intersection prevention in time
+- [ ] Unit tests for world line and time travel
 
 ### Exit Criteria
 - Core tests pass with `vitest`
@@ -45,7 +55,10 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Goal:** Add objects (walls, exits, boxes, enemies without detection yet).
 
 ### Deliverables
-- [ ] Entity/component system (walls, exits, boxes, enemies)\n+- [ ] Blocking rules and basic collisions\n+- [ ] Propagation engine for time-persistent objects\n+- [ ] Basic win condition (exit)
+- [ ] Entity/component system (walls, exits, boxes, enemies)
+- [ ] Blocking rules and basic collisions
+- [ ] Propagation engine for time-persistent objects
+- [ ] Basic win condition (exit)
 
 ### Exit Criteria
 - Movement updates cube and world line
@@ -59,7 +72,11 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Goal:** Add interactions: push/pull, rifts, and action validation pipeline.
 
 ### Deliverables
-- [ ] Action pipeline (validate → apply → propagate → check)\n+- [ ] Push/Pull interactions\n+- [ ] Rift interactions fully wired\n+- [ ] Action history tracking\n+- [ ] Sidebar displays time/turn/status/errors
+- [ ] Action pipeline (validate → apply → propagate → check)
+- [ ] Push/Pull interactions
+- [ ] Rift interactions fully wired
+- [ ] Action history tracking
+- [ ] Sidebar displays time/turn/status/errors
 
 ### Exit Criteria
 - Player can move on-screen

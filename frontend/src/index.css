@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Orbitron', 'Rajdhani', 'Avenir Next', sans-serif;
+  font-family: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
   line-height: 1.4;
   font-weight: 400;
   font-synthesis: none;
@@ -7,12 +7,13 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --ink: #b9fff8;
-  --paper: #070a12;
-  --panel: #0c1120;
-  --accent: #24f5ff;
-  --grid: #1f2a45;
-  --border-neon: #ff2bd6;
+  --ink: #111111;
+  --paper: #ffffff;
+  --panel: #ffffff;
+  --accent: #111111;
+  --grid: #111111;
+  --border: #111111;
+  --muted: #666666;
 }
 
 * {
@@ -25,6 +26,5 @@ body {
   min-height: 100dvh;
   color: var(--ink);
   overflow: hidden;
-  background:
-    radial-gradient(circle at 12% 12%, #172340 0%, #0a1124 36%, #050910 100%);
+  background: #ffffff;
 }

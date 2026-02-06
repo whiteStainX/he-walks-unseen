@@ -17,7 +17,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid var(--border-neon);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
 
@@ -31,7 +31,7 @@
 .game-header p {
   margin: 0;
   font-size: 0.9rem;
-  color: #7ed8ff;
+  color: var(--muted);
 }
 
 .game-layout {
@@ -44,7 +44,7 @@
 
 .board-panel,
 .sidebar-panel {
-  border: 1px solid var(--border-neon);
+  border: 1px solid var(--border);
   background: var(--panel);
 }
 
@@ -86,13 +86,13 @@
   display: flex;
   gap: 18px;
   flex-wrap: wrap;
-  border: 1px solid var(--border-neon);
+  border: 1px solid var(--border);
   background: var(--panel);
   padding: 8px 10px;
   text-transform: uppercase;
   font-size: 0.72rem;
   letter-spacing: 0.05em;
-  color: #81ffd8;
+  color: var(--muted);
 }
 
 @media (max-width: 980px) {
