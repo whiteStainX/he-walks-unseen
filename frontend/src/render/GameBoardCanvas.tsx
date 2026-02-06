@@ -1,16 +1,22 @@
 import { useEffect, useRef } from 'react'
 
-import type { Position2D } from '../core/position'
+import type { Position3D } from '../core/position'
+import type { PositionAtTime } from '../core/worldLine'
 import { minimalMonoTheme } from './theme'
 
 interface GameBoardCanvasProps {
   boardSize: number
-  player: Position2D
+  selvesAtCurrentTime: PositionAtTime[]
+  currentTurn: number
 }
 
 const CANVAS_SIZE = 560
 
-export function GameBoardCanvas({ boardSize, player }: GameBoardCanvasProps) {
+export function GameBoardCanvas({
+  boardSize,
+  selvesAtCurrentTime,
+  currentTurn,
+}: GameBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
   useEffect(() => {
@@ -34,23 +40,39 @@ export function GameBoardCanvas({ boardSize, player }: GameBoardCanvasProps) {
     context.fillStyle = theme.boardBackground
     context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
-    context.fillStyle = theme.playerFill
-    context.fillRect(
-      player.x * cellSize + cellSize * 0.15,
-      player.y * cellSize + cellSize * 0.15,
-      cellSize * 0.7,
-      cellSize * 0.7,
-    )
+    const drawSelf = (position: Position3D, fill: string, stroke: string) => {
+      context.fillStyle = fill
+      context.fillRect(
+        position.x * cellSize + cellSize * 0.15,
+        position.y * cellSize + cellSize * 0.15,
+        cellSize * 0.7,
+        cellSize * 0.7,
+      )
 
-    context.strokeStyle = theme.playerStroke
-    context.lineWidth = 2
-    context.strokeRect(
-      player.x * cellSize + cellSize * 0.15,
-      player.y * cellSize + cellSize * 0.15,
-      cellSize * 0.7,
-      cellSize * 0.7,
-    )
-  }, [boardSize, player])
+      context.strokeStyle = stroke
+      context.lineWidth = 2
+      context.strokeRect(
+        position.x * cellSize + cellSize * 0.15,
+        position.y * cellSize + cellSize * 0.15,
+        cellSize * 0.7,
+        cellSize * 0.7,
+      )
+    }
+
+    for (const self of selvesAtCurrentTime) {
+      if (self.turn === currentTurn) {
+        continue
+      }
+
+      drawSelf(self.position, '#9a9a9a', '#4d4d4d')
+    }
+
+    const currentSelf = selvesAtCurrentTime.find((self) => self.turn === currentTurn)
+
+    if (currentSelf) {
+      drawSelf(currentSelf.position, theme.playerFill, theme.playerStroke)
+    }
+  }, [boardSize, selvesAtCurrentTime, currentTurn])
 
   return (
     <canvas

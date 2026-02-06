@@ -44,8 +44,8 @@ This phase intentionally excludes cube-time mechanics so the input/render/state 
 - `frontend/src/core/position.ts`
   - `Position2D`
   - `Direction2D`
-  - `move_position()`
-  - `is_in_bounds()`
+  - `movePosition()`
+  - `isInBounds()`
 
 ### Game State
 - `frontend/src/game/gameSlice.ts`
@@ -111,9 +111,8 @@ This phase intentionally excludes cube-time mechanics so the input/render/state 
 
 ## Known Gaps Before Phase 2
 
-1. Naming in `core/position.ts` is snake_case (`move_position`, `is_in_bounds`); Phase 2 should normalize to camelCase for TS consistency.
-2. No tests yet for movement reducer behavior.
-3. Theme object exists, but no theme switching mechanism yet.
+1. No tests yet for movement reducer behavior.
+2. Theme object exists, but no theme switching mechanism yet.
 
 ---
 

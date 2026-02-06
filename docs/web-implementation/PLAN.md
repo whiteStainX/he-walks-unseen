@@ -39,15 +39,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_02_TIME_TRAVEL.md`
 
 ### Deliverables
-- [ ] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
-- [ ] `TimeSlice`, `TimeCube`
-- [ ] Rift moves enabled
-- [ ] Self-intersection prevention in time
-- [ ] Unit tests for world line and time travel
+- [x] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
+- [x] `TimeSlice`, `TimeCube`
+- [x] Rift moves enabled
+- [x] Self-intersection prevention in time
+- [x] Unit tests for world line and time travel
 
 ### Exit Criteria
-- Core tests pass with `vitest`
-- Can create a cube and query entities by `(x,y,t)`
+- [x] Player can move in space with automatic `t + 1` progression
+- [x] Player can rift to valid past/future `t` according to Phase 2 constraints
+- [x] Self-intersection at `(x, y, t)` is always blocked
+- [x] Sidebar reflects `n` and `t` separately
+- [x] Lint passes and Phase 2 tests pass
 
 ---
 

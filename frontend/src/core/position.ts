@@ -3,9 +3,15 @@ export interface Position2D {
   y: number
 }
 
+export type SpatialPos = Position2D
+
+export interface Position3D extends Position2D {
+  t: number
+}
+
 export type Direction2D = 'north' | 'south' | 'east' | 'west'
 
-export function move_position(position: Position2D, direction: Direction2D): Position2D {
+export function movePosition(position: Position2D, direction: Direction2D): Position2D {
   switch (direction) {
     case 'north':
       return { x: position.x, y: position.y - 1 }
@@ -18,11 +24,15 @@ export function move_position(position: Position2D, direction: Direction2D): Pos
   }
 }
 
-export function is_in_bounds(position: Position2D, board_size: number): boolean {
+export function isInBounds(position: Position2D, boardSize: number): boolean {
   return (
     position.x >= 0 &&
     position.y >= 0 &&
-    position.x < board_size &&
-    position.y < board_size
+    position.x < boardSize &&
+    position.y < boardSize
   )
+}
+
+export function manhattanDistance(a: Position2D, b: Position2D): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
 }
