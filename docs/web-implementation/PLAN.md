@@ -8,52 +8,61 @@
 
 ## Overview
 
-This plan adapts the original Rust/TUI phases to a **Vite + React + TypeScript** web app. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
+This plan uses an **iterative progression**: start minimal, then add time travel, then objects, then interactions. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
 
 ---
 
-## Phase 1: Web Foundation
+## Phase 1: Minimal Board + Movement
 
-**Goal:** Create the React + Vite shell and a minimal canvas render loop.
+**Goal:** Create the React + Vite shell and a minimal board with player movement. No time travel yet.
+**Implementation Detail:** `docs/web-implementation/PHASE_01_MINIMAL_BOARD.md`
 
 ### Deliverables
-- [ ] Vite + React + TypeScript app boots
-- [ ] Canvas renders a blank grid area
-- [ ] Basic layout: canvas + sidebar + bottom bar
-- [ ] Input loop wired (keyboard events only)
+- [x] Vite + React + TypeScript app boots
+- [x] Canvas renders a square board
+- [x] Basic layout: canvas + sidebar + bottom bar
+- [x] Player renders on board
+- [x] Player moves in 2D (no time axis)
+- [x] Input loop wired (keyboard events only)
+- [x] Redux Toolkit store scaffolded
 
 ### Exit Criteria
-- `npm run dev` renders a layout
-- Pressing `Q` logs or flags quit in state
-- No TypeScript errors
+- [x] `npm run dev` renders a layout
+- [x] Pressing `Q` logs or flags quit in state
+- [x] No TypeScript errors
 
 ---
 
-## Phase 2: Core Data Structures (TS)
+## Phase 2: Add Time Travel
 
-**Goal:** Port the Space-Time Cube model into pure TypeScript (no React imports).
+**Goal:** Introduce the time axis and rift-based time travel.
+**Implementation Detail:** `docs/web-implementation/PHASE_02_TIME_TRAVEL.md`
 
 ### Deliverables
-- [ ] `Position`, `SpatialPos`, `WorldLine`
-- [ ] `Entity`, `Component` (discriminated unions)
-- [ ] `TimeSlice`, `TimeCube`
-- [ ] Unit tests for self-intersection, bounds, indexing
+- [x] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
+- [x] `TimeSlice`, `TimeCube`
+- [x] Rift moves enabled
+- [x] Self-intersection prevention in time
+- [x] Unit tests for world line and time travel
 
 ### Exit Criteria
-- Core tests pass with `vitest`
-- Can create a cube and query entities by `(x,y,t)`
+- [x] Player can move in space with automatic `t + 1` progression
+- [x] Player can rift to valid past/future `t` according to Phase 2 constraints
+- [x] Self-intersection at `(x, y, t)` is always blocked
+- [x] Sidebar reflects `n` and `t` separately
+- [x] Lint passes and Phase 2 tests pass
 
 ---
 
-## Phase 3: Game State & Actions
+## Phase 3: Add Objects
 
-**Goal:** Implement action pipeline (validate → apply → propagate).
+**Goal:** Add objects (walls, exits, boxes, enemies without detection yet).
 
 ### Deliverables
-- [ ] `GameState`, `Action`, `ActionResult`
-- [ ] Validation for move/wait/rift/push/pull
-- [ ] Propagation engine (basic)
-- [ ] Action history tracking
+- [ ] Entity/component system (walls, exits, boxes, enemies)
+- [ ] Blocking rules and basic collisions
+- [ ] Propagation engine for time-persistent objects
+- [ ] Basic win condition (exit)
 
 ### Exit Criteria
 - Movement updates cube and world line
@@ -62,15 +71,16 @@ This plan adapts the original Rust/TUI phases to a **Vite + React + TypeScript**
 
 ---
 
-## Phase 4: Web Rendering
+## Phase 4: Add Interactions
 
-**Goal:** Render the current time slice in canvas with basic styling.
+**Goal:** Add interactions: push/pull, rifts, and action validation pipeline.
 
 ### Deliverables
-- [ ] Canvas grid renderer
-- [ ] Entity glyphs/colors (basic theme)
-- [ ] Sidebar displays time/turn/status
-- [ ] Keyboard controls map to actions
+- [ ] Action pipeline (validate → apply → propagate → check)
+- [ ] Push/Pull interactions
+- [ ] Rift interactions fully wired
+- [ ] Action history tracking
+- [ ] Sidebar displays time/turn/status/errors
 
 ### Exit Criteria
 - Player can move on-screen
@@ -84,7 +94,7 @@ This plan adapts the original Rust/TUI phases to a **Vite + React + TypeScript**
 **Goal:** Implement detection model and world line visualization.
 
 ### Deliverables
-- [ ] Discrete-delay detection model
+- [ ] Discrete-delay detection model (V1)
 - [ ] Light cone preview overlay (optional)
 - [ ] Past-turn self rendering (dim)
 - [ ] GamePhase updates to `Detected`
