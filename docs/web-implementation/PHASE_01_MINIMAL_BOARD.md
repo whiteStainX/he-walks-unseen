@@ -27,7 +27,7 @@ This phase intentionally excludes cube-time mechanics so the input/render/state 
 - Boundary blocking
 - Restart action
 - Sidebar + bottom bar status UI
-- Neon/cyberpunk visual style
+- Minimal monochrome visual style (white background, black lines/fills)
 
 ### Out of Scope
 - Time travel and rifts
@@ -69,11 +69,14 @@ This phase intentionally excludes cube-time mechanics so the input/render/state 
 
 ### Styling
 - `frontend/src/index.css`
-  - Global tokens and cyberpunk palette
+  - Global tokens and monochrome palette
   - No page scrolling (`overflow: hidden`)
 - `frontend/src/App.css`
   - Single-screen app layout
   - No drop shadows
+- `frontend/src/render/theme.ts`
+  - Centralized theme object
+  - CSS variable application + canvas colors
 
 ---
 
@@ -110,7 +113,7 @@ This phase intentionally excludes cube-time mechanics so the input/render/state 
 
 1. Naming in `core/position.ts` is snake_case (`move_position`, `is_in_bounds`); Phase 2 should normalize to camelCase for TS consistency.
 2. No tests yet for movement reducer behavior.
-3. No abstraction yet for render theme tokens (`render/theme.ts`), colors are inline.
+3. Theme object exists, but no theme switching mechanism yet.
 
 ---
 
@@ -120,4 +123,3 @@ Before adding time travel:
 1. Keep Phase 1 controls and layout stable.
 2. Introduce `Position` with cube-time (`t`) alongside turn (`n`) semantics.
 3. Add world-line prefix model (`P_n`) and realized slice semantics (`S_n(t)`) per `MATH_MODEL.md`.
-

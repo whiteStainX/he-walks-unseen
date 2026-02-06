@@ -18,24 +18,25 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_01_MINIMAL_BOARD.md`
 
 ### Deliverables
-- [ ] Vite + React + TypeScript app boots
-- [ ] Canvas renders a square grid
-- [ ] Basic layout: canvas + sidebar + bottom bar
-- [ ] Player renders on grid
-- [ ] Player moves in 2D (no time axis)
-- [ ] Input loop wired (keyboard events only)
-- [ ] Redux Toolkit store scaffolded
+- [x] Vite + React + TypeScript app boots
+- [x] Canvas renders a square board
+- [x] Basic layout: canvas + sidebar + bottom bar
+- [x] Player renders on board
+- [x] Player moves in 2D (no time axis)
+- [x] Input loop wired (keyboard events only)
+- [x] Redux Toolkit store scaffolded
 
 ### Exit Criteria
-- `npm run dev` renders a layout
-- Pressing `Q` logs or flags quit in state
-- No TypeScript errors
+- [x] `npm run dev` renders a layout
+- [x] Pressing `Q` logs or flags quit in state
+- [x] No TypeScript errors
 
 ---
 
 ## Phase 2: Add Time Travel
 
 **Goal:** Introduce the time axis and rift-based time travel.
+**Implementation Detail:** `docs/web-implementation/PHASE_02_TIME_TRAVEL.md`
 
 ### Deliverables
 - [ ] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
