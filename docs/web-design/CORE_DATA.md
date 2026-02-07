@@ -72,6 +72,32 @@ type Component =
   | { kind: 'Rift'; target: Position; bidirectional: boolean };
 ```
 
+### 4. Temporal Transition Primitives (Rift)
+Rift logic should be represented as reusable core primitives, not reducer-specific ad hoc logic.
+
+```ts
+type RiftInstruction =
+  | { kind: 'default' }
+  | { kind: 'delta'; delta: number; targetSpatial?: SpatialPos }
+  | { kind: 'tunnel'; target: Position };
+
+type RiftSettings = {
+  defaultDelta: number;   // e.g. 3 means default jump is t - 3
+  baseEnergyCost: number; // for future resource systems
+};
+
+type RiftResolution = {
+  target: Position;       // full (x,y,t)
+  energyCost: number;
+  mode: RiftInstruction['kind'];
+};
+```
+
+Core contract:
+- `resolveRift(input) -> Result<RiftResolution, RiftResolveError>`
+- validates target space/time bounds
+- remains UI-agnostic and reusable across movement, tunnel, and future cost systems
+
 ---
 
 ## Indexing Strategy
@@ -111,6 +137,7 @@ entity.ts        (components)
 timeSlice.ts     (entity, position)
 timeCube.ts      (timeSlice)
 worldLine.ts     (position)
+rift.ts          (position)
 ```
 
 ---

@@ -41,7 +41,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ### Deliverables
 - [x] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
 - [x] `TimeSlice`, `TimeCube`
-- [x] Rift moves enabled
+- [x] Rift moves enabled (`ApplyRift` + `ConfigureRiftSettings`)
 - [x] Self-intersection prevention in time
 - [x] Unit tests for world line and time travel
 

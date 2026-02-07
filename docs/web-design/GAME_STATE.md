@@ -28,6 +28,10 @@ applyAction(state, action): GameState
 GameState
   - cube: TimeCube
   - worldLine: WorldLine
+  - currentTime: number
+  - timeDepth: number
+  - riftSettings: RiftSettings
+  - riftResources: RiftResources
   - phase: GamePhase
   - turn: number
   - history: Action[]
@@ -38,7 +42,8 @@ GameState
 Action
   - Move(direction)
   - Wait
-  - UseRift
+  - ApplyRift(instruction?)
+  - ConfigureRiftSettings(partial)
   - Push(direction)
   - Pull(direction)
   - Restart
@@ -83,9 +88,13 @@ ActionResult
 - `t` advances by 1
 
 ### Rift
-- Rift at current position
-- Target in bounds
-- No self-intersection
+- Resolve target through reusable core primitive (`resolveRift`)
+- Validate in order:
+  - target time/space bounds
+  - resource/cost constraints (if enabled)
+  - world-line self-intersection
+- Extend world line with `extendViaRift`
+- Advance turn `n` after successful extension
 
 ### Push / Pull
 - Adjacent entity exists
@@ -123,14 +132,14 @@ type ActionError =
 
 Recommended approach:
 - Keep core logic in pure functions
-- UI uses `useReducer` or a lightweight store
+- UI uses Redux Toolkit store + typed hooks
 
 Example:
 ```
-const [state, dispatch] = useReducer(gameReducer, initialState)
+const store = configureStore({ reducer: { game: gameReducer } })
 ```
 
-The reducer should call pure `applyAction()` and return a new `GameState`.
+The reducer should call pure core helpers (`extendNormal`, `extendViaRift`, `resolveRift`) and return a deterministic next `GameState`.
 
 ---
 
