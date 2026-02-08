@@ -60,18 +60,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_03_OBJECTS.md`
 
 ### Deliverables
-- [ ] Reusable entity/component system (walls, exits, boxes, enemies)
-- [ ] Configurable object registry and placements
-- [ ] Blocking rules and occupancy queries
-- [ ] Time-persistent object propagation baseline
-- [ ] Basic win condition (exit)
+- [x] Reusable entity/component system (walls, exits, boxes, enemies)
+- [x] Configurable object registry and placements
+- [x] Blocking rules and occupancy queries
+- [x] Time-persistent object propagation baseline
+- [x] Basic win condition (exit)
 
 ### Exit Criteria
-- Movement respects object occupancy constraints
-- Entering exit tile sets `Won` phase
-- Object rendering is data-driven from archetypes
-- Invalid moves return typed errors
-- Deterministic outcomes
+- [x] Movement respects object occupancy constraints
+- [x] Entering exit tile sets `Won` phase
+- [x] Object rendering is data-driven from archetypes
+- [x] Invalid moves return typed errors
+- [x] Deterministic outcomes
 
 ---
 

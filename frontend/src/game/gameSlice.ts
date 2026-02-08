@@ -7,6 +7,7 @@ import {
   type RiftResources,
   type RiftSettings,
 } from '../core/rift'
+import { hasExit, isBlocked, type TimeCube } from '../core/timeCube'
 import {
   createWorldLine,
   currentPosition,
@@ -14,6 +15,8 @@ import {
   extendViaRift,
   type WorldLineState,
 } from '../core/worldLine'
+import { bootstrapLevelObjects } from './levelObjects'
+import type { ObjectRegistry } from '../core/objects'
 
 const DEFAULT_BOARD_SIZE = 12
 const DEFAULT_TIME_DEPTH = 24
@@ -27,27 +30,73 @@ const DEFAULT_RIFT_RESOURCES: RiftResources = {
   energy: null,
 }
 
+export type GamePhase = 'Playing' | 'Won'
+
 export interface GameState {
   boardSize: number
   timeDepth: number
+  objectRegistry: ObjectRegistry
+  cube: TimeCube
   worldLine: WorldLineState
   currentTime: number
   turn: number
+  phase: GamePhase
   riftSettings: RiftSettings
   riftResources: RiftResources
   status: string
 }
 
-const initialState: GameState = {
-  boardSize: DEFAULT_BOARD_SIZE,
-  timeDepth: DEFAULT_TIME_DEPTH,
-  worldLine: createWorldLine(DEFAULT_START_POSITION),
-  currentTime: DEFAULT_START_POSITION.t,
-  turn: 0,
-  riftSettings: { ...DEFAULT_RIFT_SETTINGS },
-  riftResources: { ...DEFAULT_RIFT_RESOURCES },
-  status: 'Move: WASD/Arrows | Rift: Space',
+function bootstrapObjectState(): {
+  objectRegistry: ObjectRegistry
+  cube: TimeCube
+  status: string
+} {
+  const bootstrap = bootstrapLevelObjects(DEFAULT_BOARD_SIZE, DEFAULT_TIME_DEPTH)
+
+  if (bootstrap.ok) {
+    return {
+      objectRegistry: bootstrap.value.objectRegistry,
+      cube: bootstrap.value.cube,
+      status: 'Move: WASD/Arrows | Rift: Space | Reach E to win',
+    }
+  }
+
+  return {
+    objectRegistry: { archetypes: {} },
+    cube: {
+      width: DEFAULT_BOARD_SIZE,
+      height: DEFAULT_BOARD_SIZE,
+      timeDepth: DEFAULT_TIME_DEPTH,
+      slices: Array.from({ length: DEFAULT_TIME_DEPTH }, (_, t) => ({
+        t,
+        objectIds: [],
+        spatialIndex: {},
+      })),
+      objectsById: {},
+    },
+    status: 'Object bootstrap failed; running without objects',
+  }
 }
+
+function createInitialState(): GameState {
+  const objectState = bootstrapObjectState()
+
+  return {
+    boardSize: DEFAULT_BOARD_SIZE,
+    timeDepth: DEFAULT_TIME_DEPTH,
+    objectRegistry: objectState.objectRegistry,
+    cube: objectState.cube,
+    worldLine: createWorldLine(DEFAULT_START_POSITION),
+    currentTime: DEFAULT_START_POSITION.t,
+    turn: 0,
+    phase: 'Playing',
+    riftSettings: { ...DEFAULT_RIFT_SETTINGS },
+    riftResources: { ...DEFAULT_RIFT_RESOURCES },
+    status: objectState.status,
+  }
+}
+
+const initialState: GameState = createInitialState()
 
 function nextNormalPosition(
   state: GameState,
@@ -71,11 +120,33 @@ function nextNormalPosition(
     return { error: 'Blocked by time boundary' }
   }
 
-  return {
+  const next: Position3D = {
     x: spatial.x,
     y: spatial.y,
     t: nextTime,
   }
+
+  if (isBlocked(state.cube, next)) {
+    return { error: 'Blocked by object' }
+  }
+
+  return next
+}
+
+function applyWinCheck(state: GameState, next: Position3D): void {
+  if (hasExit(state.cube, next)) {
+    state.phase = 'Won'
+    state.status = `Turn ${state.turn}: reached exit at (${next.x}, ${next.y}, t=${next.t})`
+  }
+}
+
+function guardActivePhase(state: GameState): boolean {
+  if (state.phase !== 'Playing') {
+    state.status = 'Game already ended. Press R to restart.'
+    return false
+  }
+
+  return true
 }
 
 const gameSlice = createSlice({
@@ -83,6 +154,10 @@ const gameSlice = createSlice({
   initialState,
   reducers: {
     movePlayer2D(state, action: PayloadAction<Direction2D>) {
+      if (!guardActivePhase(state)) {
+        return
+      }
+
       const next = nextNormalPosition(state, action.payload)
 
       if ('error' in next) {
@@ -102,8 +177,13 @@ const gameSlice = createSlice({
       state.currentTime = next.t
       state.turn += 1
       state.status = `Turn ${state.turn}: (${next.x}, ${next.y}, t=${next.t})`
+      applyWinCheck(state, next)
     },
     waitTurn(state) {
+      if (!guardActivePhase(state)) {
+        return
+      }
+
       const current = currentPosition(state.worldLine)
 
       if (!current) {
@@ -119,6 +199,12 @@ const gameSlice = createSlice({
       }
 
       const next: Position3D = { x: current.x, y: current.y, t: nextTime }
+
+      if (isBlocked(state.cube, next)) {
+        state.status = 'Blocked by object'
+        return
+      }
+
       const result = extendNormal(state.worldLine, next)
 
       if (!result.ok) {
@@ -131,8 +217,13 @@ const gameSlice = createSlice({
       state.currentTime = next.t
       state.turn += 1
       state.status = `Turn ${state.turn}: wait at t=${next.t}`
+      applyWinCheck(state, next)
     },
     applyRift(state, action: PayloadAction<RiftInstruction | undefined>) {
+      if (!guardActivePhase(state)) {
+        return
+      }
+
       const current = currentPosition(state.worldLine)
 
       if (!current) {
@@ -166,6 +257,11 @@ const gameSlice = createSlice({
 
       const next = riftResult.value.target
 
+      if (isBlocked(state.cube, next)) {
+        state.status = 'Blocked by object'
+        return
+      }
+
       const result = extendViaRift(state.worldLine, next)
 
       if (!result.ok) {
@@ -181,6 +277,7 @@ const gameSlice = createSlice({
         state.riftResources.energy -= riftResult.value.energyCost
       }
       state.status = `Turn ${state.turn}: rift(${riftResult.value.mode}) to (${next.x}, ${next.y}, t=${next.t})`
+      applyWinCheck(state, next)
     },
     configureRiftSettings(state, action: PayloadAction<Partial<RiftSettings>>) {
       state.riftSettings = { ...state.riftSettings, ...action.payload }
@@ -190,6 +287,7 @@ const gameSlice = createSlice({
       state.worldLine = createWorldLine(DEFAULT_START_POSITION)
       state.currentTime = DEFAULT_START_POSITION.t
       state.turn = 0
+      state.phase = 'Playing'
       state.riftSettings = { ...DEFAULT_RIFT_SETTINGS }
       state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
       state.status = 'Restarted'

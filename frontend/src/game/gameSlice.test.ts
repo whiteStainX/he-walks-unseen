@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { applyRift, configureRiftSettings, gameReducer, movePlayer2D } from './gameSlice'
+import {
+  applyRift,
+  configureRiftSettings,
+  gameReducer,
+  movePlayer2D,
+  restart,
+  waitTurn,
+} from './gameSlice'
 
 describe('gameSlice', () => {
   it('increments turn and time on normal movement', () => {
@@ -11,6 +18,26 @@ describe('gameSlice', () => {
     expect(next.turn).toBe(1)
     expect(next.currentTime).toBe(1)
     expect(next.worldLine.path.at(-1)).toEqual({ x: 6, y: 5, t: 1 })
+  })
+
+  it('blocks movement on occupied wall tiles', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+
+    const blocked = gameReducer(initial, movePlayer2D('north'))
+
+    expect(blocked.turn).toBe(0)
+    expect(blocked.currentTime).toBe(0)
+    expect(blocked.status).toBe('Blocked by object')
+  })
+
+  it('allows movement on empty tiles', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+
+    const next = gameReducer(initial, movePlayer2D('west'))
+
+    expect(next.turn).toBe(1)
+    expect(next.currentTime).toBe(1)
+    expect(next.worldLine.path.at(-1)).toEqual({ x: 4, y: 5, t: 1 })
   })
 
   it('rifts to past time and increments turn', () => {
@@ -56,5 +83,30 @@ describe('gameSlice', () => {
 
     expect(defaultRift.currentTime).toBe(1)
     expect(defaultRift.worldLine.path.at(-1)).toEqual({ x: 8, y: 5, t: 1 })
+  })
+
+  it('sets phase to Won when entering exit tile', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+
+    const won = gameReducer(initial, applyRift({ kind: 'tunnel', target: { x: 10, y: 10, t: 1 } }))
+
+    expect(won.phase).toBe('Won')
+    expect(won.turn).toBe(1)
+    expect(won.status).toContain('reached exit')
+  })
+
+  it('stops movement after win until restart', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const won = gameReducer(initial, applyRift({ kind: 'tunnel', target: { x: 10, y: 10, t: 1 } }))
+
+    const blocked = gameReducer(won, movePlayer2D('east'))
+    expect(blocked.turn).toBe(1)
+    expect(blocked.status).toBe('Game already ended. Press R to restart.')
+
+    const reset = gameReducer(blocked, restart())
+    const moved = gameReducer(reset, waitTurn())
+
+    expect(moved.turn).toBe(1)
+    expect(moved.phase).toBe('Playing')
   })
 })

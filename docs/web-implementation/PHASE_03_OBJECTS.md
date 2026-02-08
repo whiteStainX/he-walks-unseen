@@ -16,6 +16,12 @@ Phase 3 introduces reusable, configurable objects:
 - boxes (as objects only, no push/pull mechanics yet)
 - enemies (as objects only, no detection yet)
 
+## Status
+
+- `Status`: Completed
+- `Validation`: `npm run test` passed, `npm run lint` passed
+- `Runtime check`: `npm run dev` verified by user
+
 ### Truth Boundaries (Exact Rule)
 
 Authoritative runtime state is a dual model:
@@ -160,6 +166,34 @@ Minimum required archetypes in Phase 3:
 6. Update board renderer to draw objects from slice state.
 7. Keep styling unchanged from current monochrome baseline.
 
+## Implemented in Code
+
+1. Core object model and components
+- `frontend/src/core/components.ts`
+- `frontend/src/core/objects.ts`
+
+2. TimeCube occupancy and object queries
+- `frontend/src/core/timeCube.ts`
+
+3. Level object bootstrap and configurable archetype/instance data
+- `frontend/src/game/levelObjects.ts`
+
+4. Game state integration
+- `frontend/src/game/gameSlice.ts`
+- Added `objectRegistry`, `cube`, and `phase: 'Playing' | 'Won'`
+- Movement/wait/rift now validate against `isBlocked(...)`
+- Exit check via `hasExit(...)` sets `phase = 'Won'`
+
+5. Rendering integration
+- `frontend/src/render/GameBoardCanvas.tsx`
+- `frontend/src/render/theme.ts`
+- Draw order: objects -> past-turn selves -> current self
+- Object appearance sourced from archetype `render` metadata
+
+6. App shell updates
+- `frontend/src/app/GameShell.tsx`
+- Shows `phase` and object count at current slice
+
 ---
 
 ## Test Requirements
@@ -178,12 +212,33 @@ Minimum required archetypes in Phase 3:
 - object glyph/fill shown
 - player still rendered above objects
 
+## Test Coverage Added
+
+1. Core object tests
+- `frontend/src/core/objects.test.ts`
+- known archetype resolution
+- unknown archetype failure
+- instance override merge behavior
+
+2. TimeCube occupancy tests
+- `frontend/src/core/timeCube.test.ts`
+- occupancy index by `(x,y,t)`
+- `isBlocked(...)` and `hasExit(...)`
+- `objectsAtTime(...)`
+
+3. Game reducer tests
+- `frontend/src/game/gameSlice.test.ts`
+- blocked movement on wall
+- allowed movement on empty cell
+- entering exit sets `Won`
+- post-win input guard and restart recovery
+
 ---
 
 ## Exit Criteria
 
-1. World contains object instances from configurable definitions.
-2. Movement honors object blocking rules.
-3. Exit object can end the level (`Won`).
-4. Enemy objects can be placed and rendered (behavior deferred).
-5. Lint and tests pass.
+1. [x] World contains object instances from configurable definitions.
+2. [x] Movement honors object blocking rules.
+3. [x] Exit object can end the level (`Won`).
+4. [x] Enemy objects can be placed and rendered (behavior deferred).
+5. [x] Lint and tests pass.
