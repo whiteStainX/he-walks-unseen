@@ -55,6 +55,14 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 - **Object truth (Phase 3+):** `TimeCube` occupancy becomes authoritative for non-player objects.
 - **Rift transitions:** handled by reusable core resolver (`resolveRift`) before world-line extension.
 
+Truth boundaries (exact rule):
+1. Never derive player history from `TimeCube`.
+2. Never validate object blocking from `WorldLineState`.
+3. Rendering at slice `t` reads both sources:
+   - player selves from `positionsAtTime(t)` on `WorldLineState`
+   - objects from `TimeCube` occupancy at `t`
+4. Reducer conflict rules decide outcomes when player/object share `(x, y, t)` (for example, blocked or win).
+
 ### 3.4 Detection Model (V1)
 - **Discrete Delay**: enemy at `te` sees player at `te - k`
 - Rationale: bounded cost, clear player intuition, deterministic UI feedback

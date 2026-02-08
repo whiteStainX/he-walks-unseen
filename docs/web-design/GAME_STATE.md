@@ -21,6 +21,14 @@ applyAction(state, action): GameState
 - Reducer-level move/rift validity is evaluated through world-line extension helpers.
 - `TimeCube` evolves into occupancy truth for non-player objects (Phase 3+).
 
+Truth boundaries:
+1. Never derive player history from `TimeCube`.
+2. Never validate object blocking from `WorldLineState`.
+3. Rendering at slice `t` reads both sources:
+   - player selves from `positionsAtTime(t)` on `WorldLineState`
+   - objects from `TimeCube` occupancy at `t`
+4. Reducer conflict rules decide outcomes when player/object share `(x, y, t)` (for example, blocked or win).
+
 ---
 
 ## Type Hierarchy (Web)

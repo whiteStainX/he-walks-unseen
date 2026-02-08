@@ -44,6 +44,10 @@ This document describes how the web UI renders the Space-Time Cube using React +
 
 **Invariant:** Render functions do not mutate `GameState`.
 
+**Truth sources at render time:**
+- Player selves are derived from `WorldLineState` (`positionsAtTime(currentT)`).
+- Non-player objects are read from `TimeCube` occupancy at `currentT`.
+
 ---
 
 ## Grid Rendering (Canvas)

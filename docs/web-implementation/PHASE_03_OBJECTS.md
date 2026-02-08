@@ -16,9 +16,24 @@ Phase 3 introduces reusable, configurable objects:
 - boxes (as objects only, no push/pull mechanics yet)
 - enemies (as objects only, no detection yet)
 
-State-truth split for this phase:
-- player truth remains `WorldLineState`
-- object truth moves into `TimeCube` occupancy
+### Truth Boundaries (Exact Rule)
+
+Authoritative runtime state is a dual model:
+- `PlayerTimeline` = `WorldLineState` (player truth)
+- `ObjectOccupancy` = `TimeCube` occupancy (object truth)
+
+How this relates to the world-line idea:
+- both player and objects are still modeled as world-line geometry
+- player world line is explicit and turn-ordered (`P_n`)
+- object world lines are simpler/deterministic and materialized into cube occupancy
+
+Invariants:
+1. Never derive player history from `TimeCube`.
+2. Never validate object blocking from `WorldLineState`.
+3. Rendering at slice `t` reads both sources:
+   - player selves from `positionsAtTime(t)` on `WorldLineState`
+   - objects from `TimeCube` occupancy at `t`
+4. Reducer conflict rules decide outcomes when player/object share `(x, y, t)` (for example, blocked or win).
 
 ---
 

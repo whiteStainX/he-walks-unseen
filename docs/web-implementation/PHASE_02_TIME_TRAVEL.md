@@ -49,7 +49,7 @@ Phase 2 adds temporal state and world-line constraints, but still avoids object 
 
 1. `Position3D`
    - `{ x: number; y: number; t: number }`
-2. `WorldLine`
+2. `WorldLineState`
    - `path: Position3D[]`
    - `visited: Record<string, true>` where key is `x,y,t`
 3. Key methods
