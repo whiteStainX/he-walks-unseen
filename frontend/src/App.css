@@ -50,8 +50,7 @@
 
 .board-panel {
   padding: 8px;
-  display: grid;
-  place-items: center;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -74,12 +73,47 @@
 
 .board-canvas {
   display: block;
-  width: min(calc(100dvh - 150px), 100%);
+  width: min(100%, 56dvh);
   aspect-ratio: 1 / 1;
   height: auto;
   border: 1px solid var(--grid);
   image-rendering: pixelated;
   background: var(--paper);
+}
+
+.board-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  gap: 10px;
+  align-items: stretch;
+  height: 100%;
+}
+
+.board-stage-item {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.iso-stage-item {
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-content: stretch;
+}
+
+.iso-cube-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--grid);
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.iso-caption {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .bottom-bar {
@@ -107,6 +141,14 @@
   }
 
   .board-canvas {
-    width: min(calc(100dvh - 230px), 100%);
+    width: min(100%, 52dvh);
+  }
+
+  .board-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .iso-stage-item {
+    display: none;
   }
 }

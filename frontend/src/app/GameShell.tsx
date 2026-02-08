@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
@@ -13,6 +13,8 @@ import {
   waitTurn,
 } from '../game/gameSlice'
 import { GameBoardCanvas } from '../render/GameBoardCanvas'
+import { IsoTimeCubePanel } from '../render/IsoTimeCubePanel'
+import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -51,6 +53,17 @@ export function GameShell() {
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
   const objectsAtCurrentTime = objectsAtTime(cube, currentTime)
+  const isoViewModel = useMemo(
+    () =>
+      buildIsoViewModel({
+        currentT: currentTime,
+        timeDepth,
+        worldLine,
+        cube,
+        maxWindow: 10,
+      }),
+    [currentTime, timeDepth, worldLine, cube],
+  )
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -118,12 +131,22 @@ export function GameShell() {
 
       <main className="game-layout">
         <section className="board-panel">
-          <GameBoardCanvas
-            boardSize={boardSize}
-            objectsAtCurrentTime={objectsAtCurrentTime}
-            selvesAtCurrentTime={selvesAtCurrentTime}
-            currentTurn={turn}
-          />
+          <div className="board-stage">
+            <div className="board-stage-item">
+              <GameBoardCanvas
+                boardSize={boardSize}
+                objectsAtCurrentTime={objectsAtCurrentTime}
+                selvesAtCurrentTime={selvesAtCurrentTime}
+                currentTurn={turn}
+              />
+            </div>
+            <div className="board-stage-item iso-stage-item">
+              <IsoTimeCubePanel boardSize={boardSize} currentTurn={turn} viewModel={isoViewModel} />
+              <p className="iso-caption">
+                Iso window t={isoViewModel.startT}..{isoViewModel.endT}, focus={isoViewModel.focusT}
+              </p>
+            </div>
+          </div>
         </section>
 
         <aside className="sidebar-panel">

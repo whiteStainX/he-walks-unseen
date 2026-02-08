@@ -9,9 +9,22 @@ export interface CanvasTheme {
   objectGlyph: string
 }
 
+export interface IsoTheme {
+  background: string
+  layerLine: string
+  layerLineFocus: string
+  objectFill: string
+  objectStroke: string
+  selfFill: string
+  selfStroke: string
+  pastSelfFill: string
+  pastSelfStroke: string
+}
+
 export interface AppTheme {
   cssVars: Record<string, string>
   canvas: CanvasTheme
+  iso: IsoTheme
 }
 
 export const minimalMonoTheme: AppTheme = {
@@ -33,6 +46,17 @@ export const minimalMonoTheme: AppTheme = {
     objectFill: '#efefef',
     objectStroke: '#111111',
     objectGlyph: '#111111',
+  },
+  iso: {
+    background: '#ffffff',
+    layerLine: '#777777',
+    layerLineFocus: '#111111',
+    objectFill: '#efefef',
+    objectStroke: '#111111',
+    selfFill: '#111111',
+    selfStroke: '#111111',
+    pastSelfFill: '#9a9a9a',
+    pastSelfStroke: '#4d4d4d',
   },
 }
 
