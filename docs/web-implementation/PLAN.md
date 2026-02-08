@@ -57,15 +57,19 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 3: Add Objects
 
 **Goal:** Add objects (walls, exits, boxes, enemies without detection yet).
+**Implementation Detail:** `docs/web-implementation/PHASE_03_OBJECTS.md`
 
 ### Deliverables
-- [ ] Entity/component system (walls, exits, boxes, enemies)
-- [ ] Blocking rules and basic collisions
-- [ ] Propagation engine for time-persistent objects
+- [ ] Reusable entity/component system (walls, exits, boxes, enemies)
+- [ ] Configurable object registry and placements
+- [ ] Blocking rules and occupancy queries
+- [ ] Time-persistent object propagation baseline
 - [ ] Basic win condition (exit)
 
 ### Exit Criteria
-- Movement updates cube and world line
+- Movement respects object occupancy constraints
+- Entering exit tile sets `Won` phase
+- Object rendering is data-driven from archetypes
 - Invalid moves return typed errors
 - Deterministic outcomes
 
