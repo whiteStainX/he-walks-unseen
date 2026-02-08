@@ -82,6 +82,7 @@ Truth boundaries (exact rule):
 - **Palette:** low saturation base with high-contrast accent colors
 - **Icons:** simple geometric glyphs, no texture noise
 - **Hints (optional):** an isometric cube view that shows the 3D structure using line/mesh plotting
+  - Detailed spec: `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ### 4.3 Input
 - **Keyboard:** WASD / Arrows, Space (rift), R (restart)
@@ -178,3 +179,4 @@ This is out of MVP scope but should inform data formats and tooling.
 - `CORE_DATA.md` (TS data structures)
 - `GAME_STATE.md` (action pipeline and validation)
 - `RENDERING.md` (canvas/UI layout)
+- `PHASE_03_5_ISOMETRIC_TIMECUBE.md` (isometric TimeCube panel)

@@ -21,7 +21,14 @@ This document describes how the web UI renders the Space-Time Cube using React +
 ### Core Rendering
 - **HTML Canvas** for the grid
 - **React components** for sidebar and bottom bar
+- **Optional:** isometric TimeCube panel (`three` + `@react-three/fiber`) per `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 - **Optional:** switch to WebGL/Pixi later if needed
+
+If WebGL is used for the isometric panel, preserve current visual language:
+- white background
+- black outlines
+- flat grayscale fills
+- no shadows, bloom, gradients, or textured materials
 
 ### Component Layout
 ```
@@ -129,3 +136,4 @@ Theme data (colors/symbols) should be loaded from JSON and applied to:
 - `CORE_DATA.md`
 - `GAME_STATE.md`
 - `MATH_MODEL.md`
+- `PHASE_03_5_ISOMETRIC_TIMECUBE.md`

@@ -8,7 +8,7 @@
 
 ## Overview
 
-This plan uses an **iterative progression**: start minimal, then add time travel, then objects, then interactions. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
+This plan uses an **iterative progression**: start minimal, then add time travel, then objects, then an isometric TimeCube aid, then interactions. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
 
 ---
 
@@ -72,6 +72,27 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Object rendering is data-driven from archetypes
 - [x] Invalid moves return typed errors
 - [x] Deterministic outcomes
+
+---
+
+## Phase 3.5: Add Isometric TimeCube View
+
+**Goal:** Add a read-only isometric panel that visualizes a local temporal window (max 10 slices) beside the main board.
+**Implementation Detail:** `docs/web-implementation/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
+
+### Deliverables
+- [ ] Deterministic 10-slice window selector around current `t`
+- [ ] Derived isometric view model from `WorldLineState` + `TimeCube`
+- [ ] `three` + `@react-three/fiber` panel with orthographic isometric projection
+- [ ] Monochrome style alignment (white background, black lines, flat grayscale fills)
+- [ ] Responsive layout integration beside main board
+
+### Exit Criteria
+- [ ] Isometric panel renders without scrolling on desktop
+- [ ] Windowing rules match design spec
+- [ ] Current `t` slice is clearly identifiable
+- [ ] Panel is read-only and does not mutate gameplay state
+- [ ] Existing move/rift/object behavior remains unchanged
 
 ---
 
