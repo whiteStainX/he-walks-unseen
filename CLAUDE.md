@@ -12,7 +12,7 @@ A web-based, turn-based puzzle stealth game where **time is a spatial dimension*
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| UI | React 18 | Component layout and overlays |
+| UI | React 19 | Component layout and overlays |
 | Build | Vite | Fast dev server and bundling |
 | Language | TypeScript | Static typing for core math and state |
 | Rendering | Canvas 2D | Grid drawing and overlays |
@@ -51,6 +51,11 @@ frontend/
 - Player path through the cube (turn-ordered)
 - Cannot self-intersect
 
+### Truth Model
+- Player truth: `WorldLineState` (`path` + sparse `visited` index)
+- Object truth: `TimeCube` occupancy for non-player entities
+- Rift: reusable resolver (`resolveRift`) before world-line extension
+
 ### Causal Detection
 - Enemy sees past positions via light cones
 - Detection is geometric intersection in cube-time
@@ -72,8 +77,15 @@ frontend/
 Use typed error unions instead of throwing in core logic.
 
 ```ts
-type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+import type { Result } from './result';
 ```
+
+Canonical location:
+- `frontend/src/core/result.ts`
+
+Rule:
+- Reuse the shared `Result<T, E>` type across `core` and `game`.
+- Do not redeclare local `Result` aliases in module files.
 
 ---
 

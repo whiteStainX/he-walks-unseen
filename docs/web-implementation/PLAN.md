@@ -2,13 +2,13 @@
 
 > **Design Reference:** `docs/web-design/OVERALL.md`
 > **Math Reference:** `docs/web-design/MATH_MODEL.md`
-> **Agent Guide:** `docs/web-design/AGENTS.md`
+> **Agent Guide:** `AGENTS.md`
 
 ---
 
 ## Overview
 
-This plan uses an **iterative progression**: start minimal, then add time travel, then objects, then interactions. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
+This plan uses an **iterative progression**: start minimal, then add time travel, then objects, then an isometric TimeCube aid, then interactions. Each phase delivers a playable increment, keeps core logic UI-agnostic, and prioritizes deterministic gameplay.
 
 ---
 
@@ -41,13 +41,13 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ### Deliverables
 - [x] `Position`, `SpatialPos`, `WorldLine` with non-monotonic `t`
 - [x] `TimeSlice`, `TimeCube`
-- [x] Rift moves enabled
+- [x] Rift moves enabled (`ApplyRift` + `ConfigureRiftSettings`)
 - [x] Self-intersection prevention in time
 - [x] Unit tests for world line and time travel
 
 ### Exit Criteria
 - [x] Player can move in space with automatic `t + 1` progression
-- [x] Player can rift to valid past/future `t` according to Phase 2 constraints
+- [x] Player can rift to valid past/future `(x, y, t)` according to Phase 2 constraints
 - [x] Self-intersection at `(x, y, t)` is always blocked
 - [x] Sidebar reflects `n` and `t` separately
 - [x] Lint passes and Phase 2 tests pass
@@ -57,17 +57,42 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 3: Add Objects
 
 **Goal:** Add objects (walls, exits, boxes, enemies without detection yet).
+**Implementation Detail:** `docs/web-implementation/PHASE_03_OBJECTS.md`
 
 ### Deliverables
-- [ ] Entity/component system (walls, exits, boxes, enemies)
-- [ ] Blocking rules and basic collisions
-- [ ] Propagation engine for time-persistent objects
-- [ ] Basic win condition (exit)
+- [x] Reusable entity/component system (walls, exits, boxes, enemies)
+- [x] Configurable object registry and placements
+- [x] Blocking rules and occupancy queries
+- [x] Time-persistent object propagation baseline
+- [x] Basic win condition (exit)
 
 ### Exit Criteria
-- Movement updates cube and world line
-- Invalid moves return typed errors
-- Deterministic outcomes
+- [x] Movement respects object occupancy constraints
+- [x] Entering exit tile sets `Won` phase
+- [x] Object rendering is data-driven from archetypes
+- [x] Invalid moves return typed errors
+- [x] Deterministic outcomes
+
+---
+
+## Phase 3.5: Add Isometric TimeCube View
+
+**Goal:** Add a read-only isometric panel that visualizes a local temporal window (max 10 slices) beside the main board.
+**Implementation Detail:** `docs/web-implementation/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
+
+### Deliverables
+- [ ] Deterministic 10-slice window selector around current `t`
+- [ ] Derived isometric view model from `WorldLineState` + `TimeCube`
+- [ ] `three` + `@react-three/fiber` panel with orthographic isometric projection
+- [ ] Monochrome style alignment (white background, black lines, flat grayscale fills)
+- [ ] Responsive layout integration beside main board
+
+### Exit Criteria
+- [ ] Isometric panel renders without scrolling on desktop
+- [ ] Windowing rules match design spec
+- [ ] Current `t` slice is clearly identifiable
+- [ ] Panel is read-only and does not mutate gameplay state
+- [ ] Existing move/rift/object behavior remains unchanged
 
 ---
 

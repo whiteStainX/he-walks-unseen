@@ -1,4 +1,5 @@
 import { isInBounds, type Position2D, type Position3D } from './position'
+import type { Result } from './result'
 
 export interface RiftSettings {
   defaultDelta: number
@@ -24,8 +25,6 @@ export interface RiftResolution {
   energyCost: number
   mode: RiftInstruction['kind']
 }
-
-export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
 
 export interface ResolveRiftInput {
   current: Position3D

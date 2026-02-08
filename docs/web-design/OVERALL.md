@@ -33,7 +33,7 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 ## 3. Web Architecture
 
 ### 3.1 Stack
-- **Framework:** React 18
+- **Framework:** React 19
 - **Build Tool:** Vite
 - **Language:** TypeScript
 - **Rendering:** HTML Canvas (primary) with React UI overlays
@@ -50,7 +50,20 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 
 **Rule:** The core logic must remain UI-agnostic so it can be unit-tested independently and reused in non-UI contexts.
 
-### 3.3 Detection Model (V1)
+### 3.3 State Truth Model
+- **Player truth (Phase 2):** `WorldLineState` is the authoritative player history (`path` + `visited` index).
+- **Object truth (Phase 3+):** `TimeCube` occupancy becomes authoritative for non-player objects.
+- **Rift transitions:** handled by reusable core resolver (`resolveRift`) before world-line extension.
+
+Truth boundaries (exact rule):
+1. Never derive player history from `TimeCube`.
+2. Never validate object blocking from `WorldLineState`.
+3. Rendering at slice `t` reads both sources:
+   - player selves from `positionsAtTime(t)` on `WorldLineState`
+   - objects from `TimeCube` occupancy at `t`
+4. Reducer conflict rules decide outcomes when player/object share `(x, y, t)` (for example, blocked or win).
+
+### 3.4 Detection Model (V1)
 - **Discrete Delay**: enemy at `te` sees player at `te - k`
 - Rationale: bounded cost, clear player intuition, deterministic UI feedback
 
@@ -69,6 +82,7 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 - **Palette:** low saturation base with high-contrast accent colors
 - **Icons:** simple geometric glyphs, no texture noise
 - **Hints (optional):** an isometric cube view that shows the 3D structure using line/mesh plotting
+  - Detailed spec: `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ### 4.3 Input
 - **Keyboard:** WASD / Arrows, Space (rift), R (restart)
@@ -165,3 +179,4 @@ This is out of MVP scope but should inform data formats and tooling.
 - `CORE_DATA.md` (TS data structures)
 - `GAME_STATE.md` (action pipeline and validation)
 - `RENDERING.md` (canvas/UI layout)
+- `PHASE_03_5_ISOMETRIC_TIMECUBE.md` (isometric TimeCube panel)

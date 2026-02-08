@@ -2,11 +2,29 @@ export interface CanvasTheme {
   boardBackground: string
   playerFill: string
   playerStroke: string
+  pastSelfFill: string
+  pastSelfStroke: string
+  objectFill: string
+  objectStroke: string
+  objectGlyph: string
+}
+
+export interface IsoTheme {
+  background: string
+  layerLine: string
+  layerLineFocus: string
+  objectFill: string
+  objectStroke: string
+  selfFill: string
+  selfStroke: string
+  pastSelfFill: string
+  pastSelfStroke: string
 }
 
 export interface AppTheme {
   cssVars: Record<string, string>
   canvas: CanvasTheme
+  iso: IsoTheme
 }
 
 export const minimalMonoTheme: AppTheme = {
@@ -23,6 +41,22 @@ export const minimalMonoTheme: AppTheme = {
     boardBackground: '#ffffff',
     playerFill: '#111111',
     playerStroke: '#111111',
+    pastSelfFill: '#9a9a9a',
+    pastSelfStroke: '#4d4d4d',
+    objectFill: '#efefef',
+    objectStroke: '#111111',
+    objectGlyph: '#111111',
+  },
+  iso: {
+    background: '#ffffff',
+    layerLine: '#777777',
+    layerLineFocus: '#111111',
+    objectFill: '#efefef',
+    objectStroke: '#111111',
+    selfFill: '#111111',
+    selfStroke: '#111111',
+    pastSelfFill: '#9a9a9a',
+    pastSelfStroke: '#4d4d4d',
   },
 }
 

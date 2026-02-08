@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import type { Direction2D } from '../core/position'
+import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
 import {
@@ -12,6 +13,8 @@ import {
   waitTurn,
 } from '../game/gameSlice'
 import { GameBoardCanvas } from '../render/GameBoardCanvas'
+import { IsoTimeCubePanel } from '../render/IsoTimeCubePanel'
+import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -39,14 +42,28 @@ function directionForKey(key: string): Direction2D | null {
 export function GameShell() {
   const dispatch = useAppDispatch()
   const boardSize = useAppSelector((state) => state.game.boardSize)
+  const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
   const currentTime = useAppSelector((state) => state.game.currentTime)
   const turn = useAppSelector((state) => state.game.turn)
   const timeDepth = useAppSelector((state) => state.game.timeDepth)
+  const phase = useAppSelector((state) => state.game.phase)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
+  const objectsAtCurrentTime = objectsAtTime(cube, currentTime)
+  const isoViewModel = useMemo(
+    () =>
+      buildIsoViewModel({
+        currentT: currentTime,
+        timeDepth,
+        worldLine,
+        cube,
+        maxWindow: 10,
+      }),
+    [currentTime, timeDepth, worldLine, cube],
+  )
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -109,16 +126,27 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 2: time axis and rift travel foundation</p>
+        <p>Phase 3: objects and occupancy foundation</p>
       </header>
 
       <main className="game-layout">
         <section className="board-panel">
-          <GameBoardCanvas
-            boardSize={boardSize}
-            selvesAtCurrentTime={selvesAtCurrentTime}
-            currentTurn={turn}
-          />
+          <div className="board-stage">
+            <div className="board-stage-item">
+              <GameBoardCanvas
+                boardSize={boardSize}
+                objectsAtCurrentTime={objectsAtCurrentTime}
+                selvesAtCurrentTime={selvesAtCurrentTime}
+                currentTurn={turn}
+              />
+            </div>
+            <div className="board-stage-item iso-stage-item">
+              <IsoTimeCubePanel boardSize={boardSize} currentTurn={turn} viewModel={isoViewModel} />
+              <p className="iso-caption">
+                Iso window t={isoViewModel.startT}..{isoViewModel.endT}, focus={isoViewModel.focusT}
+              </p>
+            </div>
+          </div>
         </section>
 
         <aside className="sidebar-panel">
@@ -127,8 +155,10 @@ export function GameShell() {
           <p>Turn (n): {turn}</p>
           <p>Time (t): {currentTime}</p>
           <p>Time depth: {timeDepth}</p>
+          <p>Phase: {phase}</p>
           <p>Rift default delta: -{riftDefaultDelta}</p>
           <p>World line length: {worldLine.path.length}</p>
+          <p>Objects on slice: {objectsAtCurrentTime.length}</p>
           <p>
             Player: {player ? `(${player.x}, ${player.y}, t=${player.t})` : 'N/A'}
           </p>
@@ -143,7 +173,7 @@ export function GameShell() {
         <span>[ / ]: Rift delta -/+</span>
         <span>Enter: Wait</span>
         <span>R: Restart</span>
-        <span>Q / Esc: Status only</span>
+        <span>Reach E: Win</span>
       </footer>
     </div>
   )

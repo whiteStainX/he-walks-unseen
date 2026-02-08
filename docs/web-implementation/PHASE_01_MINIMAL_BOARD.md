@@ -16,6 +16,8 @@ Phase 1 establishes a playable 2D baseline:
 
 This phase intentionally excludes cube-time mechanics so the input/render/state loop is stable before temporal complexity is added.
 
+Note: this file documents the Phase 1 baseline snapshot. Current runtime code has advanced into Phase 2 (`WorldLineState` + rift flow).
+
 ---
 
 ## Scope

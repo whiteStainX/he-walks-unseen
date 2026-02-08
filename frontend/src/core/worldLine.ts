@@ -1,7 +1,11 @@
 import { manhattanDistance, type Position3D } from './position'
+import type { Result } from './result'
 
 export interface WorldLineState {
   path: Position3D[]
+  // Sparse membership index: key exists only when (x,y,t) has been visited.
+  // We store literal true (instead of boolean flags) for O(1) checks and
+  // Redux-friendly serializable state.
   visited: Record<string, true>
 }
 
@@ -9,8 +13,6 @@ export type WorldLineError =
   | { kind: 'EmptyWorldLine' }
   | { kind: 'SelfIntersection'; position: Position3D }
   | { kind: 'InvalidNormalStep'; from: Position3D; to: Position3D }
-
-export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
 
 export interface PositionAtTime {
   position: Position3D

@@ -273,6 +273,22 @@ The light cone extends **backward in cube time**.
 ### 9.5 Implications for Rifts
 Rifting adds points to the world line; those points must be checked against all enemy cones.
 
+### 9.5.1 Rift as World-Line Extension Operator
+Implementation should treat rift as an operator that appends exactly one new point:
+
+```
+Rift(P_n, instruction) -> P_{n+1}
+```
+
+Where the appended point may change:
+- only `t` (delta/default rift), or
+- `x, y, t` together (tunnel rift)
+
+Validity constraints remain unchanged:
+1. target must be within world bounds
+2. target must satisfy configured rift constraints (for example, resource cost)
+3. target `(x, y, t)` must not already exist in `P_n`
+
 ### 9.6 Committed Prefix Semantics (Implementation Rule)
 
 To remove ambiguity between cube-time geometry and turn-time progression, the engine
