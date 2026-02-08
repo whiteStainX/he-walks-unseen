@@ -77,8 +77,15 @@ frontend/
 Use typed error unions instead of throwing in core logic.
 
 ```ts
-type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+import type { Result } from './result';
 ```
+
+Canonical location:
+- `frontend/src/core/result.ts`
+
+Rule:
+- Reuse the shared `Result<T, E>` type across `core` and `game`.
+- Do not redeclare local `Result` aliases in module files.
 
 ---
 

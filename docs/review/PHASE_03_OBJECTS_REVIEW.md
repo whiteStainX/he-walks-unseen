@@ -37,6 +37,57 @@ Use it as the single source of truth for findings, decisions, and follow-up acti
 
 ---
 
+## `objects.ts` Mental Model
+
+Treat `frontend/src/core/objects.ts` as a pure definition-and-resolution layer for world objects.
+
+### What each type means
+
+1. `ObjectArchetype` (blueprint)
+- Defines reusable object shape:
+  - `kind`
+  - `components`
+  - `render` defaults
+
+2. `ObjectInstance` (placed reference)
+- Places an archetype into the world at `(x, y, t)` with a stable `id`.
+- May include `overrides` to customize this specific instance.
+
+3. `ObjectRegistry` (blueprint dictionary)
+- Maps archetype key -> `ObjectArchetype`.
+- Created once and reused during object bootstrap.
+
+4. `ResolvedObjectInstance` (runtime-ready object)
+- Output of resolution:
+  - original `id` and `position`
+  - resolved archetype key
+  - concrete archetype payload after overrides
+
+### Resolution flow
+
+1. Create registry with `createObjectRegistry(...)`.
+2. Resolve archetype key with `resolveArchetype(...)`.
+3. Resolve instance with `resolveObjectInstance(...)`.
+4. Merge overrides:
+- `components`: replace if provided
+- `render`: shallow merge over archetype render defaults
+5. Return `Result<ResolvedObjectInstance, ObjectRegistryError>`.
+
+### Why this boundary exists
+
+- `objects.ts` does not own occupancy or collisions.
+- `objects.ts` does not own turn/time validation.
+- `objects.ts` does not own reducer behavior.
+
+It only answers:
+- “What object is this instance?”
+
+Other modules answer:
+- `timeCube.ts`: “Where is it and what occupies `(x, y, t)`?”
+- `gameSlice.ts`: “How does player action interact with occupancy?”
+
+---
+
 ## Integration Reference Map
 
 ### 4) Level bootstrap and configuration

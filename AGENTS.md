@@ -40,6 +40,7 @@
 3. **Test Contracts:** Each module exports a test suite validating its public API
 4. **Data Contracts:** Level/theme formats freeze after Phase 2
 5. **Truth Model:** Player state is world-line truth; object state is cube occupancy truth
+6. **Shared Result Type:** Reuse `Result<T, E>` from `frontend/src/core/result.ts`; do not redefine local `Result` aliases
 
 ---
 
