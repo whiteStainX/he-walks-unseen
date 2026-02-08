@@ -1,6 +1,7 @@
 import { hasComponent } from './components'
 import { isInBounds, type Position2D, type Position3D } from './position'
 import type { ResolvedObjectInstance } from './objects'
+import type { Result } from './result'
 
 export interface TimeSlice {
   t: number
@@ -20,8 +21,6 @@ export type CubeError =
   | { kind: 'OutOfBounds'; x: number; y: number; t: number }
   | { kind: 'EntityAlreadyExists'; id: string; t: number }
   | { kind: 'EntityNotFound'; id: string }
-
-export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
 
 function spatialKey(position: Position2D): string {
   return `${position.x},${position.y}`

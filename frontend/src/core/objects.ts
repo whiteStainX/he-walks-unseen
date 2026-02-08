@@ -1,5 +1,6 @@
 import type { Position3D } from './position'
 import type { Component } from './components'
+import type { Result } from './result'
 
 export interface ObjectRender {
   glyph?: string
@@ -25,8 +26,6 @@ export interface ObjectRegistry {
 }
 
 export type ObjectRegistryError = { kind: 'UnknownArchetype'; archetype: string }
-
-export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
 
 export interface ResolvedObjectInstance {
   id: string

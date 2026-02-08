@@ -1,4 +1,5 @@
 import { type ObjectRegistryError, createObjectRegistry, resolveObjectInstance, type LevelObjectsConfig, type ObjectRegistry, type ResolvedObjectInstance } from '../core/objects'
+import type { Result } from '../core/result'
 import { createTimeCube, placeObjects, type CubeError, type TimeCube } from '../core/timeCube'
 
 export const defaultLevelObjectsConfig: LevelObjectsConfig = {
@@ -49,8 +50,6 @@ export const defaultLevelObjectsConfig: LevelObjectsConfig = {
 export type ObjectBootstrapError =
   | { kind: 'RegistryError'; error: ObjectRegistryError }
   | { kind: 'CubeError'; error: CubeError }
-
-export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
 
 export interface BootstrapObjectsResult {
   objectRegistry: ObjectRegistry
