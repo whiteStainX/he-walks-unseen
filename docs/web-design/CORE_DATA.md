@@ -35,7 +35,7 @@ Component       = union of component variants
 Entity          = { id: string; position: Position; components: Component[] }
 TimeSlice       = { t: number; entities: Map<string, Entity>; spatialIndex: Map<string, string[]> }
 TimeCube        = { width, height, timeDepth, slices: TimeSlice[] }
-WorldLine       = { path: Position[]; visited: Set<string> }
+WorldLineState  = { path: Position[]; visited: Record<string, true> }
 ```
 
 **Note:** Use stable ID strings (`uuid`) across cloned entities.
@@ -53,9 +53,16 @@ Pros:
 - Deterministic propagation
 
 ### 2. WorldLine is Turn-Ordered
-The world line is ordered by turn (player action sequence), not by cube-time `t`.
+The player world line is ordered by turn (player action sequence), not by cube-time `t`.
 
-### 3. Components as Discriminated Unions
+### 3. Player Truth vs Object Truth
+- **Player truth (Phase 2):** `WorldLineState` is the source of truth.
+- **Object truth (Phase 3+):** objects use simpler deterministic world lines and cube occupancy.
+  - walls/exits: fixed across `t`
+  - patrol entities: `position_at(t)` behavior
+  - interactive objects: piecewise world lines after interactions
+
+### 4. Components as Discriminated Unions
 Avoid class hierarchies. Use discriminated unions for components.
 
 ```ts
@@ -72,7 +79,7 @@ type Component =
   | { kind: 'Rift'; target: Position; bidirectional: boolean };
 ```
 
-### 4. Temporal Transition Primitives (Rift)
+### 5. Temporal Transition Primitives (Rift)
 Rift logic should be represented as reusable core primitives, not reducer-specific ad hoc logic.
 
 ```ts
@@ -103,7 +110,7 @@ Core contract:
 ## Indexing Strategy
 
 - `TimeSlice.spatialIndex` maps `"x,y"` to entity IDs for fast lookup
-- `WorldLine.visited` stores `"x,y,t"` for O(1) self-intersection
+- `WorldLineState.visited` stores sparse keys `"x,y,t" -> true` for O(1) self-intersection
 
 Helper key:
 ```
@@ -122,8 +129,9 @@ type CubeError =
   | { kind: 'PositionBlocked'; x: number; y: number; t: number };
 
 type WorldLineError =
-  | { kind: 'SelfIntersection'; x: number; y: number; t: number }
-  | { kind: 'InvalidStep'; from: Position; to: Position };
+  | { kind: 'EmptyWorldLine' }
+  | { kind: 'SelfIntersection'; position: Position }
+  | { kind: 'InvalidNormalStep'; from: Position; to: Position };
 ```
 
 ---

@@ -17,8 +17,9 @@ applyAction(state, action): GameState
 ```
 
 ### Player as Source of Truth
-- Player position is `worldLine.current()`
-- The cube contains a player entity only for rendering convenience
+- Player position is derived from `WorldLineState` (`currentPosition(worldLine)`).
+- Reducer-level move/rift validity is evaluated through world-line extension helpers.
+- `TimeCube` evolves into occupancy truth for non-player objects (Phase 3+).
 
 ---
 
@@ -27,7 +28,7 @@ applyAction(state, action): GameState
 ```
 GameState
   - cube: TimeCube
-  - worldLine: WorldLine
+  - worldLine: WorldLineState
   - currentTime: number
   - timeDepth: number
   - riftSettings: RiftSettings
@@ -37,7 +38,7 @@ GameState
   - history: Action[]
   - config: GameConfig
   - initialCube: TimeCube
-  - initialWorldLine: WorldLine
+  - initialWorldLine: WorldLineState
 
 Action
   - Move(direction)
@@ -86,6 +87,7 @@ ActionResult
 - Not blocked
 - No self-intersection
 - `t` advances by 1
+- Implemented via `extendNormal(...)` on `WorldLineState`
 
 ### Rift
 - Resolve target through reusable core primitive (`resolveRift`)

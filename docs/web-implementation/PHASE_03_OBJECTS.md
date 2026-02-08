@@ -16,6 +16,10 @@ Phase 3 introduces reusable, configurable objects:
 - boxes (as objects only, no push/pull mechanics yet)
 - enemies (as objects only, no detection yet)
 
+State-truth split for this phase:
+- player truth remains `WorldLineState`
+- object truth moves into `TimeCube` occupancy
+
 ---
 
 ## Phase Principles
@@ -99,6 +103,7 @@ type ObjectInstance = {
 2. Action/reducer behavior
 - movement checks `isBlocked(next)`
 - post-move check `hasExit(next)` -> `phase = Won`
+- player updates still extend `WorldLineState` (normal/rift paths remain unchanged)
 
 ### Render (`frontend/src/render/`)
 
@@ -167,4 +172,3 @@ Minimum required archetypes in Phase 3:
 3. Exit object can end the level (`Won`).
 4. Enemy objects can be placed and rendered (behavior deferred).
 5. Lint and tests pass.
-

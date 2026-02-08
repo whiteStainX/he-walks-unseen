@@ -51,7 +51,7 @@ Phase 2 adds temporal state and world-line constraints, but still avoids object 
    - `{ x: number; y: number; t: number }`
 2. `WorldLine`
    - `path: Position3D[]`
-   - `visited: Set<string>` where key is `x,y,t`
+   - `visited: Record<string, true>` where key is `x,y,t`
 3. Key methods
    - `wouldIntersect(position: Position3D): boolean`
    - `extendNormal(next: Position3D): Result<void, WorldLineError>`

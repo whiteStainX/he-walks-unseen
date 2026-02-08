@@ -33,7 +33,7 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 ## 3. Web Architecture
 
 ### 3.1 Stack
-- **Framework:** React 18
+- **Framework:** React 19
 - **Build Tool:** Vite
 - **Language:** TypeScript
 - **Rendering:** HTML Canvas (primary) with React UI overlays
@@ -50,7 +50,12 @@ Enemies see the player through **backward light cones** (see `MATH_MODEL.md`).
 
 **Rule:** The core logic must remain UI-agnostic so it can be unit-tested independently and reused in non-UI contexts.
 
-### 3.3 Detection Model (V1)
+### 3.3 State Truth Model
+- **Player truth (Phase 2):** `WorldLineState` is the authoritative player history (`path` + `visited` index).
+- **Object truth (Phase 3+):** `TimeCube` occupancy becomes authoritative for non-player objects.
+- **Rift transitions:** handled by reusable core resolver (`resolveRift`) before world-line extension.
+
+### 3.4 Detection Model (V1)
 - **Discrete Delay**: enemy at `te` sees player at `te - k`
 - Rationale: bounded cost, clear player intuition, deterministic UI feedback
 

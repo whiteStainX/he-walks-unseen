@@ -8,7 +8,7 @@
 
 ### Core Logic Agent
 - **Scope:** `frontend/src/core/`
-- **Focus:** TimeCube, Entity system, WorldLine, propagation, light cone math
+- **Focus:** Player `WorldLineState`, TimeCube occupancy, Entity system, propagation, light cone math
 - **Testing:** Unit tests for paradox and detection edge cases
 
 ### Game Loop Agent
@@ -39,6 +39,7 @@
 2. **No Cross-Dependency:** Core logic must not import React
 3. **Test Contracts:** Each module exports a test suite validating its public API
 4. **Data Contracts:** Level/theme formats freeze after Phase 2
+5. **Truth Model:** Player state is world-line truth; object state is cube occupancy truth
 
 ---
 

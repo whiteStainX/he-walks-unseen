@@ -2,7 +2,7 @@
 
 > **Design Reference:** `docs/web-design/OVERALL.md`
 > **Math Reference:** `docs/web-design/MATH_MODEL.md`
-> **Agent Guide:** `docs/web-design/AGENTS.md`
+> **Agent Guide:** `AGENTS.md`
 
 ---
 
@@ -47,7 +47,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ### Exit Criteria
 - [x] Player can move in space with automatic `t + 1` progression
-- [x] Player can rift to valid past/future `t` according to Phase 2 constraints
+- [x] Player can rift to valid past/future `(x, y, t)` according to Phase 2 constraints
 - [x] Self-intersection at `(x, y, t)` is always blocked
 - [x] Sidebar reflects `n` and `t` separately
 - [x] Lint passes and Phase 2 tests pass
