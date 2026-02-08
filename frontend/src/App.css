@@ -73,7 +73,7 @@
 
 .board-canvas {
   display: block;
-  width: min(100%, 56dvh);
+  width: min(100%, 70dvh);
   aspect-ratio: 1 / 1;
   height: auto;
   border: 1px solid var(--grid);
@@ -83,7 +83,7 @@
 
 .board-stage {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.65fr);
   gap: 10px;
   align-items: stretch;
   height: 100%;
@@ -101,7 +101,7 @@
 }
 
 .iso-cube-wrap {
-  width: 100%;
+  width: min(100%, 46dvh);
   aspect-ratio: 1 / 1;
   border: 1px solid var(--grid);
   background: var(--paper);
@@ -141,7 +141,7 @@
   }
 
   .board-canvas {
-    width: min(100%, 52dvh);
+    width: min(100%, 56dvh);
   }
 
   .board-stage {
