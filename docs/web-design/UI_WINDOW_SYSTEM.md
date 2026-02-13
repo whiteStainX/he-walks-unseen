@@ -78,6 +78,7 @@ Content:
   - `Space` Rift
   - `Enter` Wait
   - `L` Log overlay
+  - `P` Danger preview toggle
   - `R` Restart
 
 Behavior:
@@ -159,6 +160,7 @@ Transitions:
 - `ActionMenu -> Gameplay`: `F` or `Escape` or mode selected (`1/2/3`)
 - `Gameplay -> LogOverlay`: `L`
 - `LogOverlay -> Gameplay`: `L` or `Escape`
+- `Gameplay`: `P` toggles danger preview flag (no layer change)
 - `Gameplay -> StoryDialog`: scripted event trigger (future)
 - any state -> `SystemMenu`: pause key (future)
 

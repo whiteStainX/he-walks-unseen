@@ -43,6 +43,7 @@ npm run lint
 | `Space` | Use default rift |
 | `Enter` | Wait one turn |
 | `L` | Open/close full log overlay |
+| `P` | Toggle danger preview overlay |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import type { DetectionEvent } from '../../core/detection'
 import type { ResolvedObjectInstance } from '../../core/objects'
 import type { Position3D } from '../../core/position'
 import type { PositionAtTime } from '../../core/worldLine'
@@ -10,6 +11,8 @@ interface GameBoardCanvasProps {
   objectsAtCurrentTime: ResolvedObjectInstance[]
   selvesAtCurrentTime: PositionAtTime[]
   currentTurn: number
+  showDangerPreview: boolean
+  detectionEvents: DetectionEvent[]
 }
 
 const CANVAS_SIZE = 560
@@ -19,6 +22,8 @@ export function GameBoardCanvas({
   objectsAtCurrentTime,
   selvesAtCurrentTime,
   currentTurn,
+  showDangerPreview,
+  detectionEvents,
 }: GameBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -89,7 +94,47 @@ export function GameBoardCanvas({
     if (currentSelf) {
       drawRect(currentSelf.position, theme.playerFill, theme.playerStroke, 0.18)
     }
-  }, [boardSize, objectsAtCurrentTime, selvesAtCurrentTime, currentTurn])
+
+    if (showDangerPreview) {
+      const uniqueMarkers = new Map<string, Position3D>()
+
+      for (const event of detectionEvents) {
+        uniqueMarkers.set(event.enemyId, event.enemyPosition)
+      }
+
+      context.strokeStyle = theme.dangerMarkerStroke
+      context.fillStyle = theme.dangerMarkerFill
+      context.lineWidth = 2
+
+      for (const position of uniqueMarkers.values()) {
+        const x = position.x * cellSize
+        const y = position.y * cellSize
+        const inset = cellSize * 0.06
+        const size = cellSize - inset * 2
+        const centerX = x + cellSize * 0.5
+        const centerY = y + cellSize * 0.5
+
+        context.strokeRect(x + inset, y + inset, size, size)
+        context.beginPath()
+        context.moveTo(x + inset, y + inset)
+        context.lineTo(x + cellSize - inset, y + cellSize - inset)
+        context.moveTo(x + cellSize - inset, y + inset)
+        context.lineTo(x + inset, y + cellSize - inset)
+        context.stroke()
+
+        context.beginPath()
+        context.arc(centerX, centerY, Math.max(3, cellSize * 0.08), 0, Math.PI * 2)
+        context.fill()
+      }
+    }
+  }, [
+    boardSize,
+    objectsAtCurrentTime,
+    selvesAtCurrentTime,
+    currentTurn,
+    showDangerPreview,
+    detectionEvents,
+  ])
 
   return (
     <canvas

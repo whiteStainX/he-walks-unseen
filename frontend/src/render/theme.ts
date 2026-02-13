@@ -7,6 +7,8 @@ export interface CanvasTheme {
   objectFill: string
   objectStroke: string
   objectGlyph: string
+  dangerMarkerStroke: string
+  dangerMarkerFill: string
 }
 
 export interface IsoTheme {
@@ -54,6 +56,8 @@ export const minimalMonoTheme: AppTheme = {
     objectFill: '#efefef',
     objectStroke: '#111111',
     objectGlyph: '#111111',
+    dangerMarkerStroke: '#111111',
+    dangerMarkerFill: '#cfcfcf',
   },
   iso: {
     background: '#ffffff',

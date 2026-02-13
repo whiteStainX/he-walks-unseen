@@ -95,6 +95,7 @@ Detailed HUD and overlay specification:
   - `Space` applies Rift
   - `Enter` waits one turn
   - `L` opens/closes action log overlay
+  - `P` toggles danger preview overlay
   - `R` restarts
 - **Pointer:** optional click-to-move (future)
 

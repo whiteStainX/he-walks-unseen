@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { evaluateDetectionV1 } from '../core/detection'
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
@@ -69,6 +70,7 @@ export function GameShell() {
   const [directionalActionMode, setDirectionalActionMode] = useState<DirectionalActionMode>('Move')
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
   const [isLogOpen, setIsLogOpen] = useState(false)
+  const [showDangerPreview, setShowDangerPreview] = useState(false)
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
@@ -78,6 +80,7 @@ export function GameShell() {
   const phase = useAppSelector((state) => state.game.phase)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
+  const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
@@ -95,6 +98,16 @@ export function GameShell() {
     [currentTime, timeDepth, worldLine, cube],
   )
   const recentHistory = useMemo(() => history.slice(-5).reverse(), [history])
+  const detectionPreviewReport = useMemo(
+    () =>
+      evaluateDetectionV1({
+        cube,
+        worldLine,
+        currentTime,
+        config: detectionConfig,
+      }),
+    [cube, worldLine, currentTime, detectionConfig],
+  )
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -113,6 +126,12 @@ export function GameShell() {
       if (event.key === 'l' || event.key === 'L') {
         event.preventDefault()
         setIsLogOpen((open) => !open)
+        return
+      }
+
+      if (event.key === 'p' || event.key === 'P') {
+        event.preventDefault()
+        setShowDangerPreview((enabled) => !enabled)
         return
       }
 
@@ -243,7 +262,7 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 4: command windows and interaction pipeline</p>
+        <p>Phase 5: detection baseline + danger preview</p>
       </header>
 
       <main className="game-layout">
@@ -255,6 +274,8 @@ export function GameShell() {
                 objectsAtCurrentTime={objectsAtCurrentTime}
                 selvesAtCurrentTime={selvesAtCurrentTime}
                 currentTurn={turn}
+                showDangerPreview={showDangerPreview}
+                detectionEvents={detectionPreviewReport.events}
               />
             </div>
             <div className="board-stage-item iso-stage-item">
@@ -319,10 +340,20 @@ export function GameShell() {
                 <dd>{interactionConfig.maxPushChain}</dd>
                 <dt>Pull</dt>
                 <dd>{interactionConfig.allowPull ? 'on' : 'off'}</dd>
+                <dt>Detect</dt>
+                <dd>{detectionConfig.enabled ? 'on' : 'off'}</dd>
+                <dt>D Delay</dt>
+                <dd>{detectionConfig.delayTurns}</dd>
+                <dt>D Range</dt>
+                <dd>{detectionConfig.maxDistance}</dd>
+                <dt>Danger</dt>
+                <dd>{showDangerPreview ? 'on' : 'off'}</dd>
                 <dt>WorldLine</dt>
                 <dd>{worldLine.path.length}</dd>
                 <dt>Slice Obj</dt>
                 <dd>{objectsAtCurrentTime.length}</dd>
+                <dt>D Events</dt>
+                <dd>{detectionPreviewReport.events.length}</dd>
                 <dt>Player</dt>
                 <dd>{player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}</dd>
               </dl>
@@ -345,6 +376,7 @@ export function GameShell() {
         <span>Space Rift</span>
         <span>Enter Wait</span>
         <span>L Log</span>
+        <span>P Danger</span>
         <span>[ ] Rift +/-</span>
         <span>- = Push Max +/-</span>
         <span>R Restart</span>

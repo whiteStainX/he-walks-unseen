@@ -126,7 +126,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Discrete-delay detection model (V1)
 - [x] Detection config + detection report contracts
 - [x] GamePhase updates to `Detected`
-- [ ] Light cone/danger preview overlay (optional)
+- [x] Light cone/danger preview overlay (optional)
 
 ### Exit Criteria
 - [x] Detection triggers loss state (`Detected`)

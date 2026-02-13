@@ -153,6 +153,10 @@ Post-detection behavior:
 - Add `danger preview` toggle and simple per-slice markers for enemies that can detect at current `t`.
 - Keep current monochrome visual style (line + fill, no effects).
 
+Implemented in current pass:
+- keyboard toggle `P`
+- board markers on detector cells for current detection report events
+
 ---
 
 ## Implementation Plan
