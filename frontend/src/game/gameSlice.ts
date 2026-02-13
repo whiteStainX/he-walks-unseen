@@ -47,7 +47,7 @@ function bootstrapObjectState(): {
       objectRegistry: bootstrap.value.objectRegistry,
       cube: bootstrap.value.cube,
       status:
-        'F: action menu (1 move, 2 push, 3 pull) | Direction: WASD/Arrows | Rift: Space | Reach E to win',
+        '-_-',
     }
   }
 
