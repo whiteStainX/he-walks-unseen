@@ -28,7 +28,10 @@ frontend/
 │   ├── app/                 # App shell, routing, layout
 │   ├── core/                # Core game logic (no React)
 │   ├── game/                # State container, actions, validation
-│   ├── render/              # Canvas drawing, UI overlays
+│   ├── render/              # Rendering modules (feature folders + shared theme)
+│   │   ├── board/           # Main time-slice board renderer
+│   │   ├── iso/             # Isometric TimeCube renderer and selectors
+│   │   └── theme.ts         # Shared render tokens
 │   ├── data/                # Level/theme loading
 │   ├── main.tsx             # React entry
 │   └── styles/              # CSS / theme tokens
@@ -69,6 +72,12 @@ frontend/
 - Use discriminated unions for components and errors
 - Avoid `any`; prefer explicit unions or generics
 - Core logic must be pure and deterministic
+
+## Render Module Convention
+
+- Use feature folders under `frontend/src/render/<feature>/` for feature-specific rendering logic and tests.
+- Keep shared render utilities at `frontend/src/render/` only (for example `theme.ts`).
+- Current baseline features: `render/board/` and `render/iso/`.
 
 ---
 

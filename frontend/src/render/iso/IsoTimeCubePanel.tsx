@@ -2,8 +2,8 @@ import { Edges, Line } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { useMemo } from 'react'
 
-import type { IsoCubeViewModel } from './iso/buildIsoViewModel'
-import { minimalMonoTheme } from './theme'
+import type { IsoCubeViewModel } from './buildIsoViewModel'
+import { minimalMonoTheme } from '../theme'
 
 interface IsoTimeCubePanelProps {
   boardSize: number

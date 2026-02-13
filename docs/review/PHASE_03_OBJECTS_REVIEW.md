@@ -106,11 +106,11 @@ Other modules answer:
   - move/wait/rift integration at `frontend/src/game/gameSlice.ts:156`
 
 ### 6) Render integration
-- `frontend/src/render/GameBoardCanvas.tsx:8`
+- `frontend/src/render/board/GameBoardCanvas.tsx:8`
 - Focus: draw order and data-driven object rendering:
-  - objects first: `frontend/src/render/GameBoardCanvas.tsx:59`
-  - past selves next: `frontend/src/render/GameBoardCanvas.tsx:79`
-  - current self on top: `frontend/src/render/GameBoardCanvas.tsx:87`
+  - objects first: `frontend/src/render/board/GameBoardCanvas.tsx:59`
+  - past selves next: `frontend/src/render/board/GameBoardCanvas.tsx:79`
+  - current self on top: `frontend/src/render/board/GameBoardCanvas.tsx:87`
 - UI selector wiring: `frontend/src/app/GameShell.tsx:40`
 
 ---

@@ -108,7 +108,7 @@ Builder inputs:
 
 ### Render contract
 
-`frontend/src/render/IsoTimeCubePanel.tsx`
+`frontend/src/render/iso/IsoTimeCubePanel.tsx`
 
 Props:
 - `viewModel: IsoCubeViewModel`
@@ -159,7 +159,7 @@ Behavior:
 - `frontend/src/render/iso/buildIsoViewModel.test.ts`
 
 3. Isometric rendering panel (`three` + `@react-three/fiber`)
-- `frontend/src/render/IsoTimeCubePanel.tsx`
+- `frontend/src/render/iso/IsoTimeCubePanel.tsx`
 - Orthographic camera
 - Slice frames + object blocks + player blocks
 - Player world-line polyline in isometric view

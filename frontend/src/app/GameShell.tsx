@@ -12,9 +12,9 @@ import {
   setStatus,
   waitTurn,
 } from '../game/gameSlice'
-import { GameBoardCanvas } from '../render/GameBoardCanvas'
-import { IsoTimeCubePanel } from '../render/IsoTimeCubePanel'
+import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
 import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
+import { IsoTimeCubePanel } from '../render/iso/IsoTimeCubePanel'
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {

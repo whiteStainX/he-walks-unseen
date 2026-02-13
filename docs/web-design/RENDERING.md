@@ -41,6 +41,10 @@ If WebGL is used for the isometric panel, preserve current visual language:
 </App>
 ```
 
+### Render Module Organization
+- Place feature-specific rendering code under `frontend/src/render/<feature>/` (for example `board/`, `iso/`).
+- Keep shared rendering utilities at `frontend/src/render/` (for example `theme.ts`).
+
 ---
 
 ## Render Flow
