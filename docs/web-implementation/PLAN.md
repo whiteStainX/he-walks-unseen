@@ -99,18 +99,21 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 4: Add Interactions
 
 **Goal:** Add interactions: push/pull, rifts, and action validation pipeline.
+**Implementation Detail:** `docs/web-implementation/PHASE_04_INTERACTIONS.md`
 
 ### Deliverables
 - [ ] Action pipeline (validate → apply → propagate → check)
 - [ ] Push/Pull interactions
 - [ ] Rift interactions fully wired
+- [ ] Interaction handler registry (modular per-action handlers)
 - [ ] Action history tracking
 - [ ] Sidebar displays time/turn/status/errors
 
 ### Exit Criteria
-- Player can move on-screen
-- Walls block movement
-- Sidebar updates on each action
+- [ ] Player can move on-screen
+- [ ] Walls block movement
+- [ ] Sidebar updates on each action
+- [ ] New interaction can be added via handler+registry without reducer rewrite
 
 ---
 

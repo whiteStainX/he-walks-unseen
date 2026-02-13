@@ -42,6 +42,7 @@
 5. **Truth Model:** Player state is world-line truth; object state is cube occupancy truth
 6. **Shared Result Type:** Reuse `Result<T, E>` from `frontend/src/core/result.ts`; do not redefine local `Result` aliases
 7. **Render Feature Folders:** Place feature-specific render code under `frontend/src/render/<feature>/` (for example `board/`, `iso/`); keep only shared render utilities at `frontend/src/render/` (for example `theme.ts`)
+8. **Modular Interactions:** Follow `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`; new interactions must be handler-based and registry-dispatched, not reducer-branch expansions
 
 ---
 
