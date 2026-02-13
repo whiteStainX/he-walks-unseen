@@ -19,7 +19,7 @@ Phase 5 focuses on a simple, explicit model first:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Implemented (V1 baseline)
 
 ---
 

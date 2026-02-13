@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import type { DetectionConfig } from '../core/detection'
 import type { Direction2D, Position3D } from '../core/position'
 import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
 import { createWorldLine } from '../core/worldLine'
@@ -30,6 +31,11 @@ const DEFAULT_INTERACTION_CONFIG: InteractionConfig = {
   maxPushChain: 4,
   allowPull: true,
 }
+const DEFAULT_DETECTION_CONFIG: DetectionConfig = {
+  enabled: true,
+  delayTurns: 1,
+  maxDistance: 2,
+}
 
 export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
@@ -46,8 +52,7 @@ function bootstrapObjectState(): {
     return {
       objectRegistry: bootstrap.value.objectRegistry,
       cube: bootstrap.value.cube,
-      status:
-        '-_-',
+      status: '-_-',
     }
   }
 
@@ -83,6 +88,8 @@ function createInitialState(): GameState {
     riftSettings: { ...DEFAULT_RIFT_SETTINGS },
     riftResources: { ...DEFAULT_RIFT_RESOURCES },
     interactionConfig: { ...DEFAULT_INTERACTION_CONFIG },
+    detectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    lastDetection: null,
     history: [],
     status: objectState.status,
   }
@@ -121,6 +128,10 @@ const gameSlice = createSlice({
       state.interactionConfig = { ...state.interactionConfig, ...action.payload }
       state.status = `Interaction config updated (maxPushChain=${state.interactionConfig.maxPushChain}, allowPull=${state.interactionConfig.allowPull})`
     },
+    configureDetectionConfig(state, action: PayloadAction<Partial<DetectionConfig>>) {
+      state.detectionConfig = { ...state.detectionConfig, ...action.payload }
+      state.status = `Detection config updated (enabled=${state.detectionConfig.enabled}, delay=${state.detectionConfig.delayTurns}, range=${state.detectionConfig.maxDistance})`
+    },
     restart(state) {
       const objectState = bootstrapObjectState()
 
@@ -133,6 +144,8 @@ const gameSlice = createSlice({
       state.riftSettings = { ...DEFAULT_RIFT_SETTINGS }
       state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
       state.interactionConfig = { ...DEFAULT_INTERACTION_CONFIG }
+      state.detectionConfig = { ...DEFAULT_DETECTION_CONFIG }
+      state.lastDetection = null
       state.history = []
       state.status = 'Restarted'
     },
@@ -150,6 +163,7 @@ export const {
   pullPlayer2D,
   configureRiftSettings,
   setInteractionConfig,
+  configureDetectionConfig,
   restart,
   setStatus,
 } = gameSlice.actions

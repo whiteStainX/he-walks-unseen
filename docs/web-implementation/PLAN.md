@@ -123,15 +123,15 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_05_DETECTION.md`
 
 ### Deliverables
-- [ ] Discrete-delay detection model (V1)
-- [ ] Detection config + detection report contracts
-- [ ] GamePhase updates to `Detected`
+- [x] Discrete-delay detection model (V1)
+- [x] Detection config + detection report contracts
+- [x] GamePhase updates to `Detected`
 - [ ] Light cone/danger preview overlay (optional)
 
 ### Exit Criteria
-- Detection triggers loss state (`Detected`)
-- Post-detected actions are blocked until restart
-- Existing win/restart behavior remains stable
+- [x] Detection triggers loss state (`Detected`)
+- [x] Post-detected actions are blocked until restart
+- [x] Existing win/restart behavior remains stable
 
 ---
 

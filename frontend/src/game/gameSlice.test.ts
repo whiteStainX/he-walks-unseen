@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { objectsAt } from '../core/timeCube'
 import {
   applyRift,
+  configureDetectionConfig,
   configureRiftSettings,
   gameReducer,
   movePlayer2D,
@@ -189,5 +190,65 @@ describe('gameSlice', () => {
     expect(reset.history).toHaveLength(0)
     expect(objectsAt(reset.cube, { x: 8, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
     expect(objectsAt(reset.cube, { x: 9, y: 6, t: 4 }).map((obj) => obj.id)).not.toContain('box.main')
+  })
+
+  it('transitions to Detected when discrete-delay rule matches', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+
+    const detected = gameReducer(configured, waitTurn())
+
+    expect(detected.turn).toBe(1)
+    expect(detected.phase).toBe('Detected')
+    expect(detected.lastDetection?.detected).toBe(true)
+    expect(detected.lastDetection?.events[0]?.enemyId).toBe('enemy.alpha')
+    expect(detected.status).toContain('detected by enemy.alpha')
+  })
+
+  it('blocks gameplay actions after detection until restart', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+    const detected = gameReducer(configured, waitTurn())
+
+    const blocked = gameReducer(detected, movePlayer2D('east'))
+
+    expect(blocked.turn).toBe(1)
+    expect(blocked.currentTime).toBe(1)
+    expect(blocked.phase).toBe('Detected')
+    expect(blocked.status).toBe('Game already ended. Press R to restart.')
+  })
+
+  it('restart clears detection phase and report', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+    const detected = gameReducer(configured, waitTurn())
+    const reset = gameReducer(detected, restart())
+
+    expect(reset.phase).toBe('Playing')
+    expect(reset.turn).toBe(0)
+    expect(reset.lastDetection).toBeNull()
+  })
+
+  it('keeps win priority over detection on the same action', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 50 }),
+    )
+
+    const won = gameReducer(configured, applyRift({ kind: 'tunnel', target: { x: 10, y: 10, t: 1 } }))
+
+    expect(won.phase).toBe('Won')
+    expect(won.status).toContain('reached exit')
+    expect(won.lastDetection).toBeNull()
   })
 })

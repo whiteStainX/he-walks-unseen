@@ -1,3 +1,4 @@
+import { evaluateDetectionV1 } from '../../core/detection'
 import { hasExit } from '../../core/timeCube'
 import { currentPosition } from '../../core/worldLine'
 import { executeRegisteredInteraction } from './registry'
@@ -43,10 +44,28 @@ export function runInteractionPipeline(
   })
 
   if (hasExit(state.cube, player)) {
+    state.lastDetection = null
     state.phase = 'Won'
     state.status = `Turn ${state.turn}: reached exit at (${player.x}, ${player.y}, t=${player.t})`
     return
   }
+
+  const detection = evaluateDetectionV1({
+    cube: state.cube,
+    worldLine: state.worldLine,
+    currentTime: player.t,
+    config: state.detectionConfig,
+  })
+
+  if (detection.detected) {
+    const primary = detection.events[0]
+    state.lastDetection = detection
+    state.phase = 'Detected'
+    state.status = `Turn ${state.turn}: detected by ${primary.enemyId} (observed t=${primary.observedPlayer.t})`
+    return
+  }
+
+  state.lastDetection = null
 
   state.status = `Turn ${state.turn}: ${result.status}`
 }
