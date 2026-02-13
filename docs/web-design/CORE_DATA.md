@@ -1,155 +1,215 @@
 # Core Data Design (Web)
 
 > **Module target:** `frontend/src/core/`
-> **Status:** Web rewrite
+> **Status:** Phase 4 implemented, Phase 5 contracts defined
 
-This document defines the core data model in TypeScript for the Space-Time Cube.
+This document defines canonical core data structures and reusable core contracts.
 
 ---
 
-## Conceptual Model
+## 1. Core Model
 
 ### Space-Time Cube
 - 3D grid `(x, y, t)`
-- Player is 3D; other entities are 2D per time slice
+- Player is represented by a world line through cube-time
+- Non-player entities are represented by occupancy in `TimeCube`
 
-### Entity Dimensionality
-| Entity | Dimensionality | Behavior |
-|--------|----------------|----------|
-| Player | 3D | World line through time
-| Walls | 2D × time | Fixed across slices
-| Enemies | 2D × time | Patrol-derived positions
-| Boxes | 2D | Push/pull within slices
-| Rifts | 2D × time | Map links between `(x,y,t)`
+### Truth Split
+1. Player truth: `WorldLineState`
+2. Object truth: `TimeCube`
+
+This split is invariant across phases.
 
 ---
 
-## Type Hierarchy (TypeScript)
-
-```
-Position        = { x: number; y: number; t: number }
-SpatialPos      = { x: number; y: number }
-Direction       = 'north' | 'south' | 'east' | 'west'
-
-Component       = union of component variants
-Entity          = { id: string; position: Position; components: Component[] }
-TimeSlice       = { t: number; entities: Map<string, Entity>; spatialIndex: Map<string, string[]> }
-TimeCube        = { width, height, timeDepth, slices: TimeSlice[] }
-WorldLineState  = { path: Position[]; visited: Record<string, true> }
-```
-
-**Note:** Use stable ID strings (`uuid`) across cloned entities.
-
----
-
-## Critical Decisions (Web)
-
-### 1. Clone-Per-Slice Entity Storage
-Each `TimeSlice` owns its own entity instances. Identity continuity is maintained via `Entity.id`.
-
-Pros:
-- Simple slice queries
-- No cross-slice references
-- Deterministic propagation
-
-### 2. WorldLine is Turn-Ordered
-The player world line is ordered by turn (player action sequence), not by cube-time `t`.
-
-### 3. Player Truth vs Object Truth
-- **Player truth (Phase 2):** `WorldLineState` is the source of truth.
-- **Object truth (Phase 3+):** objects use simpler deterministic world lines and cube occupancy.
-  - walls/exits: fixed across `t`
-  - patrol entities: `position_at(t)` behavior
-  - interactive objects: piecewise world lines after interactions
-
-### 4. Components as Discriminated Unions
-Avoid class hierarchies. Use discriminated unions for components.
+## 2. Canonical Types
 
 ```ts
-type Component =
-  | { kind: 'BlocksMovement' }
-  | { kind: 'BlocksVision' }
-  | { kind: 'Pushable' }
-  | { kind: 'Pullable' }
-  | { kind: 'TimePersistent' }
-  | { kind: 'Exit' }
-  | { kind: 'Player' }
-  | { kind: 'Patrol'; path: SpatialPos[]; loops: boolean }
-  | { kind: 'VisionCone'; lightSpeed: number; radius?: number }
-  | { kind: 'Rift'; target: Position; bidirectional: boolean };
+export interface Position2D {
+  x: number
+  y: number
+}
+
+export interface Position3D extends Position2D {
+  t: number
+}
+
+export type Direction2D = 'north' | 'south' | 'east' | 'west'
 ```
 
-### 5. Temporal Transition Primitives (Rift)
-Rift logic should be represented as reusable core primitives, not reducer-specific ad hoc logic.
+```ts
+export interface TimeSlice {
+  t: number
+  objectIds: string[]
+  spatialIndex: Record<string, string[]>
+}
+
+export interface TimeCube {
+  width: number
+  height: number
+  timeDepth: number
+  slices: TimeSlice[]
+  objectsById: Record<string, ResolvedObjectInstance>
+}
+```
+
+```ts
+export interface WorldLineState {
+  path: Position3D[]
+  visited: Record<string, true>
+}
+```
+
+Shared result contract:
+
+```ts
+export type Result<T, E> = { ok: true; value: T } | { ok: false; error: E }
+```
+
+Canonical location: `frontend/src/core/result.ts`
+
+---
+
+## 3. Object System
+
+Objects are archetype-based and data-driven:
+- archetype defines components + render hints
+- instance binds `id`, archetype key, and initial position
+- resolved object stores dereferenced archetype payload
+
+Component model remains discriminated unions (`Marker`, `Patrol`, `Rift`-style components).
+
+Key movement-related markers:
+- `BlocksMovement`
+- `Pushable`
+- `Pullable`
+- `TimePersistent`
+- `Exit`
+
+---
+
+## 4. Indexing Strategy
+
+Spatial keys:
+- `TimeSlice.spatialIndex` key: `"x,y"`
+
+World-line membership keys:
+- `WorldLineState.visited` key: `"x,y,t"`
+
+Purpose:
+- O(1) lookup for occupancy and self-intersection checks
+- deterministic serialization-friendly structures (`Record<...>`)
+
+---
+
+## 5. Rift Contracts
+
+Rift behavior is a reusable core primitive.
 
 ```ts
 type RiftInstruction =
   | { kind: 'default' }
-  | { kind: 'delta'; delta: number; targetSpatial?: SpatialPos }
-  | { kind: 'tunnel'; target: Position };
+  | { kind: 'delta'; delta: number; targetSpatial?: Position2D }
+  | { kind: 'tunnel'; target: Position3D }
 
-type RiftSettings = {
-  defaultDelta: number;   // e.g. 3 means default jump is t - 3
-  baseEnergyCost: number; // for future resource systems
-};
+interface RiftSettings {
+  defaultDelta: number
+  baseEnergyCost: number
+}
 
-type RiftResolution = {
-  target: Position;       // full (x,y,t)
-  energyCost: number;
-  mode: RiftInstruction['kind'];
-};
+interface RiftResources {
+  energy: number | null
+}
+
+interface RiftResolution {
+  target: Position3D
+  energyCost: number
+  mode: RiftInstruction['kind']
+}
 ```
 
-Core contract:
+Core API:
 - `resolveRift(input) -> Result<RiftResolution, RiftResolveError>`
-- validates target space/time bounds
-- remains UI-agnostic and reusable across movement, tunnel, and future cost systems
 
 ---
 
-## Indexing Strategy
+## 6. Detection Contracts (Phase 5)
 
-- `TimeSlice.spatialIndex` maps `"x,y"` to entity IDs for fast lookup
-- `WorldLineState.visited` stores sparse keys `"x,y,t" -> true` for O(1) self-intersection
+Detection contracts are defined in core so reducer and render can share one report shape.
 
-Helper key:
+```ts
+export interface DetectionConfig {
+  enabled: boolean
+  delayTurns: number
+  maxDistance: number
+}
+
+export interface DetectionEvent {
+  enemyId: string
+  enemyPosition: Position3D
+  observedPlayer: Position3D
+  observedTurn: number
+}
+
+export interface DetectionReport {
+  detected: boolean
+  atTime: number
+  events: DetectionEvent[]
+}
 ```
-key = `${x},${y},${t}`
+
+Planned core API:
+
+```ts
+evaluateDetectionV1(input: {
+  cube: TimeCube
+  worldLine: WorldLineState
+  currentTime: number
+  config: DetectionConfig
+}): DetectionReport
 ```
+
+V1 model target:
+- discrete-delay + bounded Manhattan distance
+- pure read operation (no mutations)
 
 ---
 
-## Error Types (Web)
+## 7. Core Error Families
 
 ```ts
 type CubeError =
   | { kind: 'OutOfBounds'; x: number; y: number; t: number }
   | { kind: 'EntityNotFound'; id: string }
   | { kind: 'EntityAlreadyExists'; id: string; t: number }
-  | { kind: 'PositionBlocked'; x: number; y: number; t: number };
+
 
 type WorldLineError =
   | { kind: 'EmptyWorldLine' }
-  | { kind: 'SelfIntersection'; position: Position }
-  | { kind: 'InvalidNormalStep'; from: Position; to: Position };
+  | { kind: 'SelfIntersection'; position: Position3D }
+  | { kind: 'InvalidNormalStep'; from: Position3D; to: Position3D }
 ```
+
+Interaction-specific and reducer-level errors should wrap these core errors rather than redefining duplicated primitives.
 
 ---
 
-## Module Dependencies (Web)
+## 8. Module Dependencies
 
 ```
-position.ts      (leaf)
-components.ts    (position)
-entity.ts        (components)
-timeSlice.ts     (entity, position)
-timeCube.ts      (timeSlice)
-worldLine.ts     (position)
-rift.ts          (position)
+result.ts       (leaf)
+position.ts     (leaf)
+components.ts   (position)
+objects.ts      (components, position, result)
+worldLine.ts    (position, result)
+rift.ts         (position, result)
+timeCube.ts     (objects, components, position, result)
+detection.ts    (timeCube, worldLine, position)
 ```
 
 ---
 
 ## Related Documents
-- `MATH_MODEL.md`
-- `GAME_STATE.md`
+- `docs/web-design/GAME_STATE.md`
+- `docs/web-design/MATH_MODEL.md`
+- `docs/web-implementation/PHASE_05_DETECTION.md`

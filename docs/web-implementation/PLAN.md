@@ -119,17 +119,19 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ## Phase 5: Detection + Past-Turn Selves
 
-**Goal:** Implement detection model and world line visualization.
+**Goal:** Implement detection model (V1) and `Detected` phase transition.
+**Implementation Detail:** `docs/web-implementation/PHASE_05_DETECTION.md`
 
 ### Deliverables
 - [ ] Discrete-delay detection model (V1)
-- [ ] Light cone preview overlay (optional)
-- [ ] Past-turn self rendering (dim)
+- [ ] Detection config + detection report contracts
 - [ ] GamePhase updates to `Detected`
+- [ ] Light cone/danger preview overlay (optional)
 
 ### Exit Criteria
-- Detection triggers loss state
-- Past-turn selves visible when rifting
+- Detection triggers loss state (`Detected`)
+- Post-detected actions are blocked until restart
+- Existing win/restart behavior remains stable
 
 ---
 
