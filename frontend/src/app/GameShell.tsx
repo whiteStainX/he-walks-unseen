@@ -68,6 +68,7 @@ export function GameShell() {
   const dispatch = useAppDispatch()
   const [directionalActionMode, setDirectionalActionMode] = useState<DirectionalActionMode>('Move')
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
+  const [isLogOpen, setIsLogOpen] = useState(false)
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
@@ -106,6 +107,18 @@ export function GameShell() {
       if (event.key === 'f' || event.key === 'F') {
         event.preventDefault()
         setIsActionMenuOpen((open) => !open)
+        return
+      }
+
+      if (event.key === 'l' || event.key === 'L') {
+        event.preventDefault()
+        setIsLogOpen((open) => !open)
+        return
+      }
+
+      if (event.key === 'Escape' && isLogOpen) {
+        event.preventDefault()
+        setIsLogOpen(false)
         return
       }
 
@@ -217,7 +230,14 @@ export function GameShell() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [directionalActionMode, dispatch, interactionConfig.maxPushChain, isActionMenuOpen, riftDefaultDelta])
+  }, [
+    directionalActionMode,
+    dispatch,
+    interactionConfig.maxPushChain,
+    isActionMenuOpen,
+    isLogOpen,
+    riftDefaultDelta,
+  ])
 
   return (
     <div className="game-shell">
@@ -311,20 +331,8 @@ export function GameShell() {
 
           <section className="ui-window log-window">
             <h2 className="ui-window-title">Log</h2>
-            <div className="ui-window-body log-body">
+            <div className="ui-window-body log-body-compact">
               <p className="window-note status-line">{status}</p>
-              <div className="log-list">
-                {recentHistory.length === 0 ? (
-                  <p className="empty-log">No actions yet.</p>
-                ) : (
-                  recentHistory.map((entry) => (
-                    <div className="log-row" key={`${entry.turn}-${entry.action.kind}`}>
-                      <span className="log-turn">T{entry.turn}</span>
-                      <span className="log-text">{actionSummary(entry)}</span>
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
           </section>
         </aside>
@@ -336,10 +344,37 @@ export function GameShell() {
         <span>WASD/Arrows Direction</span>
         <span>Space Rift</span>
         <span>Enter Wait</span>
+        <span>L Log</span>
         <span>[ ] Rift +/-</span>
         <span>- = Push Max +/-</span>
         <span>R Restart</span>
       </footer>
+
+      {isLogOpen ? (
+        <div className="overlay-backdrop" role="dialog" aria-modal="true" aria-label="Action Log">
+          <section className="overlay-window">
+            <header className="overlay-header">
+              <h2>Action Log</h2>
+              <p>L / Esc: close</p>
+            </header>
+            <div className="overlay-body">
+              {recentHistory.length === 0 ? (
+                <p className="empty-log">No actions yet.</p>
+              ) : (
+                history
+                  .slice()
+                  .reverse()
+                  .map((entry) => (
+                    <div className="log-row" key={`${entry.turn}-${entry.action.kind}`}>
+                      <span className="log-turn">T{entry.turn}</span>
+                      <span className="log-text">{actionSummary(entry)}</span>
+                    </div>
+                  ))
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   )
 }
