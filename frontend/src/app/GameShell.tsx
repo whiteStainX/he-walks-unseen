@@ -20,6 +20,13 @@ import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 import { IsoTimeCubePanel } from '../render/iso/IsoTimeCubePanel'
 
 type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
+type DirectionalOption = { mode: DirectionalActionMode; keyLabel: '1' | '2' | '3'; description: string }
+
+const directionalOptions: DirectionalOption[] = [
+  { mode: 'Move', keyLabel: '1', description: 'Normal movement' },
+  { mode: 'Push', keyLabel: '2', description: 'Push chain forward' },
+  { mode: 'Pull', keyLabel: '3', description: 'Pull from behind' },
+]
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -44,6 +51,19 @@ function directionForKey(key: string): Direction2D | null {
   }
 }
 
+function actionSummary(entry: { action: { kind: string; direction?: string }; outcome: { kind: string } }): string {
+  const actionText =
+    entry.action.kind === 'Move' ||
+    entry.action.kind === 'Push' ||
+    entry.action.kind === 'Pull'
+      ? `${entry.action.kind.toLowerCase()} ${entry.action.direction ?? ''}`.trim()
+      : entry.action.kind === 'ApplyRift'
+        ? 'rift'
+        : entry.action.kind.toLowerCase()
+
+  return `${actionText} -> ${entry.outcome.kind.toLowerCase()}`
+}
+
 export function GameShell() {
   const dispatch = useAppDispatch()
   const [directionalActionMode, setDirectionalActionMode] = useState<DirectionalActionMode>('Move')
@@ -57,7 +77,7 @@ export function GameShell() {
   const phase = useAppSelector((state) => state.game.phase)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
-  const historyLength = useAppSelector((state) => state.game.history.length)
+  const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
@@ -73,6 +93,7 @@ export function GameShell() {
       }),
     [currentTime, timeDepth, worldLine, cube],
   )
+  const recentHistory = useMemo(() => history.slice(-5).reverse(), [history])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -202,7 +223,7 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 4: interaction pipeline (move/wait/rift/push/pull)</p>
+        <p>Phase 4: command windows and interaction pipeline</p>
       </header>
 
       <main className="game-layout">
@@ -225,39 +246,99 @@ export function GameShell() {
           </div>
         </section>
 
-        <aside className="sidebar-panel">
-          <h2>State</h2>
-          <p>Board: {boardSize} x {boardSize}</p>
-          <p>Turn (n): {turn}</p>
-          <p>Time (t): {currentTime}</p>
-          <p>Time depth: {timeDepth}</p>
-          <p>Phase: {phase}</p>
-          <p>Directional action: {directionalActionMode}</p>
-          <p>Action menu: {isActionMenuOpen ? 'open (1/2/3 to select)' : 'closed (F to open)'}</p>
-          <p>Rift default delta: -{riftDefaultDelta}</p>
-          <p>Max push chain: {interactionConfig.maxPushChain}</p>
-          <p>Pull enabled: {interactionConfig.allowPull ? 'yes' : 'no'}</p>
-          <p>History entries: {historyLength}</p>
-          <p>World line length: {worldLine.path.length}</p>
-          <p>Objects on slice: {objectsAtCurrentTime.length}</p>
-          <p>
-            Player: {player ? `(${player.x}, ${player.y}, t=${player.t})` : 'N/A'}
-          </p>
-          <h2>Status</h2>
-          <p>{status}</p>
+        <aside className="hud-stack">
+          <section className="ui-window command-window">
+            <h2 className="ui-window-title">Command</h2>
+            <div className="ui-window-body">
+              <p className="window-note">F: {isActionMenuOpen ? 'close menu' : 'open menu'}</p>
+              <div className="command-list">
+                {directionalOptions.map((option) => (
+                  <div
+                    key={option.mode}
+                    className={[
+                      'command-row',
+                      directionalActionMode === option.mode ? 'is-selected' : '',
+                      isActionMenuOpen ? 'is-menu-active' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    <span className="command-key">{option.keyLabel}</span>
+                    <span className="command-text">{option.mode}</span>
+                    <span className="command-desc">{option.description}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="command-meta">
+                <span>Direction: WASD / Arrows</span>
+                <span>Space: Rift</span>
+                <span>Enter: Wait</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="ui-window state-window">
+            <h2 className="ui-window-title">State</h2>
+            <div className="ui-window-body">
+              <dl className="state-grid">
+                <dt>Board</dt>
+                <dd>{boardSize} x {boardSize}</dd>
+                <dt>Turn</dt>
+                <dd>{turn}</dd>
+                <dt>Time</dt>
+                <dd>{currentTime}</dd>
+                <dt>Depth</dt>
+                <dd>{timeDepth}</dd>
+                <dt>Phase</dt>
+                <dd>{phase}</dd>
+                <dt>Mode</dt>
+                <dd>{directionalActionMode}</dd>
+                <dt>Rift Delta</dt>
+                <dd>-{riftDefaultDelta}</dd>
+                <dt>Push Max</dt>
+                <dd>{interactionConfig.maxPushChain}</dd>
+                <dt>Pull</dt>
+                <dd>{interactionConfig.allowPull ? 'on' : 'off'}</dd>
+                <dt>WorldLine</dt>
+                <dd>{worldLine.path.length}</dd>
+                <dt>Slice Obj</dt>
+                <dd>{objectsAtCurrentTime.length}</dd>
+                <dt>Player</dt>
+                <dd>{player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}</dd>
+              </dl>
+            </div>
+          </section>
+
+          <section className="ui-window log-window">
+            <h2 className="ui-window-title">Log</h2>
+            <div className="ui-window-body log-body">
+              <p className="window-note status-line">{status}</p>
+              <div className="log-list">
+                {recentHistory.length === 0 ? (
+                  <p className="empty-log">No actions yet.</p>
+                ) : (
+                  recentHistory.map((entry) => (
+                    <div className="log-row" key={`${entry.turn}-${entry.action.kind}`}>
+                      <span className="log-turn">T{entry.turn}</span>
+                      <span className="log-text">{actionSummary(entry)}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
         </aside>
       </main>
 
       <footer className="bottom-bar">
-        <span>F: Open/close action menu</span>
-        <span>1/2/3: Move/Push/Pull mode</span>
-        <span>WASD / Arrows: Direction for selected action</span>
-        <span>Space: Rift (configurable)</span>
-        <span>[ / ]: Rift delta -/+</span>
-        <span>- / =: Push chain -/+</span>
-        <span>Enter: Wait</span>
-        <span>R: Restart</span>
-        <span>Reach E: Win</span>
+        <span>F Menu</span>
+        <span>1/2/3 Mode</span>
+        <span>WASD/Arrows Direction</span>
+        <span>Space Rift</span>
+        <span>Enter Wait</span>
+        <span>[ ] Rift +/-</span>
+        <span>- = Push Max +/-</span>
+        <span>R Restart</span>
       </footer>
     </div>
   )
