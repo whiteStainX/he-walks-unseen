@@ -81,36 +81,39 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ### Deliverables
-- [ ] Deterministic 10-slice window selector around current `t`
-- [ ] Derived isometric view model from `WorldLineState` + `TimeCube`
-- [ ] `three` + `@react-three/fiber` panel with orthographic isometric projection
-- [ ] Monochrome style alignment (white background, black lines, flat grayscale fills)
-- [ ] Responsive layout integration beside main board
+- [x] Deterministic 10-slice window selector around current `t`
+- [x] Derived isometric view model from `WorldLineState` + `TimeCube`
+- [x] `three` + `@react-three/fiber` panel with orthographic isometric projection
+- [x] Monochrome style alignment (white background, black lines, flat grayscale fills)
+- [x] Responsive layout integration beside main board
 
 ### Exit Criteria
-- [ ] Isometric panel renders without scrolling on desktop
-- [ ] Windowing rules match design spec
-- [ ] Current `t` slice is clearly identifiable
-- [ ] Panel is read-only and does not mutate gameplay state
-- [ ] Existing move/rift/object behavior remains unchanged
+- [x] Isometric panel renders without scrolling on desktop
+- [x] Windowing rules match design spec
+- [x] Current `t` slice is clearly identifiable
+- [x] Panel is read-only and does not mutate gameplay state
+- [x] Existing move/rift/object behavior remains unchanged
 
 ---
 
 ## Phase 4: Add Interactions
 
 **Goal:** Add interactions: push/pull, rifts, and action validation pipeline.
+**Implementation Detail:** `docs/web-implementation/PHASE_04_INTERACTIONS.md`
 
 ### Deliverables
-- [ ] Action pipeline (validate → apply → propagate → check)
-- [ ] Push/Pull interactions
-- [ ] Rift interactions fully wired
-- [ ] Action history tracking
-- [ ] Sidebar displays time/turn/status/errors
+- [x] Action pipeline (handler execution + post-check orchestration)
+- [x] Push/Pull interactions
+- [x] Rift interactions fully wired
+- [x] Interaction handler registry (modular per-action handlers)
+- [x] Action history tracking
+- [x] Sidebar displays time/turn/status/errors
 
 ### Exit Criteria
-- Player can move on-screen
-- Walls block movement
-- Sidebar updates on each action
+- [x] Player can move on-screen
+- [x] Walls block movement
+- [x] Sidebar updates on each action
+- [x] New interaction can be added via handler+registry without reducer rewrite
 
 ---
 

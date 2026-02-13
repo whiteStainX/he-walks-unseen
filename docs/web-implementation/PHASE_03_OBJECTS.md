@@ -185,7 +185,7 @@ Minimum required archetypes in Phase 3:
 - Exit check via `hasExit(...)` sets `phase = 'Won'`
 
 5. Rendering integration
-- `frontend/src/render/GameBoardCanvas.tsx`
+- `frontend/src/render/board/GameBoardCanvas.tsx`
 - `frontend/src/render/theme.ts`
 - Draw order: objects -> past-turn selves -> current self
 - Object appearance sourced from archetype `render` metadata

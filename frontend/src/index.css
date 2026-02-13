@@ -14,6 +14,14 @@
   --grid: #111111;
   --border: #111111;
   --muted: #666666;
+  --ui-bg: #ffffff;
+  --ui-fg: #111111;
+  --ui-muted: #6a6a6a;
+  --ui-line: #111111;
+  --ui-fill-selected: #111111;
+  --ui-fill-alt: #efefef;
+  --ui-font-title: 'IBM Plex Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+  --ui-font-mono: 'IBM Plex Mono', 'SFMono-Regular', 'Menlo', monospace;
 }
 
 * {

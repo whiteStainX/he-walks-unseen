@@ -1,22 +1,19 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-import { isInBounds, movePosition, type Direction2D, type Position3D } from '../core/position'
-import {
-  resolveRift,
-  type RiftInstruction,
-  type RiftResources,
-  type RiftSettings,
-} from '../core/rift'
-import { hasExit, isBlocked, type TimeCube } from '../core/timeCube'
-import {
-  createWorldLine,
-  currentPosition,
-  extendNormal,
-  extendViaRift,
-  type WorldLineState,
-} from '../core/worldLine'
-import { bootstrapLevelObjects } from './levelObjects'
+import type { Direction2D, Position3D } from '../core/position'
+import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
+import { createWorldLine } from '../core/worldLine'
 import type { ObjectRegistry } from '../core/objects'
+import { bootstrapLevelObjects } from './levelObjects'
+import { runInteractionPipeline } from './interactions/pipeline'
+import type {
+  GamePhase,
+  InteractionAction,
+  InteractionConfig,
+  InteractionHistoryEntry,
+  InteractionState,
+} from './interactions/types'
+import type { TimeCube } from '../core/timeCube'
 
 const DEFAULT_BOARD_SIZE = 12
 const DEFAULT_TIME_DEPTH = 24
@@ -29,21 +26,13 @@ const DEFAULT_RIFT_SETTINGS: RiftSettings = {
 const DEFAULT_RIFT_RESOURCES: RiftResources = {
   energy: null,
 }
+const DEFAULT_INTERACTION_CONFIG: InteractionConfig = {
+  maxPushChain: 4,
+  allowPull: true,
+}
 
-export type GamePhase = 'Playing' | 'Won'
-
-export interface GameState {
-  boardSize: number
-  timeDepth: number
+export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
-  cube: TimeCube
-  worldLine: WorldLineState
-  currentTime: number
-  turn: number
-  phase: GamePhase
-  riftSettings: RiftSettings
-  riftResources: RiftResources
-  status: string
 }
 
 function bootstrapObjectState(): {
@@ -57,7 +46,8 @@ function bootstrapObjectState(): {
     return {
       objectRegistry: bootstrap.value.objectRegistry,
       cube: bootstrap.value.cube,
-      status: 'Move: WASD/Arrows | Rift: Space | Reach E to win',
+      status:
+        'F: action menu (1 move, 2 push, 3 pull) | Direction: WASD/Arrows | Rift: Space | Reach E to win',
     }
   }
 
@@ -92,61 +82,16 @@ function createInitialState(): GameState {
     phase: 'Playing',
     riftSettings: { ...DEFAULT_RIFT_SETTINGS },
     riftResources: { ...DEFAULT_RIFT_RESOURCES },
+    interactionConfig: { ...DEFAULT_INTERACTION_CONFIG },
+    history: [],
     status: objectState.status,
   }
 }
 
 const initialState: GameState = createInitialState()
 
-function nextNormalPosition(
-  state: GameState,
-  direction: Direction2D,
-): Position3D | { error: string } {
-  const current = currentPosition(state.worldLine)
-
-  if (!current) {
-    return { error: 'Internal error: empty world line' }
-  }
-
-  const spatial = movePosition(current, direction)
-
-  if (!isInBounds(spatial, state.boardSize)) {
-    return { error: 'Blocked by boundary' }
-  }
-
-  const nextTime = current.t + 1
-
-  if (nextTime >= state.timeDepth) {
-    return { error: 'Blocked by time boundary' }
-  }
-
-  const next: Position3D = {
-    x: spatial.x,
-    y: spatial.y,
-    t: nextTime,
-  }
-
-  if (isBlocked(state.cube, next)) {
-    return { error: 'Blocked by object' }
-  }
-
-  return next
-}
-
-function applyWinCheck(state: GameState, next: Position3D): void {
-  if (hasExit(state.cube, next)) {
-    state.phase = 'Won'
-    state.status = `Turn ${state.turn}: reached exit at (${next.x}, ${next.y}, t=${next.t})`
-  }
-}
-
-function guardActivePhase(state: GameState): boolean {
-  if (state.phase !== 'Playing') {
-    state.status = 'Game already ended. Press R to restart.'
-    return false
-  }
-
-  return true
+function runAction(state: GameState, action: InteractionAction): void {
+  runInteractionPipeline(state, action)
 }
 
 const gameSlice = createSlice({
@@ -154,142 +99,41 @@ const gameSlice = createSlice({
   initialState,
   reducers: {
     movePlayer2D(state, action: PayloadAction<Direction2D>) {
-      if (!guardActivePhase(state)) {
-        return
-      }
-
-      const next = nextNormalPosition(state, action.payload)
-
-      if ('error' in next) {
-        state.status = next.error
-        return
-      }
-
-      const result = extendNormal(state.worldLine, next)
-
-      if (!result.ok) {
-        state.status =
-          result.error.kind === 'SelfIntersection' ? 'Blocked by self-intersection' : 'Invalid move'
-        return
-      }
-
-      state.worldLine = result.value
-      state.currentTime = next.t
-      state.turn += 1
-      state.status = `Turn ${state.turn}: (${next.x}, ${next.y}, t=${next.t})`
-      applyWinCheck(state, next)
+      runAction(state, { kind: 'Move', direction: action.payload })
     },
     waitTurn(state) {
-      if (!guardActivePhase(state)) {
-        return
-      }
-
-      const current = currentPosition(state.worldLine)
-
-      if (!current) {
-        state.status = 'Internal error: empty world line'
-        return
-      }
-
-      const nextTime = current.t + 1
-
-      if (nextTime >= state.timeDepth) {
-        state.status = 'Blocked by time boundary'
-        return
-      }
-
-      const next: Position3D = { x: current.x, y: current.y, t: nextTime }
-
-      if (isBlocked(state.cube, next)) {
-        state.status = 'Blocked by object'
-        return
-      }
-
-      const result = extendNormal(state.worldLine, next)
-
-      if (!result.ok) {
-        state.status =
-          result.error.kind === 'SelfIntersection' ? 'Blocked by self-intersection' : 'Invalid wait'
-        return
-      }
-
-      state.worldLine = result.value
-      state.currentTime = next.t
-      state.turn += 1
-      state.status = `Turn ${state.turn}: wait at t=${next.t}`
-      applyWinCheck(state, next)
+      runAction(state, { kind: 'Wait' })
     },
     applyRift(state, action: PayloadAction<RiftInstruction | undefined>) {
-      if (!guardActivePhase(state)) {
-        return
-      }
-
-      const current = currentPosition(state.worldLine)
-
-      if (!current) {
-        state.status = 'Internal error: empty world line'
-        return
-      }
-
-      const riftResult = resolveRift({
-        current,
-        instruction: action.payload,
-        settings: state.riftSettings,
-        resources: state.riftResources,
-        boardSize: state.boardSize,
-        timeDepth: state.timeDepth,
-      })
-
-      if (!riftResult.ok) {
-        switch (riftResult.error.kind) {
-          case 'InvalidTargetTime':
-            state.status = 'Invalid rift target time'
-            break
-          case 'InvalidTargetSpace':
-            state.status = 'Invalid rift target position'
-            break
-          case 'InsufficientEnergy':
-            state.status = 'Insufficient energy for rift'
-            break
-        }
-        return
-      }
-
-      const next = riftResult.value.target
-
-      if (isBlocked(state.cube, next)) {
-        state.status = 'Blocked by object'
-        return
-      }
-
-      const result = extendViaRift(state.worldLine, next)
-
-      if (!result.ok) {
-        state.status =
-          result.error.kind === 'SelfIntersection' ? 'Blocked by self-intersection' : 'Invalid rift'
-        return
-      }
-
-      state.worldLine = result.value
-      state.currentTime = next.t
-      state.turn += 1
-      if (state.riftResources.energy !== null) {
-        state.riftResources.energy -= riftResult.value.energyCost
-      }
-      state.status = `Turn ${state.turn}: rift(${riftResult.value.mode}) to (${next.x}, ${next.y}, t=${next.t})`
-      applyWinCheck(state, next)
+      runAction(state, { kind: 'ApplyRift', instruction: action.payload })
+    },
+    pushPlayer2D(state, action: PayloadAction<Direction2D>) {
+      runAction(state, { kind: 'Push', direction: action.payload })
+    },
+    pullPlayer2D(state, action: PayloadAction<Direction2D>) {
+      runAction(state, { kind: 'Pull', direction: action.payload })
     },
     configureRiftSettings(state, action: PayloadAction<Partial<RiftSettings>>) {
       state.riftSettings = { ...state.riftSettings, ...action.payload }
       state.status = `Rift settings updated (delta=${state.riftSettings.defaultDelta}, cost=${state.riftSettings.baseEnergyCost})`
     },
+    setInteractionConfig(state, action: PayloadAction<Partial<InteractionConfig>>) {
+      state.interactionConfig = { ...state.interactionConfig, ...action.payload }
+      state.status = `Interaction config updated (maxPushChain=${state.interactionConfig.maxPushChain}, allowPull=${state.interactionConfig.allowPull})`
+    },
     restart(state) {
+      const objectState = bootstrapObjectState()
+
+      state.objectRegistry = objectState.objectRegistry
+      state.cube = objectState.cube
       state.worldLine = createWorldLine(DEFAULT_START_POSITION)
       state.currentTime = DEFAULT_START_POSITION.t
       state.turn = 0
       state.phase = 'Playing'
       state.riftSettings = { ...DEFAULT_RIFT_SETTINGS }
       state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
+      state.interactionConfig = { ...DEFAULT_INTERACTION_CONFIG }
+      state.history = []
       state.status = 'Restarted'
     },
     setStatus(state, action: PayloadAction<string>) {
@@ -298,6 +142,17 @@ const gameSlice = createSlice({
   },
 })
 
-export const { movePlayer2D, waitTurn, applyRift, configureRiftSettings, restart, setStatus } =
-  gameSlice.actions
+export const {
+  movePlayer2D,
+  waitTurn,
+  applyRift,
+  pushPlayer2D,
+  pullPlayer2D,
+  configureRiftSettings,
+  setInteractionConfig,
+  restart,
+  setStatus,
+} = gameSlice.actions
 export const gameReducer = gameSlice.reducer
+
+export type { GamePhase, InteractionHistoryEntry }

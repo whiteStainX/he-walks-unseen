@@ -20,7 +20,7 @@ This document describes how the web UI renders the Space-Time Cube using React +
 
 ### Core Rendering
 - **HTML Canvas** for the grid
-- **React components** for sidebar and bottom bar
+- **React components** for HUD windows, bottom bar, and overlays
 - **Optional:** isometric TimeCube panel (`three` + `@react-three/fiber`) per `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 - **Optional:** switch to WebGL/Pixi later if needed
 
@@ -35,11 +35,16 @@ If WebGL is used for the isometric panel, preserve current visual language:
 <App>
   <GameLayout>
     <GameCanvas />
-    <Sidebar />
+    <HudWindows />
     <BottomBar />
+    <OverlayLayer />
   </GameLayout>
 </App>
 ```
+
+### Render Module Organization
+- Place feature-specific rendering code under `frontend/src/render/<feature>/` (for example `board/`, `iso/`).
+- Keep shared rendering utilities at `frontend/src/render/` (for example `theme.ts`).
 
 ---
 
@@ -102,14 +107,12 @@ Only drawn when detection preview is enabled.
 
 ---
 
-## Sidebar (React)
+## HUD Windows (React)
 
 Display:
-- Level name
-- `t` (cube time)
-- Turn number
-- Last outcome
-- Status/errors
+- `CommandWindow` (mode + key commands)
+- `StateWindow` (`t`, turn, phase, core stats)
+- `LogWindow` (status line + log overlay hint)
 
 ---
 
@@ -119,7 +122,7 @@ Display input hints and mode indicators.
 
 Example:
 ```
-WASD/Arrows: Move | Space: Rift | R: Restart | P: Preview
+F Menu | 1/2/3 Mode | WASD/Arrows Direction | Space Rift | Enter Wait | L Log | [ ] Rift +/- | - = Push Max +/- | R Restart
 ```
 
 ---

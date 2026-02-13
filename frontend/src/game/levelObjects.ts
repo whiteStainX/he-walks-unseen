@@ -16,7 +16,12 @@ export const defaultLevelObjectsConfig: LevelObjectsConfig = {
     },
     box: {
       kind: 'box',
-      components: [{ kind: 'BlocksMovement' }, { kind: 'Pushable' }, { kind: 'TimePersistent' }],
+      components: [
+        { kind: 'BlocksMovement' },
+        { kind: 'Pushable' },
+        { kind: 'Pullable' },
+        { kind: 'TimePersistent' },
+      ],
       render: { fill: '#d9d9d9', stroke: '#111111' },
     },
     enemy: {

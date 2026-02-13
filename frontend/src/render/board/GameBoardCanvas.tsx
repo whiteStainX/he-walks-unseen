@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react'
 
-import type { Position3D } from '../core/position'
-import type { ResolvedObjectInstance } from '../core/objects'
-import type { PositionAtTime } from '../core/worldLine'
-import { minimalMonoTheme } from './theme'
+import type { ResolvedObjectInstance } from '../../core/objects'
+import type { Position3D } from '../../core/position'
+import type { PositionAtTime } from '../../core/worldLine'
+import { minimalMonoTheme } from '../theme'
 
 interface GameBoardCanvasProps {
   boardSize: number

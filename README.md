@@ -15,7 +15,14 @@ Exploit causality. Move faster than light. Walk unseen.
 
 ## Status
 
-In development. Web rewrite in progress.
+Web rewrite is in active development.
+
+Current playable baseline:
+- Turn/time separation with `WorldLineState`
+- Rift-based time travel
+- Object occupancy with push/pull interactions
+- Isometric TimeCube helper panel
+- Windowed HUD with action-mode selection and log overlay
 
 ## Requirements
 
@@ -34,16 +41,22 @@ npm run dev
 
 | Key | Action |
 |-----|--------|
-| `W/A/S/D` / Arrow Keys | Move in space |
-| `Space` | Use rift |
-| `Q` / `Esc` | Quit |
-| `R` | Restart level |
-| `P` | Toggle preview |
+| `F` | Open/close action menu |
+| `1 / 2 / 3` | Select directional mode: Move / Push / Pull |
+| `W/A/S/D` / Arrow Keys | Apply selected directional mode |
+| `Space` | Use default rift |
+| `Enter` | Wait one turn |
+| `L` | Open/close full log overlay |
+| `[` / `]` | Rift delta - / + |
+| `-` / `=` | Max push chain - / + |
+| `R` | Restart |
 
 ## Documentation
 
 - [Web Design Docs](docs/web-design/OVERALL.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
+- [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
+- [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
 - [Web Implementation Plan](docs/web-implementation/PLAN.md)
 - [Agent Guide](AGENTS.md)
 

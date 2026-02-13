@@ -5,6 +5,7 @@
 A web-based, turn-based puzzle stealth game where **time is a spatial dimension**. The player navigates a 3D Space-Time Cube and avoids detection from enemies who perceive via causal light cones.
 
 **Design Reference:** `docs/web-design/OVERALL.md`
+**Interaction Architecture Reference:** `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
 
 ---
 
@@ -28,7 +29,11 @@ frontend/
 │   ├── app/                 # App shell, routing, layout
 │   ├── core/                # Core game logic (no React)
 │   ├── game/                # State container, actions, validation
-│   ├── render/              # Canvas drawing, UI overlays
+│   │   └── interactions/    # Handler registry + per-action interaction modules
+│   ├── render/              # Rendering modules (feature folders + shared theme)
+│   │   ├── board/           # Main time-slice board renderer
+│   │   ├── iso/             # Isometric TimeCube renderer and selectors
+│   │   └── theme.ts         # Shared render tokens
 │   ├── data/                # Level/theme loading
 │   ├── main.tsx             # React entry
 │   └── styles/              # CSS / theme tokens
@@ -69,6 +74,24 @@ frontend/
 - Use discriminated unions for components and errors
 - Avoid `any`; prefer explicit unions or generics
 - Core logic must be pure and deterministic
+
+## Render Module Convention
+
+- Use feature folders under `frontend/src/render/<feature>/` for feature-specific rendering logic and tests.
+- Keep shared render utilities at `frontend/src/render/` only (for example `theme.ts`).
+- Current baseline features: `render/board/` and `render/iso/`.
+
+## Interaction Modularity Convention
+
+- Follow `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`.
+- Interactions are handler modules dispatched by a registry keyed by action kind.
+- Adding a new interaction should require:
+  - adding one action type
+  - adding one handler module
+  - registering handler in registry
+  - adding tests
+- Avoid growing a monolithic reducer with action-specific branching.
+- Keep input intent-first: UI/input chooses action mode first, then direction/target; handlers stay keyed to typed `InteractionAction`.
 
 ---
 

@@ -71,6 +71,9 @@ Truth boundaries (exact rule):
 
 ## 4. UI & UX Principles (Web)
 
+Detailed HUD and overlay specification:
+- `docs/web-design/UI_WINDOW_SYSTEM.md`
+
 ### 4.1 Visual Goals
 - Make temporal mechanics visually obvious
 - Emphasize **past-turn selves**, **light cones**, and **time depth**
@@ -85,7 +88,14 @@ Truth boundaries (exact rule):
   - Detailed spec: `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ### 4.3 Input
-- **Keyboard:** WASD / Arrows, Space (rift), R (restart)
+- **Keyboard (intent-first):**
+  - `F` opens/closes interaction mode selection
+  - `1/2/3` selects directional mode (`Move`/`Push`/`Pull`)
+  - WASD / Arrows apply the selected directional mode
+  - `Space` applies Rift
+  - `Enter` waits one turn
+  - `L` opens/closes action log overlay
+  - `R` restarts
 - **Pointer:** optional click-to-move (future)
 
 ### 4.4 Layout (Web)

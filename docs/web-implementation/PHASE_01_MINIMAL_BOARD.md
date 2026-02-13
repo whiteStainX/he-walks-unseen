@@ -59,7 +59,7 @@ Note: this file documents the Phase 1 baseline snapshot. Current runtime code ha
   - Typed selectors and dispatch
 
 ### Rendering + App Shell
-- `frontend/src/render/GameBoardCanvas.tsx`
+- `frontend/src/render/board/GameBoardCanvas.tsx`
   - Canvas-based board render
   - Player square render
   - Grid lines intentionally removed
