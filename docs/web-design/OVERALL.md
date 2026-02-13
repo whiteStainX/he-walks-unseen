@@ -190,4 +190,5 @@ This is out of MVP scope but should inform data formats and tooling.
 - `CORE_DATA.md` (TS data structures)
 - `GAME_STATE.md` (action pipeline and validation)
 - `RENDERING.md` (canvas/UI layout)
+- `PHASE_06_CONTENT_SYSTEM.md` (data-driven content loading design)
 - `PHASE_03_5_ISOMETRIC_TIMECUBE.md` (isometric TimeCube panel)

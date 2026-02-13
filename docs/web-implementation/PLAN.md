@@ -138,15 +138,19 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 6: Data Loading
 
 **Goal:** Load levels/themes from JSON assets.
+**Design Detail:** `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
 
 ### Deliverables
+- [ ] Canonical content schemas (level, behavior, theme, rules)
+- [ ] Parser + validator with structured errors
 - [ ] JSON level format parser
 - [ ] JSON theme loader
 - [ ] Bundle default levels in `public/data/`
 
 ### Exit Criteria
-- Can switch levels without rebuild
-- Theme applies to canvas and UI
+- [ ] Can switch levels without rebuild
+- [ ] Theme applies to canvas and UI
+- [ ] Enemy behavior parameters load from content files
 
 ---
 
