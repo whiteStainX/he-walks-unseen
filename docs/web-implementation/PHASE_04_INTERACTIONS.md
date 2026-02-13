@@ -262,9 +262,12 @@ Implement a single reducer pipeline for all active actions:
 - `setInteractionConfig(partial)`
 
 6. Update keyboard wiring in `GameShell`:
-- propose defaults:
-  - `Shift+WASD` = push
-  - `Alt+WASD` or dedicated keys for pull
+- intent-first controls:
+  - `F` opens/closes action mode selection
+  - `1/2/3` selects directional action (`Move`/`Push`/`Pull`)
+  - WASD / Arrows execute selected directional action
+  - `Space` remains rift
+  - `Enter` remains wait
 
 7. Update sidebar status:
 - last action type

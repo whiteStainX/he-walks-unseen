@@ -91,6 +91,7 @@ frontend/
   - registering handler in registry
   - adding tests
 - Avoid growing a monolithic reducer with action-specific branching.
+- Keep input intent-first: UI/input chooses action mode first, then direction/target; handlers stay keyed to typed `InteractionAction`.
 
 ---
 

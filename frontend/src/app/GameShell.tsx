@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
@@ -18,6 +18,8 @@ import {
 import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
 import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 import { IsoTimeCubePanel } from '../render/iso/IsoTimeCubePanel'
+
+type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -44,6 +46,8 @@ function directionForKey(key: string): Direction2D | null {
 
 export function GameShell() {
   const dispatch = useAppDispatch()
+  const [directionalActionMode, setDirectionalActionMode] = useState<DirectionalActionMode>('Move')
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
@@ -78,20 +82,56 @@ export function GameShell() {
 
       const direction = directionForKey(event.key)
 
+      if (event.key === 'f' || event.key === 'F') {
+        event.preventDefault()
+        setIsActionMenuOpen((open) => !open)
+        return
+      }
+
+      if (isActionMenuOpen) {
+        if (event.key === '1') {
+          event.preventDefault()
+          setDirectionalActionMode('Move')
+          setIsActionMenuOpen(false)
+          return
+        }
+
+        if (event.key === '2') {
+          event.preventDefault()
+          setDirectionalActionMode('Push')
+          setIsActionMenuOpen(false)
+          return
+        }
+
+        if (event.key === '3') {
+          event.preventDefault()
+          setDirectionalActionMode('Pull')
+          setIsActionMenuOpen(false)
+          return
+        }
+
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          setIsActionMenuOpen(false)
+          return
+        }
+
+        return
+      }
+
       if (direction) {
         event.preventDefault()
-
-        if (event.shiftKey) {
-          dispatch(pushPlayer2D(direction))
-          return
+        switch (directionalActionMode) {
+          case 'Move':
+            dispatch(movePlayer2D(direction))
+            break
+          case 'Push':
+            dispatch(pushPlayer2D(direction))
+            break
+          case 'Pull':
+            dispatch(pullPlayer2D(direction))
+            break
         }
-
-        if (event.altKey) {
-          dispatch(pullPlayer2D(direction))
-          return
-        }
-
-        dispatch(movePlayer2D(direction))
         return
       }
 
@@ -156,7 +196,7 @@ export function GameShell() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [dispatch, interactionConfig.maxPushChain, riftDefaultDelta])
+  }, [directionalActionMode, dispatch, interactionConfig.maxPushChain, isActionMenuOpen, riftDefaultDelta])
 
   return (
     <div className="game-shell">
@@ -192,6 +232,8 @@ export function GameShell() {
           <p>Time (t): {currentTime}</p>
           <p>Time depth: {timeDepth}</p>
           <p>Phase: {phase}</p>
+          <p>Directional action: {directionalActionMode}</p>
+          <p>Action menu: {isActionMenuOpen ? 'open (1/2/3 to select)' : 'closed (F to open)'}</p>
           <p>Rift default delta: -{riftDefaultDelta}</p>
           <p>Max push chain: {interactionConfig.maxPushChain}</p>
           <p>Pull enabled: {interactionConfig.allowPull ? 'yes' : 'no'}</p>
@@ -207,9 +249,9 @@ export function GameShell() {
       </main>
 
       <footer className="bottom-bar">
-        <span>WASD / Arrows: Move</span>
-        <span>Shift + Move: Push</span>
-        <span>Alt + Move: Pull</span>
+        <span>F: Open/close action menu</span>
+        <span>1/2/3: Move/Push/Pull mode</span>
+        <span>WASD / Arrows: Direction for selected action</span>
         <span>Space: Rift (configurable)</span>
         <span>[ / ]: Rift delta -/+</span>
         <span>- / =: Push chain -/+</span>

@@ -46,6 +46,11 @@ The reducer pipeline must not grow via large action-specific branching.
 - no side effects
 - no hidden global state
 
+6. Keep input intent-separated from interaction execution:
+- input layer selects an `InteractionAction` intent (mode + target)
+- interaction handlers execute typed actions only
+- avoid scaling controls via multi-key chords as the primary interaction model
+
 ---
 
 ## Suggested Module Layout
@@ -107,4 +112,3 @@ A new interaction is considered modular only if:
 1. No reducer pipeline rewrite was required.
 2. Existing handler modules were not modified outside shared contracts.
 3. Existing interaction tests still pass.
-
