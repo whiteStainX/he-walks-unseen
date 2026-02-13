@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
+import { objectsAt } from '../core/timeCube'
 import {
   applyRift,
   configureRiftSettings,
   gameReducer,
   movePlayer2D,
+  pullPlayer2D,
+  pushPlayer2D,
   restart,
+  setInteractionConfig,
   waitTurn,
 } from './gameSlice'
 
@@ -108,5 +112,82 @@ describe('gameSlice', () => {
 
     expect(moved.turn).toBe(1)
     expect(moved.phase).toBe('Playing')
+  })
+
+  it('pushes a pullable box and propagates occupancy to future slices', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const s1 = gameReducer(initial, movePlayer2D('east'))
+    const s2 = gameReducer(s1, movePlayer2D('east'))
+    const s3 = gameReducer(s2, movePlayer2D('south'))
+    const pushed = gameReducer(s3, pushPlayer2D('east'))
+
+    expect(pushed.turn).toBe(4)
+    expect(pushed.currentTime).toBe(4)
+    expect(pushed.worldLine.path.at(-1)).toEqual({ x: 8, y: 6, t: 4 })
+    expect(objectsAt(pushed.cube, { x: 9, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
+    expect(objectsAt(pushed.cube, { x: 9, y: 6, t: 8 }).map((obj) => obj.id)).toContain('box.main')
+  })
+
+  it('pulls a box from behind into previous player cell', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const s1 = gameReducer(initial, movePlayer2D('east'))
+    const s2 = gameReducer(s1, movePlayer2D('east'))
+    const s3 = gameReducer(s2, movePlayer2D('south'))
+    const pushed = gameReducer(s3, pushPlayer2D('east'))
+    const pulled = gameReducer(pushed, pullPlayer2D('west'))
+
+    expect(pulled.turn).toBe(5)
+    expect(pulled.currentTime).toBe(5)
+    expect(pulled.worldLine.path.at(-1)).toEqual({ x: 7, y: 6, t: 5 })
+    expect(objectsAt(pulled.cube, { x: 8, y: 6, t: 5 }).map((obj) => obj.id)).toContain('box.main')
+  })
+
+  it('rejects push when chain exceeds configured max length', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(initial, setInteractionConfig({ maxPushChain: 0 }))
+    const s1 = gameReducer(configured, movePlayer2D('east'))
+    const s2 = gameReducer(s1, movePlayer2D('east'))
+    const s3 = gameReducer(s2, movePlayer2D('south'))
+    const blocked = gameReducer(s3, pushPlayer2D('east'))
+
+    expect(blocked.turn).toBe(3)
+    expect(blocked.currentTime).toBe(3)
+    expect(blocked.status).toBe('Push chain too long')
+    expect(blocked.worldLine.path.at(-1)).toEqual({ x: 7, y: 6, t: 3 })
+    expect(objectsAt(blocked.cube, { x: 8, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
+  })
+
+  it('records successful interactions in history', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const moved = gameReducer(initial, movePlayer2D('east'))
+    const blocked = gameReducer(
+      moved,
+      applyRift({ kind: 'tunnel', target: { x: 6, y: 5, t: 1 } }),
+    )
+    const waited = gameReducer(blocked, waitTurn())
+
+    expect(waited.turn).toBe(2)
+    expect(waited.history).toHaveLength(2)
+    expect(waited.history[0].action).toEqual({ kind: 'Move', direction: 'east' })
+    expect(waited.history[1].action).toEqual({ kind: 'Wait' })
+    expect(waited.history[0].outcome.kind).toBe('Moved')
+    expect(waited.history[1].outcome.kind).toBe('Moved')
+  })
+
+  it('resets moved object occupancy on restart', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const s1 = gameReducer(initial, movePlayer2D('east'))
+    const s2 = gameReducer(s1, movePlayer2D('east'))
+    const s3 = gameReducer(s2, movePlayer2D('south'))
+    const pushed = gameReducer(s3, pushPlayer2D('east'))
+
+    expect(objectsAt(pushed.cube, { x: 9, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
+
+    const reset = gameReducer(pushed, restart())
+
+    expect(reset.turn).toBe(0)
+    expect(reset.history).toHaveLength(0)
+    expect(objectsAt(reset.cube, { x: 8, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
+    expect(objectsAt(reset.cube, { x: 9, y: 6, t: 4 }).map((obj) => obj.id)).not.toContain('box.main')
   })
 })

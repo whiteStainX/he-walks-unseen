@@ -102,18 +102,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_04_INTERACTIONS.md`
 
 ### Deliverables
-- [ ] Action pipeline (validate → apply → propagate → check)
-- [ ] Push/Pull interactions
-- [ ] Rift interactions fully wired
-- [ ] Interaction handler registry (modular per-action handlers)
-- [ ] Action history tracking
-- [ ] Sidebar displays time/turn/status/errors
+- [x] Action pipeline (handler execution + post-check orchestration)
+- [x] Push/Pull interactions
+- [x] Rift interactions fully wired
+- [x] Interaction handler registry (modular per-action handlers)
+- [x] Action history tracking
+- [x] Sidebar displays time/turn/status/errors
 
 ### Exit Criteria
-- [ ] Player can move on-screen
-- [ ] Walls block movement
-- [ ] Sidebar updates on each action
-- [ ] New interaction can be added via handler+registry without reducer rewrite
+- [x] Player can move on-screen
+- [x] Walls block movement
+- [x] Sidebar updates on each action
+- [x] New interaction can be added via handler+registry without reducer rewrite
 
 ---
 

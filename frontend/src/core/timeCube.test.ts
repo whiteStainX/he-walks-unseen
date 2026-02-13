@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import type { ResolvedObjectInstance } from './objects'
-import { createTimeCube, hasExit, isBlocked, objectsAt, objectsAtTime, placeObjects } from './timeCube'
+import {
+  applyRelocationsFromTime,
+  createTimeCube,
+  hasExit,
+  isBlocked,
+  objectsAt,
+  objectsAtTime,
+  placeObjects,
+} from './timeCube'
 
 function sampleObjects(): ResolvedObjectInstance[] {
   return [
@@ -70,5 +78,44 @@ describe('timeCube object occupancy', () => {
 
     expect(objectsAtTime(placed.value, 0).map((obj) => obj.id)).toEqual(['wall.a', 'exit.a'])
     expect(objectsAtTime(placed.value, 2).map((obj) => obj.id)).toEqual(['wall.a', 'exit.a'])
+  })
+
+  it('relocates objects from a target time forward', () => {
+    const cube = createTimeCube(6, 6, 5)
+    const placed = placeObjects(cube, [
+      {
+        id: 'box.a',
+        archetypeKey: 'box',
+        position: { x: 1, y: 2, t: 0 },
+        archetype: {
+          kind: 'box',
+          components: [{ kind: 'BlocksMovement' }, { kind: 'Pushable' }, { kind: 'TimePersistent' }],
+          render: {},
+        },
+      },
+    ])
+
+    expect(placed.ok).toBe(true)
+    if (!placed.ok) {
+      return
+    }
+
+    const relocated = applyRelocationsFromTime(placed.value, 2, [
+      {
+        id: 'box.a',
+        from: { x: 1, y: 2, t: 2 },
+        to: { x: 2, y: 2, t: 2 },
+      },
+    ])
+
+    expect(relocated.ok).toBe(true)
+    if (!relocated.ok) {
+      return
+    }
+
+    expect(objectsAt(relocated.value, { x: 1, y: 2, t: 1 }).map((obj) => obj.id)).toContain('box.a')
+    expect(objectsAt(relocated.value, { x: 2, y: 2, t: 2 }).map((obj) => obj.id)).toContain('box.a')
+    expect(objectsAt(relocated.value, { x: 2, y: 2, t: 4 }).map((obj) => obj.id)).toContain('box.a')
+    expect(objectsAt(relocated.value, { x: 1, y: 2, t: 4 }).map((obj) => obj.id)).toHaveLength(0)
   })
 })

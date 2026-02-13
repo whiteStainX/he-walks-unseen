@@ -8,8 +8,11 @@ import {
   applyRift,
   configureRiftSettings,
   movePlayer2D,
+  pullPlayer2D,
+  pushPlayer2D,
   restart,
   setStatus,
+  setInteractionConfig,
   waitTurn,
 } from '../game/gameSlice'
 import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
@@ -49,6 +52,8 @@ export function GameShell() {
   const timeDepth = useAppSelector((state) => state.game.timeDepth)
   const phase = useAppSelector((state) => state.game.phase)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
+  const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
+  const historyLength = useAppSelector((state) => state.game.history.length)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
@@ -75,6 +80,17 @@ export function GameShell() {
 
       if (direction) {
         event.preventDefault()
+
+        if (event.shiftKey) {
+          dispatch(pushPlayer2D(direction))
+          return
+        }
+
+        if (event.altKey) {
+          dispatch(pullPlayer2D(direction))
+          return
+        }
+
         dispatch(movePlayer2D(direction))
         return
       }
@@ -109,6 +125,26 @@ export function GameShell() {
         return
       }
 
+      if (event.key === '-') {
+        event.preventDefault()
+        dispatch(
+          setInteractionConfig({
+            maxPushChain: Math.max(1, interactionConfig.maxPushChain - 1),
+          }),
+        )
+        return
+      }
+
+      if (event.key === '=') {
+        event.preventDefault()
+        dispatch(
+          setInteractionConfig({
+            maxPushChain: interactionConfig.maxPushChain + 1,
+          }),
+        )
+        return
+      }
+
       if (event.key === 'q' || event.key === 'Q' || event.key === 'Escape') {
         event.preventDefault()
         dispatch(setStatus('Quit is not wired in web build.'))
@@ -120,13 +156,13 @@ export function GameShell() {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [dispatch, riftDefaultDelta])
+  }, [dispatch, interactionConfig.maxPushChain, riftDefaultDelta])
 
   return (
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 3: objects and occupancy foundation</p>
+        <p>Phase 4: interaction pipeline (move/wait/rift/push/pull)</p>
       </header>
 
       <main className="game-layout">
@@ -157,6 +193,9 @@ export function GameShell() {
           <p>Time depth: {timeDepth}</p>
           <p>Phase: {phase}</p>
           <p>Rift default delta: -{riftDefaultDelta}</p>
+          <p>Max push chain: {interactionConfig.maxPushChain}</p>
+          <p>Pull enabled: {interactionConfig.allowPull ? 'yes' : 'no'}</p>
+          <p>History entries: {historyLength}</p>
           <p>World line length: {worldLine.path.length}</p>
           <p>Objects on slice: {objectsAtCurrentTime.length}</p>
           <p>
@@ -169,8 +208,11 @@ export function GameShell() {
 
       <footer className="bottom-bar">
         <span>WASD / Arrows: Move</span>
+        <span>Shift + Move: Push</span>
+        <span>Alt + Move: Pull</span>
         <span>Space: Rift (configurable)</span>
         <span>[ / ]: Rift delta -/+</span>
+        <span>- / =: Push chain -/+</span>
         <span>Enter: Wait</span>
         <span>R: Restart</span>
         <span>Reach E: Win</span>
