@@ -101,7 +101,7 @@
 
 .hud-stack {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 8px;
   min-height: 0;
 }
@@ -188,21 +188,67 @@
   color: var(--ui-muted);
 }
 
-.state-grid {
-  margin: 0;
+.state-sections {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 8px;
+  gap: 8px;
+  max-height: 100%;
+  overflow: auto;
 }
 
-.state-grid dt {
+.state-window .ui-window-body {
+  overflow: hidden;
+}
+
+.state-block {
+  border: 1px solid var(--ui-line);
+  padding: 6px;
+}
+
+.state-block-title {
+  margin: 0 0 6px;
+  font-family: var(--ui-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ui-muted);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.metric-grid-single {
+  grid-template-columns: 1fr;
+}
+
+.metric-item {
+  border: 1px solid var(--ui-line);
+  background: var(--ui-fill-alt);
+  padding: 4px 6px;
+  min-width: 0;
+}
+
+.metric-item-wide {
+  grid-column: 1 / -1;
+}
+
+.metric-label {
+  display: block;
   color: var(--ui-muted);
   text-transform: uppercase;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
 }
 
-.state-grid dd {
-  margin: 0;
-  text-align: right;
+.metric-value {
+  display: block;
+  margin-top: 2px;
+  color: var(--ui-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .log-body-compact {

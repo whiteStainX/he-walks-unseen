@@ -321,42 +321,101 @@ export function GameShell() {
           <section className="ui-window state-window">
             <h2 className="ui-window-title">State</h2>
             <div className="ui-window-body">
-              <dl className="state-grid">
-                <dt>Board</dt>
-                <dd>{boardSize} x {boardSize}</dd>
-                <dt>Turn</dt>
-                <dd>{turn}</dd>
-                <dt>Time</dt>
-                <dd>{currentTime}</dd>
-                <dt>Depth</dt>
-                <dd>{timeDepth}</dd>
-                <dt>Phase</dt>
-                <dd>{phase}</dd>
-                <dt>Mode</dt>
-                <dd>{directionalActionMode}</dd>
-                <dt>Rift Delta</dt>
-                <dd>-{riftDefaultDelta}</dd>
-                <dt>Push Max</dt>
-                <dd>{interactionConfig.maxPushChain}</dd>
-                <dt>Pull</dt>
-                <dd>{interactionConfig.allowPull ? 'on' : 'off'}</dd>
-                <dt>Detect</dt>
-                <dd>{detectionConfig.enabled ? 'on' : 'off'}</dd>
-                <dt>D Delay</dt>
-                <dd>{detectionConfig.delayTurns}</dd>
-                <dt>D Range</dt>
-                <dd>{detectionConfig.maxDistance}</dd>
-                <dt>Danger</dt>
-                <dd>{showDangerPreview ? 'on' : 'off'}</dd>
-                <dt>WorldLine</dt>
-                <dd>{worldLine.path.length}</dd>
-                <dt>Slice Obj</dt>
-                <dd>{objectsAtCurrentTime.length}</dd>
-                <dt>D Events</dt>
-                <dd>{detectionPreviewReport.events.length}</dd>
-                <dt>Player</dt>
-                <dd>{player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}</dd>
-              </dl>
+              <div className="state-sections">
+                <section className="state-block">
+                  <h3 className="state-block-title">Core</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Board</span>
+                      <span className="metric-value">{boardSize} x {boardSize}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Turn</span>
+                      <span className="metric-value">{turn}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Time</span>
+                      <span className="metric-value">{currentTime}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Depth</span>
+                      <span className="metric-value">{timeDepth}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Phase</span>
+                      <span className="metric-value">{phase}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Mode</span>
+                      <span className="metric-value">{directionalActionMode}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Interaction</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Rift Delta</span>
+                      <span className="metric-value">-{riftDefaultDelta}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Push Max</span>
+                      <span className="metric-value">{interactionConfig.maxPushChain}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Pull</span>
+                      <span className="metric-value">{interactionConfig.allowPull ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Danger</span>
+                      <span className="metric-value">{showDangerPreview ? 'on' : 'off'}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Detection</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Enabled</span>
+                      <span className="metric-value">{detectionConfig.enabled ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Delay</span>
+                      <span className="metric-value">{detectionConfig.delayTurns}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Range</span>
+                      <span className="metric-value">{detectionConfig.maxDistance}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Events</span>
+                      <span className="metric-value">{detectionPreviewReport.events.length}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Slice</h3>
+                  <div className="metric-grid metric-grid-single">
+                    <div className="metric-item">
+                      <span className="metric-label">WorldLine</span>
+                      <span className="metric-value">{worldLine.path.length}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Slice Obj</span>
+                      <span className="metric-value">{objectsAtCurrentTime.length}</span>
+                    </div>
+                    <div className="metric-item metric-item-wide">
+                      <span className="metric-label">Player</span>
+                      <span className="metric-value">
+                        {player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
           </section>
 
