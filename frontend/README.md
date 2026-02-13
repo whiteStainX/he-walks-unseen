@@ -31,15 +31,32 @@ npm test
 
 ```bash
 npm run lint
-npm run format
 ```
+
+## Controls
+
+| Key | Action |
+|-----|--------|
+| `F` | Open/close action menu |
+| `1 / 2 / 3` | Select directional mode: Move / Push / Pull |
+| `W/A/S/D` / Arrow Keys | Apply selected directional mode |
+| `Space` | Use default rift |
+| `Enter` | Wait one turn |
+| `L` | Open/close full log overlay |
+| `[` / `]` | Rift delta - / + |
+| `-` / `=` | Max push chain - / + |
+| `R` | Restart |
 
 ## Assets
 
 - Levels and themes should live in `frontend/public/data/`.
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
+- Interaction handlers live in `frontend/src/game/interactions/`.
+- Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 
 ## References
 
 - `docs/web-design/OVERALL.md`
 - `docs/web-design/MATH_MODEL.md`
+- `docs/web-design/UI_WINDOW_SYSTEM.md`
+- `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`

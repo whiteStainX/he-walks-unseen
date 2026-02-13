@@ -77,6 +77,7 @@ Content:
   - `3` select Pull
   - `Space` Rift
   - `Enter` Wait
+  - `L` Log overlay
   - `R` Restart
 
 Behavior:
@@ -100,12 +101,16 @@ Required fields:
 ### 4.3 LogWindow
 
 Purpose:
-- show recent outcomes with minimal noise
+- show immediate status with minimal noise while keeping board focus
+- provide access to full history via overlay
 
 Rules:
-- display last `5` entries
-- newest entry at top
-- each entry: `Turn`, `Action`, short outcome text
+- in-HUD log window shows:
+  - current status line
+  - hint for log overlay key
+- full history is shown in `LogOverlay` (opened by `L`)
+- overlay list order: newest first
+- each entry format: `Turn`, `Action`, short outcome text
 - use monospace alignment for readability
 
 ---
@@ -138,18 +143,22 @@ Input is mode-driven and layer-aware.
 States:
 1. `Gameplay`
 2. `ActionMenu`
-3. `StoryDialog` (future)
-4. `SystemMenu` (future pause/settings/help)
+3. `LogOverlay`
+4. `StoryDialog` (future)
+5. `SystemMenu` (future pause/settings/help)
 
 Priority:
 - highest: `SystemMenu`
 - then: `StoryDialog`
+- then: `LogOverlay`
 - then: `ActionMenu`
 - lowest: `Gameplay`
 
 Transitions:
 - `Gameplay -> ActionMenu`: `F`
 - `ActionMenu -> Gameplay`: `F` or `Escape` or mode selected (`1/2/3`)
+- `Gameplay -> LogOverlay`: `L`
+- `LogOverlay -> Gameplay`: `L` or `Escape`
 - `Gameplay -> StoryDialog`: scripted event trigger (future)
 - any state -> `SystemMenu`: pause key (future)
 
@@ -178,6 +187,7 @@ To add story overlays:
 
 1. Players can understand controls by reading `CommandWindow` alone.
 2. Active mode is always visible.
-3. No gameplay scroll on desktop.
-4. Input conflicts are prevented by input-layer ownership.
-5. Future story dialogs can be added without redesigning base HUD.
+3. `L` toggles a readable full log overlay without squeezing HUD layout.
+4. No gameplay scroll on desktop.
+5. Input conflicts are prevented by input-layer ownership.
+6. Future story dialogs can be added without redesigning base HUD.

@@ -94,6 +94,7 @@ Detailed HUD and overlay specification:
   - WASD / Arrows apply the selected directional mode
   - `Space` applies Rift
   - `Enter` waits one turn
+  - `L` opens/closes action log overlay
   - `R` restarts
 - **Pointer:** optional click-to-move (future)
 

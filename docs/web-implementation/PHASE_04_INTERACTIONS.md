@@ -268,6 +268,7 @@ Implement a single reducer pipeline for all active actions:
   - WASD / Arrows execute selected directional action
   - `Space` remains rift
   - `Enter` remains wait
+  - `L` opens/closes full action log overlay
 
 7. Update sidebar status:
 - last action type
