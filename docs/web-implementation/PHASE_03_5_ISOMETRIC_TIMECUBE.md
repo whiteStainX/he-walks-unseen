@@ -16,8 +16,10 @@ This phase does not change move/rift/object rules. It only adds an explanatory v
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Completed
 - `Dependencies`: Installed (`three`, `@react-three/fiber`, `@react-three/drei`, `@types/three`)
+- `Validation`: `npm run test` passed, `npm run lint` passed
+- `Runtime check`: `npm run dev` verified by user
 
 ---
 
@@ -146,6 +148,33 @@ Behavior:
 
 6. Verify no reducer/core gameplay changes are introduced.
 
+## Implemented in Code
+
+1. Isometric window selector and tests
+- `frontend/src/render/iso/selectIsoWindow.ts`
+- `frontend/src/render/iso/selectIsoWindow.test.ts`
+
+2. Derived isometric view-model and tests
+- `frontend/src/render/iso/buildIsoViewModel.ts`
+- `frontend/src/render/iso/buildIsoViewModel.test.ts`
+
+3. Isometric rendering panel (`three` + `@react-three/fiber`)
+- `frontend/src/render/IsoTimeCubePanel.tsx`
+- Orthographic camera
+- Slice frames + object blocks + player blocks
+- Player world-line polyline in isometric view
+- Edge outlines only (no dense wireframe diagonals)
+
+4. UI integration and layout updates
+- `frontend/src/app/GameShell.tsx`
+- `frontend/src/App.css`
+- Isometric panel shown beside main board on desktop
+- Mobile fallback keeps gameplay board primary
+
+5. Theme alignment
+- `frontend/src/render/theme.ts`
+- Monochrome tokens extended for isometric panel
+
 ---
 
 ## Test Requirements
@@ -165,16 +194,31 @@ Behavior:
 - panel renders without affecting existing movement/rift behavior
 - lint and tests pass
 
+## Test Coverage Added
+
+1. Selector tests (`selectIsoWindow`)
+- latest-time behavior
+- limited-future behavior
+- centered behavior when future is abundant
+- boundary clamping and small-depth behavior
+
+2. View-model tests (`buildIsoViewModel`)
+- bounded window construction
+- player/object mapping by slice `t`
+
+3. Regression safety
+- existing Phase 2/3 reducer and core tests remain green
+
 ---
 
 ## Acceptance Criteria
 
-1. Isometric panel renders beside main board on desktop.
-2. 10-slice window logic matches design rules.
-3. Focus slice is clearly highlighted.
-4. Player/object layers match state at each displayed `t`.
-5. Existing game actions behave identically to pre-Phase 3.5.
-6. `npm run lint` and `npm run test` pass.
+1. [x] Isometric panel renders beside main board on desktop.
+2. [x] 10-slice window logic matches design rules.
+3. [x] Focus slice is clearly highlighted.
+4. [x] Player/object layers match state at each displayed `t`.
+5. [x] Existing game actions behave identically to pre-Phase 3.5.
+6. [x] `npm run lint` and `npm run test` pass.
 
 ---
 
