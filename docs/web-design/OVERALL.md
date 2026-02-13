@@ -71,6 +71,9 @@ Truth boundaries (exact rule):
 
 ## 4. UI & UX Principles (Web)
 
+Detailed HUD and overlay specification:
+- `docs/web-design/UI_WINDOW_SYSTEM.md`
+
 ### 4.1 Visual Goals
 - Make temporal mechanics visually obvious
 - Emphasize **past-turn selves**, **light cones**, and **time depth**
