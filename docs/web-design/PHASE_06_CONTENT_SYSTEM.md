@@ -249,6 +249,11 @@ Exact next step:
 2. Whether generator ships in Phase 6 baseline or Phase 6.5.
 3. Whether detection config is global per level or per enemy override by default.
 
+Current baseline decision implemented:
+- JSON content packs under `frontend/public/data/`
+- manifest file `frontend/public/data/index.json`
+- runtime pack switching uses manifest order
+
 ---
 
 ## 12. Infrastructure Readiness Check

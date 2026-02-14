@@ -14,7 +14,7 @@ Ship a baseline content infrastructure where gameplay boots from validated exter
 
 ## Status
 
-- `Status`: In Progress
+- `Status`: Implemented (baseline)
 
 Progress in current pass:
 - contracts + default content pack fixtures added
@@ -22,6 +22,7 @@ Progress in current pass:
 - loader baseline added and wired into bootstrap defaults
 - default content pack mirrored under `public/data/`
 - async public-data loader entrypoint added (`loadBootContentFromPublic`)
+- public manifest loader added (`loadContentPackManifestFromPublic`)
 - behavior resolver module added (`Static`, `PatrolLoop`, `PatrolPingPong`, `ScriptedTimeline` position resolution)
 - runtime pack switching added (`V` cycles `default` / `variant` from `public/data`)
 - data-layer tests added
@@ -43,6 +44,7 @@ Progress in current pass:
 3. Loader-backed bootstrap integration into game startup.
 
 4. Enemy behavior policy selection loaded from data (at least static + patrol-loop baseline).
+   - Implemented baseline includes `Static`, `PatrolLoop`, and `PatrolPingPong`.
 
 5. Fixture content pack under `frontend/public/data/` and integration tests.
 
@@ -129,15 +131,17 @@ Data layer:
 - `frontend/src/data/behaviorResolver.ts`
 
 Fixtures:
-- `frontend/public/data/levels/*.json`
-- `frontend/public/data/behaviors/*.json`
-- `frontend/public/data/themes/*.json`
-- `frontend/public/data/rules/*.json`
+- `frontend/public/data/index.json`
+- `frontend/public/data/*.level.json`
+- `frontend/public/data/*.behavior.json`
+- `frontend/public/data/*.theme.json`
+- `frontend/public/data/*.rules.json`
 
 Tests:
-- `frontend/src/data/contracts.test.ts`
+- `frontend/src/data/parse.test.ts`
 - `frontend/src/data/validate.test.ts`
 - `frontend/src/data/loader.test.ts`
+- `frontend/src/data/behaviorResolver.test.ts`
 
 ---
 

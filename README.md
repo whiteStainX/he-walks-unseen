@@ -23,6 +23,7 @@ Current playable baseline:
 - Object occupancy with push/pull interactions
 - Isometric TimeCube helper panel
 - Windowed HUD with action-mode selection and log overlay
+- Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
 
 ## Requirements
 
@@ -56,6 +57,7 @@ npm run dev
 ## Documentation
 
 - [Web Design Docs](docs/web-design/OVERALL.md)
+- [Phase 6 Content System](docs/web-design/PHASE_06_CONTENT_SYSTEM.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)

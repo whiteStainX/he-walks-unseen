@@ -52,6 +52,7 @@ npm run lint
 ## Assets
 
 - Levels and themes should live in `frontend/public/data/`.
+- Content pack manifest lives at `frontend/public/data/index.json`.
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
@@ -59,6 +60,7 @@ npm run lint
 ## References
 
 - `docs/web-design/OVERALL.md`
+- `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-design/UI_WINDOW_SYSTEM.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
