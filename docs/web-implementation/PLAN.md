@@ -180,16 +180,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ## Phase 8: Polish
 
 **Goal:** Improve UX and performance.
+**Implementation Detail:** `docs/web-implementation/PHASE_08_POLISH.md`
 
 ### Deliverables
-- [ ] Input buffering and preview
-- [ ] Smooth rendering loop
-- [ ] Accessibility improvements
-- [ ] Settings panel (optional)
+- [ ] Input buffering + intent preview
+- [ ] Render/runtime smoothing and chunking improvements
+- [ ] Accessibility baseline improvements
+- [ ] Settings panel (optional, non-destructive toggles)
 
 ### Exit Criteria
-- Stable 60 FPS on typical hardware
-- No major UI jank
+- Stable rendering and no major UI jank on typical hardware
+- Deterministic gameplay behavior preserved
+- Keyboard-only control path remains fully playable
 
 ---
 
