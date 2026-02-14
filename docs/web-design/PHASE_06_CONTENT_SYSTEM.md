@@ -18,6 +18,58 @@ Primary target:
 
 ---
 
+## 1.1 Key Diagrams
+
+### A. Content-to-Runtime Flow
+
+```mermaid
+flowchart LR
+  A[Content Files<br/>Level/Behavior/Theme/Rules] --> B[Schema + Parse]
+  B --> C[Validation]
+  C --> D[Typed Runtime Config]
+  D --> E[Bootstrap GameState]
+  E --> F[Core Systems<br/>WorldLine + TimeCube + Interaction + Detection]
+  C -->|error| X[Structured Load Errors]
+```
+
+### B. Config Ownership Boundaries
+
+```mermaid
+flowchart TB
+  subgraph ContentPack
+    L[LevelConfig]
+    H[BehaviorConfig]
+    T[ThemeConfig]
+    R[GameRulesConfig]
+  end
+
+  subgraph Runtime
+    G[Game Bootstrap]
+    C[Core Logic]
+    U[UI Render]
+  end
+
+  L --> G
+  H --> G
+  R --> G
+  G --> C
+  T --> U
+  C --> U
+```
+
+### C. Future Story-to-Config Pipeline
+
+```mermaid
+flowchart LR
+  S[Story Text] --> I[Intermediate Spec]
+  I --> V[Schema + Gameplay Validator]
+  V --> P[Compiled Content Pack]
+  P --> G[Game Runtime]
+  V -->|invalid| E[Author Feedback]
+```
+
+---
+
 ## 2. Exact Scope: What We Load
 
 Phase 6 baseline loads these assets:
@@ -196,3 +248,43 @@ Exact next step:
 1. Format choice for shipped content: JSON only vs JSON + authoring DSL.
 2. Whether generator ships in Phase 6 baseline or Phase 6.5.
 3. Whether detection config is global per level or per enemy override by default.
+
+---
+
+## 12. Infrastructure Readiness Check
+
+Current foundation is strong for Phase 6 baseline, but not for full content ambition in one step.
+
+Ready now:
+1. Deterministic core logic modules (`WorldLineState`, `TimeCube`, interactions, detection).
+2. Clear truth model boundaries (player world line vs object occupancy).
+3. Modular reducer pipeline that can consume loaded config.
+4. Stable test/lint/build loop for regression safety.
+
+Not ready yet:
+1. No dedicated `data` layer implementation for parsing/validation.
+2. Bootstrap still relies on hardcoded object config.
+3. No versioned schema contracts and migration strategy in code.
+4. Enemy behavior policies are not yet loaded via reusable behavior presets.
+5. No solvability validator/generator runtime yet.
+
+Implication:
+- Phase 6 must be split into **baseline loader infrastructure first**, then advanced generation/authoring tooling.
+
+---
+
+## 13. Scope Lock for Phase 6
+
+### Phase 6 Baseline (must ship)
+
+1. Canonical schemas and parser/validator.
+2. Loader-backed bootstrap replacing hardcoded level initialization.
+3. Behavior config loading for enemy movement policy selection.
+4. Theme/rules config loading.
+5. Fixture content packs + integration tests.
+
+### Post-Phase 6 (defer intentionally)
+
+1. Procedural generator with guaranteed solvability.
+2. Story-to-config translator pipeline.
+3. Schema migration tooling beyond minimal `schemaVersion` checks.

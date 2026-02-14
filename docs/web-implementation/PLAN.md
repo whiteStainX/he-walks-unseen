@@ -139,6 +139,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 **Goal:** Load levels/themes from JSON assets.
 **Design Detail:** `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
+**Implementation Detail:** `docs/web-implementation/PHASE_06_DATA_LOADING.md`
 
 ### Deliverables
 - [ ] Canonical content schemas (level, behavior, theme, rules)
