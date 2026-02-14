@@ -3,8 +3,14 @@ import type { TimeCube } from '../../core/timeCube'
 import type { Direction2D, Position3D } from '../../core/position'
 import type { WorldLineState } from '../../core/worldLine'
 import type { Result } from '../../core/result'
+import type { DetectionConfig, DetectionReport } from '../../core/detection'
+import type {
+  CausalAnchor,
+  ParadoxConfig,
+  ParadoxReport,
+} from '../../core/paradox'
 
-export type GamePhase = 'Playing' | 'Won'
+export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox'
 
 export type InteractionAction =
   | { kind: 'Move'; direction: Direction2D }
@@ -39,6 +45,8 @@ export interface InteractionHistoryEntry {
   turn: number
   action: InteractionAction
   outcome: SuccessfulOutcome
+  anchors?: CausalAnchor[]
+  affectedFromTime?: number
 }
 
 export interface InteractionConfig {
@@ -58,6 +66,11 @@ export interface InteractionState {
   riftResources: RiftResources
   interactionConfig: InteractionConfig
   history: InteractionHistoryEntry[]
+  detectionConfig: DetectionConfig
+  lastDetection: DetectionReport | null
+  paradoxConfig: ParadoxConfig
+  lastParadox: ParadoxReport | null
+  causalAnchors: CausalAnchor[]
   status: string
 }
 
@@ -86,4 +99,3 @@ export function isBlockedError(result: InteractionHandlerResult): result is {
 } {
   return !result.ok
 }
-

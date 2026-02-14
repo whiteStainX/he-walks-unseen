@@ -7,6 +7,8 @@ export interface CanvasTheme {
   objectFill: string
   objectStroke: string
   objectGlyph: string
+  dangerMarkerStroke: string
+  dangerMarkerFill: string
 }
 
 export interface IsoTheme {
@@ -54,6 +56,8 @@ export const minimalMonoTheme: AppTheme = {
     objectFill: '#efefef',
     objectStroke: '#111111',
     objectGlyph: '#111111',
+    dangerMarkerStroke: '#111111',
+    dangerMarkerFill: '#cfcfcf',
   },
   iso: {
     background: '#ffffff',
@@ -68,14 +72,18 @@ export const minimalMonoTheme: AppTheme = {
   },
 }
 
-export function applyThemeCssVars(theme: AppTheme): void {
+export function applyCssVars(cssVars: Record<string, string>): void {
   if (typeof document === 'undefined') {
     return
   }
 
   const root = document.documentElement
 
-  for (const [name, value] of Object.entries(theme.cssVars)) {
+  for (const [name, value] of Object.entries(cssVars)) {
     root.style.setProperty(name, value)
   }
+}
+
+export function applyThemeCssVars(theme: AppTheme): void {
+  applyCssVars(theme.cssVars)
 }

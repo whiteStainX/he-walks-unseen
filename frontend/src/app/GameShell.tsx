@@ -1,32 +1,90 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import {
+  closeTopLayer,
+  createInputStateMachine,
+  flushDirectionalInput,
+  pushDirectionalInput,
+  selectDirectionalMode,
+  toggleActionMenu,
+  toggleLogOverlay,
+  toggleSystemMenu,
+  type DirectionalActionMode,
+  type InputStateMachine,
+} from './inputStateMachine'
+import { evaluateDetectionV1 } from '../core/detection'
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
+import { loadBootContentFromPublic, loadContentPackManifestFromPublic } from '../data/loader'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
 import {
+  applyLoadedContent,
   applyRift,
   configureRiftSettings,
   movePlayer2D,
   pullPlayer2D,
   pushPlayer2D,
   restart,
+  setContentPackId,
   setStatus,
   setInteractionConfig,
   waitTurn,
 } from '../game/gameSlice'
 import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
+import { buildActionPreview } from '../render/board/preview'
 import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
-import { IsoTimeCubePanel } from '../render/iso/IsoTimeCubePanel'
+import { applyCssVars } from '../render/theme'
 
-type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
+const LazyIsoTimeCubePanel = lazy(async () => {
+  const module = await import('../render/iso/IsoTimeCubePanel')
+  return { default: module.IsoTimeCubePanel }
+})
+
 type DirectionalOption = { mode: DirectionalActionMode; keyLabel: '1' | '2' | '3'; description: string }
+interface UiSettings {
+  showIsoPanel: boolean
+  compactHints: boolean
+  defaultDangerPreview: boolean
+}
+
+const DEFAULT_PACK_SEQUENCE = ['default', 'variant']
+const UI_SETTINGS_STORAGE_KEY = 'he-walks-unseen.ui-settings.v1'
+const defaultUiSettings: UiSettings = {
+  showIsoPanel: true,
+  compactHints: false,
+  defaultDangerPreview: false,
+}
 
 const directionalOptions: DirectionalOption[] = [
   { mode: 'Move', keyLabel: '1', description: 'Normal movement' },
   { mode: 'Push', keyLabel: '2', description: 'Push chain forward' },
   { mode: 'Pull', keyLabel: '3', description: 'Pull from behind' },
 ]
+
+function loadUiSettings(): UiSettings {
+  if (typeof window === 'undefined') {
+    return defaultUiSettings
+  }
+
+  const raw = window.localStorage.getItem(UI_SETTINGS_STORAGE_KEY)
+
+  if (!raw) {
+    return defaultUiSettings
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<UiSettings>
+
+    return {
+      showIsoPanel: parsed.showIsoPanel ?? defaultUiSettings.showIsoPanel,
+      compactHints: parsed.compactHints ?? defaultUiSettings.compactHints,
+      defaultDangerPreview: parsed.defaultDangerPreview ?? defaultUiSettings.defaultDangerPreview,
+    }
+  } catch {
+    return defaultUiSettings
+  }
+}
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -66,9 +124,13 @@ function actionSummary(entry: { action: { kind: string; direction?: string }; ou
 
 export function GameShell() {
   const dispatch = useAppDispatch()
-  const [directionalActionMode, setDirectionalActionMode] = useState<DirectionalActionMode>('Move')
-  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
-  const [isLogOpen, setIsLogOpen] = useState(false)
+  const [inputMachine, setInputMachine] = useState(createInputStateMachine)
+  const [uiSettings, setUiSettings] = useState(loadUiSettings)
+  const [showDangerPreview, setShowDangerPreview] = useState(loadUiSettings().defaultDangerPreview)
+  const [availablePackIds, setAvailablePackIds] = useState<string[]>(DEFAULT_PACK_SEQUENCE)
+  const logOverlayRef = useRef<HTMLElement | null>(null)
+  const settingsOverlayRef = useRef<HTMLElement | null>(null)
+
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
@@ -76,13 +138,31 @@ export function GameShell() {
   const turn = useAppSelector((state) => state.game.turn)
   const timeDepth = useAppSelector((state) => state.game.timeDepth)
   const phase = useAppSelector((state) => state.game.phase)
+  const contentPackId = useAppSelector((state) => state.game.contentPackId)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
+  const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
+  const paradoxConfig = useAppSelector((state) => state.game.paradoxConfig)
+  const lastParadox = useAppSelector((state) => state.game.lastParadox)
+  const causalAnchors = useAppSelector((state) => state.game.causalAnchors)
+  const themeCssVars = useAppSelector((state) => state.game.themeCssVars)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
+
+  const directionalActionMode = inputMachine.mode
+  const isActionMenuOpen = inputMachine.layer === 'ActionMenu'
+  const isLogOpen = inputMachine.layer === 'LogOverlay'
+  const isSystemMenuOpen = inputMachine.layer === 'SystemMenu'
+
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
   const objectsAtCurrentTime = objectsAtTime(cube, currentTime)
+  const recentHistory = useMemo(() => history.slice(-5).reverse(), [history])
+  const queuedIntent = inputMachine.queuedDirectional
+  const queuedIntentLabel = queuedIntent
+    ? `${queuedIntent.mode.toUpperCase()} ${queuedIntent.direction.toUpperCase()}`
+    : 'none'
+
   const isoViewModel = useMemo(
     () =>
       buildIsoViewModel({
@@ -94,7 +174,147 @@ export function GameShell() {
       }),
     [currentTime, timeDepth, worldLine, cube],
   )
-  const recentHistory = useMemo(() => history.slice(-5).reverse(), [history])
+
+  const detectionPreviewReport = useMemo(
+    () =>
+      evaluateDetectionV1({
+        cube,
+        worldLine,
+        currentTime,
+        config: detectionConfig,
+      }),
+    [cube, worldLine, currentTime, detectionConfig],
+  )
+
+  const actionPreview = useMemo(
+    () =>
+      buildActionPreview({
+        cube,
+        worldLine,
+        boardSize,
+        timeDepth,
+        intent: queuedIntent,
+        maxPushChain: interactionConfig.maxPushChain,
+        allowPull: interactionConfig.allowPull,
+      }),
+    [
+      cube,
+      worldLine,
+      boardSize,
+      timeDepth,
+      queuedIntent,
+      interactionConfig.maxPushChain,
+      interactionConfig.allowPull,
+    ],
+  )
+
+  const dispatchDirectionalIntent = useCallback(
+    (intent: { mode: DirectionalActionMode; direction: Direction2D }) => {
+      switch (intent.mode) {
+        case 'Move':
+          dispatch(movePlayer2D(intent.direction))
+          break
+        case 'Push':
+          dispatch(pushPlayer2D(intent.direction))
+          break
+        case 'Pull':
+          dispatch(pullPlayer2D(intent.direction))
+          break
+      }
+    },
+    [dispatch],
+  )
+
+  const applyMachineTransition = useCallback(
+    (nextMachine: InputStateMachine) => {
+      const flushed = flushDirectionalInput(nextMachine)
+      setInputMachine(flushed.next)
+
+      if (flushed.immediate) {
+        dispatchDirectionalIntent(flushed.immediate)
+      }
+    },
+    [dispatchDirectionalIntent],
+  )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    window.localStorage.setItem(UI_SETTINGS_STORAGE_KEY, JSON.stringify(uiSettings))
+  }, [uiSettings])
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const manifest = await loadContentPackManifestFromPublic('/data')
+
+      if (cancelled || !manifest.ok) {
+        return
+      }
+
+      const packIds = manifest.value.packs.map((pack) => pack.id)
+
+      if (packIds.length > 0) {
+        setAvailablePackIds(packIds)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (availablePackIds.length === 0) {
+      return
+    }
+
+    if (!availablePackIds.includes(contentPackId)) {
+      dispatch(setContentPackId(availablePackIds[0]))
+    }
+  }, [availablePackIds, contentPackId, dispatch])
+
+  useEffect(() => {
+    applyCssVars(themeCssVars)
+  }, [themeCssVars])
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const loaded = await loadBootContentFromPublic({ packId: contentPackId })
+
+      if (cancelled) {
+        return
+      }
+
+      if (!loaded.ok) {
+        dispatch(setStatus(`Content load failed (${contentPackId}): ${loaded.error.kind}`))
+        return
+      }
+
+      dispatch(applyLoadedContent({ packId: contentPackId, content: loaded.value }))
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [contentPackId, dispatch])
+
+  useEffect(() => {
+    if (isLogOpen) {
+      logOverlayRef.current?.focus()
+    }
+  }, [isLogOpen])
+
+  useEffect(() => {
+    if (isSystemMenuOpen) {
+      settingsOverlayRef.current?.focus()
+    }
+  }, [isSystemMenuOpen])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -106,66 +326,82 @@ export function GameShell() {
 
       if (event.key === 'f' || event.key === 'F') {
         event.preventDefault()
-        setIsActionMenuOpen((open) => !open)
+        applyMachineTransition(toggleActionMenu(inputMachine))
         return
       }
 
       if (event.key === 'l' || event.key === 'L') {
         event.preventDefault()
-        setIsLogOpen((open) => !open)
+        applyMachineTransition(toggleLogOverlay(inputMachine))
         return
       }
 
-      if (event.key === 'Escape' && isLogOpen) {
+      if (event.key === 'm' || event.key === 'M') {
         event.preventDefault()
-        setIsLogOpen(false)
+        applyMachineTransition(toggleSystemMenu(inputMachine))
         return
+      }
+
+      if (event.key === 'p' || event.key === 'P') {
+        event.preventDefault()
+        setShowDangerPreview((enabled) => !enabled)
+        return
+      }
+
+      if (event.key === 'v' || event.key === 'V') {
+        event.preventDefault()
+        if (availablePackIds.length > 0) {
+          const currentIndex = availablePackIds.findIndex((id) => id === contentPackId)
+          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % availablePackIds.length
+          dispatch(setContentPackId(availablePackIds[nextIndex]))
+        }
+        return
+      }
+
+      if (event.key === 'Escape') {
+        const next = closeTopLayer(inputMachine)
+
+        if (next !== inputMachine) {
+          event.preventDefault()
+          applyMachineTransition(next)
+          return
+        }
       }
 
       if (isActionMenuOpen) {
         if (event.key === '1') {
           event.preventDefault()
-          setDirectionalActionMode('Move')
-          setIsActionMenuOpen(false)
+          applyMachineTransition(selectDirectionalMode(inputMachine, 'Move'))
           return
         }
 
         if (event.key === '2') {
           event.preventDefault()
-          setDirectionalActionMode('Push')
-          setIsActionMenuOpen(false)
+          applyMachineTransition(selectDirectionalMode(inputMachine, 'Push'))
           return
         }
 
         if (event.key === '3') {
           event.preventDefault()
-          setDirectionalActionMode('Pull')
-          setIsActionMenuOpen(false)
+          applyMachineTransition(selectDirectionalMode(inputMachine, 'Pull'))
           return
         }
+      }
 
-        if (event.key === 'Escape') {
-          event.preventDefault()
-          setIsActionMenuOpen(false)
-          return
+      if (direction) {
+        event.preventDefault()
+        const result = pushDirectionalInput(inputMachine, direction)
+
+        if (result.immediate) {
+          dispatchDirectionalIntent(result.immediate)
+        } else {
+          applyMachineTransition(result.next)
         }
 
         return
       }
 
-      if (direction) {
-        event.preventDefault()
-        switch (directionalActionMode) {
-          case 'Move':
-            dispatch(movePlayer2D(direction))
-            break
-          case 'Push':
-            dispatch(pushPlayer2D(direction))
-            break
-          case 'Pull':
-            dispatch(pullPlayer2D(direction))
-            break
-        }
+      if (inputMachine.layer !== 'Gameplay') {
         return
       }
 
@@ -219,7 +455,7 @@ export function GameShell() {
         return
       }
 
-      if (event.key === 'q' || event.key === 'Q' || event.key === 'Escape') {
+      if (event.key === 'q' || event.key === 'Q') {
         event.preventDefault()
         dispatch(setStatus('Quit is not wired in web build.'))
       }
@@ -231,43 +467,70 @@ export function GameShell() {
       window.removeEventListener('keydown', onKeyDown)
     }
   }, [
-    directionalActionMode,
+    availablePackIds,
+    contentPackId,
     dispatch,
+    applyMachineTransition,
+    dispatchDirectionalIntent,
+    inputMachine,
     interactionConfig.maxPushChain,
     isActionMenuOpen,
-    isLogOpen,
     riftDefaultDelta,
   ])
+
+  const bottomHints = uiSettings.compactHints
+    ? ['F Menu', '1/2/3 Mode', 'WASD/Arrows', 'Space Rift', 'Enter Wait', 'M Settings', 'R Restart']
+    : [
+        'F Menu',
+        '1/2/3 Mode',
+        'WASD/Arrows Direction',
+        'Space Rift',
+        'Enter Wait',
+        'L Log',
+        'P Danger',
+        'V Pack',
+        '[ ] Rift +/-',
+        '- = Push Max +/-',
+        'M Settings',
+        'R Restart',
+      ]
 
   return (
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 4: command windows and interaction pipeline</p>
+        <p>Phase 8: input buffering + preview + accessibility baseline</p>
       </header>
 
       <main className="game-layout">
-        <section className="board-panel">
-          <div className="board-stage">
+        <section className="board-panel" aria-label="Gameplay Panel">
+          <div className={['board-stage', uiSettings.showIsoPanel ? '' : 'board-stage--single'].filter(Boolean).join(' ')}>
             <div className="board-stage-item">
               <GameBoardCanvas
                 boardSize={boardSize}
                 objectsAtCurrentTime={objectsAtCurrentTime}
                 selvesAtCurrentTime={selvesAtCurrentTime}
                 currentTurn={turn}
+                showDangerPreview={showDangerPreview}
+                detectionEvents={detectionPreviewReport.events}
+                actionPreview={actionPreview}
               />
             </div>
-            <div className="board-stage-item iso-stage-item">
-              <IsoTimeCubePanel boardSize={boardSize} currentTurn={turn} viewModel={isoViewModel} />
-              <p className="iso-caption">
-                Iso window t={isoViewModel.startT}..{isoViewModel.endT}, focus={isoViewModel.focusT}
-              </p>
-            </div>
+            {uiSettings.showIsoPanel ? (
+              <div className="board-stage-item iso-stage-item">
+                <Suspense fallback={<div className="iso-fallback">Loading isometric view...</div>}>
+                  <LazyIsoTimeCubePanel boardSize={boardSize} currentTurn={turn} viewModel={isoViewModel} />
+                </Suspense>
+                <p className="iso-caption">
+                  Iso window t={isoViewModel.startT}..{isoViewModel.endT}, focus={isoViewModel.focusT}
+                </p>
+              </div>
+            ) : null}
           </div>
         </section>
 
-        <aside className="hud-stack">
-          <section className="ui-window command-window">
+        <aside className="hud-stack" aria-label="HUD Panel">
+          <section className="ui-window command-window" aria-label="Command Window">
             <h2 className="ui-window-title">Command</h2>
             <div className="ui-window-body">
               <p className="window-note">F: {isActionMenuOpen ? 'close menu' : 'open menu'}</p>
@@ -293,66 +556,159 @@ export function GameShell() {
                 <span>Direction: WASD / Arrows</span>
                 <span>Space: Rift</span>
                 <span>Enter: Wait</span>
+                <span>M: Settings</span>
+                <span>Buffered: {queuedIntentLabel}</span>
               </div>
             </div>
           </section>
 
-          <section className="ui-window state-window">
+          <section className="ui-window state-window" aria-label="State Window">
             <h2 className="ui-window-title">State</h2>
             <div className="ui-window-body">
-              <dl className="state-grid">
-                <dt>Board</dt>
-                <dd>{boardSize} x {boardSize}</dd>
-                <dt>Turn</dt>
-                <dd>{turn}</dd>
-                <dt>Time</dt>
-                <dd>{currentTime}</dd>
-                <dt>Depth</dt>
-                <dd>{timeDepth}</dd>
-                <dt>Phase</dt>
-                <dd>{phase}</dd>
-                <dt>Mode</dt>
-                <dd>{directionalActionMode}</dd>
-                <dt>Rift Delta</dt>
-                <dd>-{riftDefaultDelta}</dd>
-                <dt>Push Max</dt>
-                <dd>{interactionConfig.maxPushChain}</dd>
-                <dt>Pull</dt>
-                <dd>{interactionConfig.allowPull ? 'on' : 'off'}</dd>
-                <dt>WorldLine</dt>
-                <dd>{worldLine.path.length}</dd>
-                <dt>Slice Obj</dt>
-                <dd>{objectsAtCurrentTime.length}</dd>
-                <dt>Player</dt>
-                <dd>{player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}</dd>
-              </dl>
+              <div className="state-sections">
+                <section className="state-block">
+                  <h3 className="state-block-title">Core</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Board</span>
+                      <span className="metric-value">{boardSize} x {boardSize}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Turn</span>
+                      <span className="metric-value">{turn}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Time</span>
+                      <span className="metric-value">{currentTime}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Depth</span>
+                      <span className="metric-value">{timeDepth}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Phase</span>
+                      <span className="metric-value">{phase}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Mode</span>
+                      <span className="metric-value">{directionalActionMode}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Pack</span>
+                      <span className="metric-value">{contentPackId}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Interaction</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Rift Delta</span>
+                      <span className="metric-value">-{riftDefaultDelta}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Push Max</span>
+                      <span className="metric-value">{interactionConfig.maxPushChain}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Pull</span>
+                      <span className="metric-value">{interactionConfig.allowPull ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Danger</span>
+                      <span className="metric-value">{showDangerPreview ? 'on' : 'off'}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Detection</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Enabled</span>
+                      <span className="metric-value">{detectionConfig.enabled ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Delay</span>
+                      <span className="metric-value">{detectionConfig.delayTurns}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Range</span>
+                      <span className="metric-value">{detectionConfig.maxDistance}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Events</span>
+                      <span className="metric-value">{detectionPreviewReport.events.length}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Paradox</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Enabled</span>
+                      <span className="metric-value">{paradoxConfig.enabled ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Anchors</span>
+                      <span className="metric-value">{causalAnchors.length}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Violations</span>
+                      <span className="metric-value">{lastParadox?.violations.length ?? 0}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">From T</span>
+                      <span className="metric-value">{lastParadox?.checkedFromTime ?? '-'}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Slice</h3>
+                  <div className="metric-grid metric-grid-single">
+                    <div className="metric-item">
+                      <span className="metric-label">WorldLine</span>
+                      <span className="metric-value">{worldLine.path.length}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Slice Obj</span>
+                      <span className="metric-value">{objectsAtCurrentTime.length}</span>
+                    </div>
+                    <div className="metric-item metric-item-wide">
+                      <span className="metric-label">Player</span>
+                      <span className="metric-value">
+                        {player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                </section>
+              </div>
             </div>
           </section>
 
-          <section className="ui-window log-window">
+          <section className="ui-window log-window" aria-label="Log Window">
             <h2 className="ui-window-title">Log</h2>
             <div className="ui-window-body log-body-compact">
-              <p className="window-note status-line">{status}</p>
+              <p className="window-note status-line" role="status" aria-live="polite">
+                {status}
+              </p>
             </div>
           </section>
         </aside>
       </main>
 
-      <footer className="bottom-bar">
-        <span>F Menu</span>
-        <span>1/2/3 Mode</span>
-        <span>WASD/Arrows Direction</span>
-        <span>Space Rift</span>
-        <span>Enter Wait</span>
-        <span>L Log</span>
-        <span>[ ] Rift +/-</span>
-        <span>- = Push Max +/-</span>
-        <span>R Restart</span>
+      <footer className={['bottom-bar', uiSettings.compactHints ? 'is-compact' : ''].filter(Boolean).join(' ')}>
+        {bottomHints.map((hint) => (
+          <span key={hint}>{hint}</span>
+        ))}
       </footer>
 
       {isLogOpen ? (
         <div className="overlay-backdrop" role="dialog" aria-modal="true" aria-label="Action Log">
-          <section className="overlay-window">
+          <section className="overlay-window" ref={logOverlayRef} tabIndex={-1}>
             <header className="overlay-header">
               <h2>Action Log</h2>
               <p>L / Esc: close</p>
@@ -371,6 +727,64 @@ export function GameShell() {
                     </div>
                   ))
               )}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {isSystemMenuOpen ? (
+        <div className="overlay-backdrop" role="dialog" aria-modal="true" aria-label="Settings">
+          <section className="overlay-window settings-window" ref={settingsOverlayRef} tabIndex={-1}>
+            <header className="overlay-header">
+              <h2>Settings</h2>
+              <p>M / Esc: close</p>
+            </header>
+            <div className="overlay-body settings-body">
+              <label className="settings-row" htmlFor="setting-iso-panel">
+                <span>Show isometric panel</span>
+                <input
+                  id="setting-iso-panel"
+                  type="checkbox"
+                  checked={uiSettings.showIsoPanel}
+                  onChange={(event) => {
+                    setUiSettings((settings) => ({
+                      ...settings,
+                      showIsoPanel: event.target.checked,
+                    }))
+                  }}
+                />
+              </label>
+              <label className="settings-row" htmlFor="setting-compact-hints">
+                <span>Compact bottom hints</span>
+                <input
+                  id="setting-compact-hints"
+                  type="checkbox"
+                  checked={uiSettings.compactHints}
+                  onChange={(event) => {
+                    setUiSettings((settings) => ({
+                      ...settings,
+                      compactHints: event.target.checked,
+                    }))
+                  }}
+                />
+              </label>
+              <label className="settings-row" htmlFor="setting-default-danger">
+                <span>Default danger preview</span>
+                <input
+                  id="setting-default-danger"
+                  type="checkbox"
+                  checked={uiSettings.defaultDangerPreview}
+                  onChange={(event) => {
+                    const nextValue = event.target.checked
+
+                    setUiSettings((settings) => ({
+                      ...settings,
+                      defaultDangerPreview: nextValue,
+                    }))
+                    setShowDangerPreview(nextValue)
+                  }}
+                />
+              </label>
             </div>
           </section>
         </div>

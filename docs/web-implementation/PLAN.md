@@ -119,63 +119,79 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ## Phase 5: Detection + Past-Turn Selves
 
-**Goal:** Implement detection model and world line visualization.
+**Goal:** Implement detection model (V1) and `Detected` phase transition.
+**Implementation Detail:** `docs/web-implementation/PHASE_05_DETECTION.md`
 
 ### Deliverables
-- [ ] Discrete-delay detection model (V1)
-- [ ] Light cone preview overlay (optional)
-- [ ] Past-turn self rendering (dim)
-- [ ] GamePhase updates to `Detected`
+- [x] Discrete-delay detection model (V1)
+- [x] Detection config + detection report contracts
+- [x] GamePhase updates to `Detected`
+- [x] Light cone/danger preview overlay (optional)
 
 ### Exit Criteria
-- Detection triggers loss state
-- Past-turn selves visible when rifting
+- [x] Detection triggers loss state (`Detected`)
+- [x] Post-detected actions are blocked until restart
+- [x] Existing win/restart behavior remains stable
 
 ---
 
 ## Phase 6: Data Loading
 
 **Goal:** Load levels/themes from JSON assets.
+**Design Detail:** `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
+**Implementation Detail:** `docs/web-implementation/PHASE_06_DATA_LOADING.md`
 
 ### Deliverables
-- [ ] JSON level format parser
-- [ ] JSON theme loader
-- [ ] Bundle default levels in `public/data/`
+- [x] Canonical content schemas (level, behavior, theme, rules)
+- [x] Parser + validator with structured errors
+- [x] JSON level format parser (baseline fixture-backed)
+- [x] JSON theme loader (baseline fixture-backed)
+- [x] Bundle default levels in `public/data/`
 
 ### Exit Criteria
-- Can switch levels without rebuild
-- Theme applies to canvas and UI
+- [x] Can switch levels without rebuild
+- [x] Theme applies to canvas and UI
+- [x] Enemy behavior parameters load from content files
 
 ---
 
 ## Phase 7: Paradox Detection
 
-**Goal:** Implement grandfather paradox validation.
+**Goal:** Implement committed-history paradox validation (grandfather class).
+**Design Detail:** `docs/web-design/MATH_MODEL.md`, `docs/web-design/GAME_STATE.md`, `docs/web-design/CORE_DATA.md`
+**Implementation Detail:** `docs/web-implementation/PHASE_07_PARADOX.md`
 
 ### Deliverables
-- [ ] Propagation consistency checks
-- [ ] Paradox errors surface to UI
-- [ ] Unit tests for paradox edge cases
+- [x] Core paradox contracts (`ParadoxConfig`, `CausalAnchor`, `ParadoxReport`)
+- [x] Anchor capture from successful interaction outcomes
+- [x] Paradox evaluator with affected-time windowing
+- [x] Reducer pipeline order update: `Paradox -> Won -> Detected`
+- [x] `GamePhase` update to include `Paradox` + UI status/log surface
+- [x] Unit tests for paradox edge cases and ordering
 
 ### Exit Criteria
-- Invalid paradox moves rejected
-- GamePhase updates to `Paradox`
+- [x] Any action that violates committed anchors transitions the game to `Paradox`
+- [x] `Paradox` blocks further actions until restart
+- [x] If an action could both win and paradox, paradox takes priority
+- [x] Existing detection and win behavior remains stable when no paradox exists
 
 ---
 
 ## Phase 8: Polish
 
 **Goal:** Improve UX and performance.
+**Implementation Detail:** `docs/web-implementation/PHASE_08_POLISH.md`
 
 ### Deliverables
-- [ ] Input buffering and preview
-- [ ] Smooth rendering loop
-- [ ] Accessibility improvements
-- [ ] Settings panel (optional)
+- [x] Input buffering + intent preview
+- [x] Render/runtime smoothing and chunking improvements
+- [x] Accessibility baseline improvements
+- [x] Settings panel (optional, non-destructive toggles)
 
 ### Exit Criteria
-- Stable 60 FPS on typical hardware
-- No major UI jank
+- Stable rendering and no major UI jank on typical hardware
+- Deterministic gameplay behavior preserved
+- Keyboard-only control path remains fully playable
 
 ---
 

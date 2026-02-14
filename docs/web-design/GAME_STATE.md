@@ -1,158 +1,182 @@
 # Game State Design (Web)
 
 > **Module target:** `frontend/src/game/`
-> **Status:** Web rewrite
+> **Status:** Phase 7 implemented (baseline)
 
-This document defines the game state container, action pipeline, and validation rules for the web app.
-
----
-
-## Conceptual Model
-
-### Immutable-By-Convention State
-All actions operate on a cloned state. The previous state is preserved for replay/debugging.
-
-```
-applyAction(state, action): GameState
-```
-
-### Player as Source of Truth
-- Player position is derived from `WorldLineState` (`currentPosition(worldLine)`).
-- Reducer-level move/rift validity is evaluated through world-line extension helpers.
-- `TimeCube` evolves into occupancy truth for non-player objects (Phase 3+).
-
-Truth boundaries:
-1. Never derive player history from `TimeCube`.
-2. Never validate object blocking from `WorldLineState`.
-3. Rendering at slice `t` reads both sources:
-   - player selves from `positionsAtTime(t)` on `WorldLineState`
-   - objects from `TimeCube` occupancy at `t`
-4. Reducer conflict rules decide outcomes when player/object share `(x, y, t)` (for example, blocked or win).
+This document defines the reducer state shape, interaction pipeline, and phase transitions for the web app.
 
 ---
 
-## Type Hierarchy (Web)
+## 1. Truth Model
 
-```
-GameState
-  - cube: TimeCube
-  - worldLine: WorldLineState
-  - currentTime: number
-  - timeDepth: number
-  - riftSettings: RiftSettings
-  - riftResources: RiftResources
-  - phase: GamePhase
-  - turn: number
-  - history: Action[]
-  - config: GameConfig
-  - initialCube: TimeCube
-  - initialWorldLine: WorldLineState
+Player and objects are intentionally split:
 
-Action
-  - Move(direction)
-  - Wait
-  - ApplyRift(instruction?)
-  - ConfigureRiftSettings(partial)
-  - Push(direction)
-  - Pull(direction)
-  - Restart
+1. Player truth: `WorldLineState`
+2. Object truth: `TimeCube` occupancy
 
-ActionResult
-  - state
-  - outcome
-  - movedEntities
-  - propagation?
-```
+Rules:
+- Never derive player history from `TimeCube`.
+- Never validate object occupancy from `WorldLineState`.
+- Render combines both sources at current `t`.
 
 ---
 
-## GamePhase
+## 2. Canonical Interfaces
 
-| Phase | Meaning |
-|-------|---------|
-| `Playing` | Active play |
-| `Won` | Exit reached |
-| `Detected` | Player seen |
-| `Paradox` | Paradox triggered |
-| `Restarted` | Restart action applied |
-
----
-
-## Action Pipeline
-
-1. **Validate** action
-2. **Preview** (optional UI)
-3. **Apply** (clone and mutate)
-4. **Propagate** (if needed)
-5. **Check** win/lose
-
----
-
-## Validation Rules
-
-### Move / Wait
-- In bounds
-- Not blocked
-- No self-intersection
-- `t` advances by 1
-- Implemented via `extendNormal(...)` on `WorldLineState`
-
-### Rift
-- Resolve target through reusable core primitive (`resolveRift`)
-- Validate in order:
-  - target time/space bounds
-  - resource/cost constraints (if enabled)
-  - world-line self-intersection
-- Extend world line with `extendViaRift`
-- Advance turn `n` after successful extension
-
-### Push / Pull
-- Adjacent entity exists
-- Chain length ≤ max
-- Targets in bounds and unblocked
-- Propagate moved entities forward
-
----
-
-## Error Model
+Current game state is reducer-owned and interaction-first.
 
 ```ts
-type MoveError =
-  | { kind: 'OutOfBounds'; x: number; y: number; t: number }
-  | { kind: 'Blocked'; x: number; y: number; t: number; entityId: string }
-  | { kind: 'SelfIntersection'; x: number; y: number; t: number }
-  | { kind: 'TimeOverflow'; t: number; maxT: number };
+import type { CausalAnchor, ParadoxConfig, ParadoxReport } from '../core/paradox'
+export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox'
 
-type ActionError =
-  | { kind: 'GameNotActive'; phase: GamePhase }
-  | { kind: 'MoveBlocked'; reason: MoveError }
-  | { kind: 'NoRiftHere' }
-  | { kind: 'InvalidRiftTarget' }
-  | { kind: 'NothingToPush' }
-  | { kind: 'PushBlocked' }
-  | { kind: 'PushChainTooLong'; length: number; max: number }
-  | { kind: 'NothingToPull' }
-  | { kind: 'NotPullable'; entityId: string }
-  | { kind: 'Internal'; message: string };
+export interface DetectionConfig {
+  enabled: boolean
+  delayTurns: number
+  maxDistance: number
+}
+
+export interface DetectionEvent {
+  enemyId: string
+  enemyPosition: Position3D
+  observedPlayer: Position3D
+  observedTurn: number
+}
+
+export interface DetectionReport {
+  detected: boolean
+  atTime: number
+  events: DetectionEvent[]
+}
+
+export interface GameState {
+  boardSize: number
+  timeDepth: number
+  objectRegistry: ObjectRegistry
+  cube: TimeCube
+  worldLine: WorldLineState
+  currentTime: number
+  turn: number
+  phase: GamePhase
+  riftSettings: RiftSettings
+  riftResources: RiftResources
+  interactionConfig: InteractionConfig
+  history: InteractionHistoryEntry[]
+  detectionConfig: DetectionConfig
+  lastDetection: DetectionReport | null
+  paradoxConfig: ParadoxConfig
+  lastParadox: ParadoxReport | null
+  status: string
+}
+```
+
+Notes:
+- Detection and paradox are separate checks with separate report types.
+- Detection reports line-of-sight outcomes; paradox reports causality consistency failures.
+
+---
+
+## 3. Interaction Contracts
+
+Reducer actions should dispatch typed interaction intents.
+
+```ts
+type InteractionAction =
+  | { kind: 'Move'; direction: Direction2D }
+  | { kind: 'Wait' }
+  | { kind: 'ApplyRift'; instruction?: RiftInstruction }
+  | { kind: 'Push'; direction: Direction2D }
+  | { kind: 'Pull'; direction: Direction2D }
+```
+
+```ts
+interface InteractionHistoryEntry {
+  turn: number
+  action: InteractionAction
+  outcome: SuccessfulOutcome
+  anchors?: CausalAnchor[]
+  affectedFromTime?: number
+}
 ```
 
 ---
 
-## State Management in React
+## 4. Pipeline Order
 
-Recommended approach:
-- Keep core logic in pure functions
-- UI uses Redux Toolkit store + typed hooks
+For each interaction action:
 
-Example:
+1. Guard phase (`Playing` only).
+2. Execute interaction handler from registry.
+3. On success: update `turn`, `currentTime`, `history`, `status`.
+4. Run paradox evaluator against committed anchors (Phase 7).
+5. If paradox is found: set `phase = 'Paradox'`, persist `lastParadox`, stop pipeline.
+6. If not paradox: check win (`hasExit`).
+7. If not won and detection enabled: run detection evaluator.
+8. If detected: set `phase = 'Detected'` with deterministic status message.
+
+Outcome priority in same action:
+1. `Paradox`
+2. `Won`
+3. `Detected`
+
+---
+
+## 5. Phase Semantics
+
+| Phase | Meaning | Input Handling |
+|-------|---------|----------------|
+| `Playing` | Active gameplay | interactions allowed |
+| `Won` | Exit reached | blocked until restart |
+| `Detected` | Enemy detection triggered | blocked until restart |
+| `Paradox` | Causality consistency violated | blocked until restart |
+
+Restart semantics:
+- resets world line and occupancy state
+- resets turn/time/phase
+- clears history, `lastDetection`, and `lastParadox`
+
+---
+
+## 6. Error / Result Model
+
+Interaction handlers use typed error unions and shared `Result` contract:
+
+```ts
+import type { Result } from '../core/result'
 ```
-const store = configureStore({ reducer: { game: gameReducer } })
-```
 
-The reducer should call pure core helpers (`extendNormal`, `extendViaRift`, `resolveRift`) and return a deterministic next `GameState`.
+Guideline:
+- do not throw for expected gameplay validation failures
+- return typed errors and map them to deterministic status text
+
+---
+
+## 7. Detection Integration (Phase 5)
+
+Detection is a pure read of current state:
+- inputs: `TimeCube`, `WorldLineState`, `currentTime`, `DetectionConfig`
+- output: `DetectionReport`
+- no mutation inside detector
+
+The reducer is responsible for phase transition and status text.
+
+---
+
+## 8. Paradox Integration (Phase 7)
+
+Paradox validation is a pure read over committed state and anchor history:
+- inputs: `TimeCube`, `WorldLineState`, `CausalAnchor[]`, `checkedFromTime`, `ParadoxConfig`
+- output: `ParadoxReport`
+- no mutation inside evaluator
+
+The reducer is responsible for:
+- creating/updating anchor history from interaction outcomes
+- choosing `checkedFromTime` from the interaction mutation footprint
+- applying phase transition to `Paradox`
 
 ---
 
 ## Related Documents
-- `CORE_DATA.md`
-- `MATH_MODEL.md`
+- `docs/web-design/CORE_DATA.md`
+- `docs/web-design/MATH_MODEL.md`
+- `docs/web-implementation/PHASE_05_DETECTION.md`
+- `docs/web-implementation/PLAN.md`

@@ -1,9 +1,12 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+import type { DetectionConfig } from '../core/detection'
+import type { ParadoxConfig } from '../core/paradox'
 import type { Direction2D, Position3D } from '../core/position'
 import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
 import { createWorldLine } from '../core/worldLine'
-import type { ObjectRegistry } from '../core/objects'
+import type { LevelObjectsConfig, ObjectRegistry } from '../core/objects'
+import { loadDefaultBootContent, type LoadedBootContent } from '../data/loader'
 import { bootstrapLevelObjects } from './levelObjects'
 import { runInteractionPipeline } from './interactions/pipeline'
 import type {
@@ -15,24 +18,56 @@ import type {
 } from './interactions/types'
 import type { TimeCube } from '../core/timeCube'
 
-const DEFAULT_BOARD_SIZE = 12
-const DEFAULT_TIME_DEPTH = 24
-const DEFAULT_RIFT_DELTA = 3
-const DEFAULT_START_POSITION: Position3D = { x: 5, y: 5, t: 0 }
-const DEFAULT_RIFT_SETTINGS: RiftSettings = {
-  defaultDelta: DEFAULT_RIFT_DELTA,
-  baseEnergyCost: 0,
-}
+const bootContent = loadDefaultBootContent()
+const DEFAULT_CONTENT_PACK_ID = 'default'
+
+const DEFAULT_BOARD_SIZE = bootContent.ok ? bootContent.value.boardSize : 12
+const DEFAULT_TIME_DEPTH = bootContent.ok ? bootContent.value.timeDepth : 24
+const DEFAULT_START_POSITION: Position3D = bootContent.ok
+  ? bootContent.value.startPosition
+  : { x: 5, y: 5, t: 0 }
+const DEFAULT_RIFT_SETTINGS: RiftSettings = bootContent.ok
+  ? bootContent.value.riftSettings
+  : {
+      defaultDelta: 3,
+      baseEnergyCost: 0,
+    }
 const DEFAULT_RIFT_RESOURCES: RiftResources = {
   energy: null,
 }
-const DEFAULT_INTERACTION_CONFIG: InteractionConfig = {
-  maxPushChain: 4,
-  allowPull: true,
+const DEFAULT_INTERACTION_CONFIG: InteractionConfig = bootContent.ok
+  ? bootContent.value.interactionConfig
+  : {
+      maxPushChain: 4,
+      allowPull: true,
+    }
+const DEFAULT_DETECTION_CONFIG: DetectionConfig = bootContent.ok
+  ? bootContent.value.detectionConfig
+  : {
+      enabled: true,
+      delayTurns: 1,
+    maxDistance: 2,
+  }
+const DEFAULT_PARADOX_CONFIG: ParadoxConfig = {
+  enabled: true,
 }
+const DEFAULT_LEVEL_OBJECTS_CONFIG: LevelObjectsConfig | null = bootContent.ok
+  ? bootContent.value.levelObjectsConfig
+  : null
+const DEFAULT_THEME_CSS_VARS: Record<string, string> = bootContent.ok
+  ? bootContent.value.themeCssVars
+  : {}
 
 export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
+  contentPackId: string
+  levelObjectsConfig: LevelObjectsConfig | null
+  startPosition: Position3D
+  defaultRiftSettings: RiftSettings
+  defaultInteractionConfig: InteractionConfig
+  defaultDetectionConfig: DetectionConfig
+  defaultParadoxConfig: ParadoxConfig
+  themeCssVars: Record<string, string>
 }
 
 function bootstrapObjectState(): {
@@ -40,14 +75,17 @@ function bootstrapObjectState(): {
   cube: TimeCube
   status: string
 } {
-  const bootstrap = bootstrapLevelObjects(DEFAULT_BOARD_SIZE, DEFAULT_TIME_DEPTH)
+  const bootstrap = bootstrapLevelObjects(
+    DEFAULT_BOARD_SIZE,
+    DEFAULT_TIME_DEPTH,
+    bootContent.ok ? bootContent.value.levelObjectsConfig : undefined,
+  )
 
   if (bootstrap.ok) {
     return {
       objectRegistry: bootstrap.value.objectRegistry,
       cube: bootstrap.value.cube,
-      status:
-        '-_-',
+      status: '-_-',
     }
   }
 
@@ -68,6 +106,31 @@ function bootstrapObjectState(): {
   }
 }
 
+function bootstrapObjectStateForContent(content: LoadedBootContent): {
+  ok: true
+  objectRegistry: ObjectRegistry
+  cube: TimeCube
+} | {
+  ok: false
+  message: string
+} {
+  const bootstrap = bootstrapLevelObjects(
+    content.boardSize,
+    content.timeDepth,
+    content.levelObjectsConfig,
+  )
+
+  if (!bootstrap.ok) {
+    return { ok: false, message: 'Loaded content bootstrap failed' }
+  }
+
+  return {
+    ok: true,
+    objectRegistry: bootstrap.value.objectRegistry,
+    cube: bootstrap.value.cube,
+  }
+}
+
 function createInitialState(): GameState {
   const objectState = bootstrapObjectState()
 
@@ -83,6 +146,19 @@ function createInitialState(): GameState {
     riftSettings: { ...DEFAULT_RIFT_SETTINGS },
     riftResources: { ...DEFAULT_RIFT_RESOURCES },
     interactionConfig: { ...DEFAULT_INTERACTION_CONFIG },
+    defaultRiftSettings: { ...DEFAULT_RIFT_SETTINGS },
+    defaultInteractionConfig: { ...DEFAULT_INTERACTION_CONFIG },
+    detectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    defaultDetectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    paradoxConfig: { ...DEFAULT_PARADOX_CONFIG },
+    defaultParadoxConfig: { ...DEFAULT_PARADOX_CONFIG },
+    contentPackId: DEFAULT_CONTENT_PACK_ID,
+    levelObjectsConfig: DEFAULT_LEVEL_OBJECTS_CONFIG,
+    startPosition: DEFAULT_START_POSITION,
+    themeCssVars: { ...DEFAULT_THEME_CSS_VARS },
+    lastDetection: null,
+    lastParadox: null,
+    causalAnchors: [],
     history: [],
     status: objectState.status,
   }
@@ -121,18 +197,83 @@ const gameSlice = createSlice({
       state.interactionConfig = { ...state.interactionConfig, ...action.payload }
       state.status = `Interaction config updated (maxPushChain=${state.interactionConfig.maxPushChain}, allowPull=${state.interactionConfig.allowPull})`
     },
-    restart(state) {
-      const objectState = bootstrapObjectState()
+    configureDetectionConfig(state, action: PayloadAction<Partial<DetectionConfig>>) {
+      state.detectionConfig = { ...state.detectionConfig, ...action.payload }
+      state.status = `Detection config updated (enabled=${state.detectionConfig.enabled}, delay=${state.detectionConfig.delayTurns}, range=${state.detectionConfig.maxDistance})`
+    },
+    configureParadoxConfig(state, action: PayloadAction<Partial<ParadoxConfig>>) {
+      state.paradoxConfig = { ...state.paradoxConfig, ...action.payload }
+      state.status = `Paradox config updated (enabled=${state.paradoxConfig.enabled})`
+    },
+    setContentPackId(state, action: PayloadAction<string>) {
+      if (state.contentPackId === action.payload) {
+        return
+      }
 
-      state.objectRegistry = objectState.objectRegistry
-      state.cube = objectState.cube
-      state.worldLine = createWorldLine(DEFAULT_START_POSITION)
-      state.currentTime = DEFAULT_START_POSITION.t
+      state.contentPackId = action.payload
+      state.status = `Loading content pack: ${action.payload}`
+    },
+    applyLoadedContent(
+      state,
+      action: PayloadAction<{ packId: string; content: LoadedBootContent }>,
+    ) {
+      const bootstrapped = bootstrapObjectStateForContent(action.payload.content)
+
+      if (!bootstrapped.ok) {
+        state.status = bootstrapped.message
+        return
+      }
+
+      state.contentPackId = action.payload.packId
+      state.levelObjectsConfig = action.payload.content.levelObjectsConfig
+      state.boardSize = action.payload.content.boardSize
+      state.timeDepth = action.payload.content.timeDepth
+      state.startPosition = action.payload.content.startPosition
+      state.objectRegistry = bootstrapped.objectRegistry
+      state.cube = bootstrapped.cube
+      state.worldLine = createWorldLine(action.payload.content.startPosition)
+      state.currentTime = action.payload.content.startPosition.t
       state.turn = 0
       state.phase = 'Playing'
-      state.riftSettings = { ...DEFAULT_RIFT_SETTINGS }
       state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
-      state.interactionConfig = { ...DEFAULT_INTERACTION_CONFIG }
+      state.defaultRiftSettings = { ...action.payload.content.riftSettings }
+      state.riftSettings = { ...action.payload.content.riftSettings }
+      state.defaultInteractionConfig = { ...action.payload.content.interactionConfig }
+      state.interactionConfig = { ...action.payload.content.interactionConfig }
+      state.defaultDetectionConfig = { ...action.payload.content.detectionConfig }
+      state.detectionConfig = { ...action.payload.content.detectionConfig }
+      state.paradoxConfig = { ...state.defaultParadoxConfig }
+      state.themeCssVars = { ...action.payload.content.themeCssVars }
+      state.lastDetection = null
+      state.lastParadox = null
+      state.causalAnchors = []
+      state.history = []
+      state.status = `Loaded content pack: ${action.payload.packId}`
+    },
+    restart(state) {
+      const objectState = state.levelObjectsConfig
+        ? bootstrapLevelObjects(state.boardSize, state.timeDepth, state.levelObjectsConfig)
+        : bootstrapLevelObjects(state.boardSize, state.timeDepth)
+
+      if (!objectState.ok) {
+        state.status = 'Restart failed: object bootstrap error'
+        return
+      }
+
+      state.objectRegistry = objectState.value.objectRegistry
+      state.cube = objectState.value.cube
+      state.worldLine = createWorldLine(state.startPosition)
+      state.currentTime = state.startPosition.t
+      state.turn = 0
+      state.phase = 'Playing'
+      state.riftSettings = { ...state.defaultRiftSettings }
+      state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
+      state.interactionConfig = { ...state.defaultInteractionConfig }
+      state.detectionConfig = { ...state.defaultDetectionConfig }
+      state.lastDetection = null
+      state.paradoxConfig = { ...state.defaultParadoxConfig }
+      state.lastParadox = null
+      state.causalAnchors = []
       state.history = []
       state.status = 'Restarted'
     },
@@ -150,6 +291,10 @@ export const {
   pullPlayer2D,
   configureRiftSettings,
   setInteractionConfig,
+  configureDetectionConfig,
+  configureParadoxConfig,
+  setContentPackId,
+  applyLoadedContent,
   restart,
   setStatus,
 } = gameSlice.actions

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "packs": [
+    { "id": "default", "name": "Default Lab" },
+    { "id": "variant", "name": "Variant Hall" }
+  ]
+}

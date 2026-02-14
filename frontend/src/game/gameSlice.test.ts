@@ -1,14 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
+import { loadDefaultBootContent } from '../data/loader'
 import { objectsAt } from '../core/timeCube'
 import {
+  applyLoadedContent,
   applyRift,
+  configureDetectionConfig,
+  configureParadoxConfig,
   configureRiftSettings,
   gameReducer,
   movePlayer2D,
   pullPlayer2D,
   pushPlayer2D,
   restart,
+  setContentPackId,
   setInteractionConfig,
   waitTurn,
 } from './gameSlice'
@@ -189,5 +194,191 @@ describe('gameSlice', () => {
     expect(reset.history).toHaveLength(0)
     expect(objectsAt(reset.cube, { x: 8, y: 6, t: 4 }).map((obj) => obj.id)).toContain('box.main')
     expect(objectsAt(reset.cube, { x: 9, y: 6, t: 4 }).map((obj) => obj.id)).not.toContain('box.main')
+  })
+
+  it('transitions to Detected when discrete-delay rule matches', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+
+    const detected = gameReducer(configured, waitTurn())
+
+    expect(detected.turn).toBe(1)
+    expect(detected.phase).toBe('Detected')
+    expect(detected.lastDetection?.detected).toBe(true)
+    expect(detected.lastDetection?.events[0]?.enemyId).toBe('enemy.alpha')
+    expect(detected.status).toContain('detected by enemy.alpha')
+  })
+
+  it('blocks gameplay actions after detection until restart', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+    const detected = gameReducer(configured, waitTurn())
+
+    const blocked = gameReducer(detected, movePlayer2D('east'))
+
+    expect(blocked.turn).toBe(1)
+    expect(blocked.currentTime).toBe(1)
+    expect(blocked.phase).toBe('Detected')
+    expect(blocked.status).toBe('Game already ended. Press R to restart.')
+  })
+
+  it('restart clears detection phase and report', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 8 }),
+    )
+    const detected = gameReducer(configured, waitTurn())
+    const reset = gameReducer(detected, restart())
+
+    expect(reset.phase).toBe('Playing')
+    expect(reset.turn).toBe(0)
+    expect(reset.lastDetection).toBeNull()
+  })
+
+  it('keeps win priority over detection on the same action', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 50 }),
+    )
+
+    const won = gameReducer(configured, applyRift({ kind: 'tunnel', target: { x: 10, y: 10, t: 1 } }))
+
+    expect(won.phase).toBe('Won')
+    expect(won.status).toContain('reached exit')
+    expect(won.lastDetection).toBeNull()
+  })
+
+  it('transitions to Paradox when a committed object anchor becomes inconsistent', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const seeded = {
+      ...initial,
+      causalAnchors: [
+        {
+          id: 'seed-object-anchor',
+          requirement: {
+            kind: 'ObjectAt' as const,
+            objectId: 'box.main',
+            position: { x: 8, y: 6, t: 1 },
+            sourceTurn: 0,
+          },
+        },
+      ],
+    }
+    const staged = gameReducer(
+      seeded,
+      applyRift({ kind: 'tunnel', target: { x: 8, y: 5, t: 0 } }),
+    )
+    const paradox = gameReducer(staged, pullPlayer2D('north'))
+
+    expect(paradox.phase).toBe('Paradox')
+    expect(paradox.lastParadox?.paradox).toBe(true)
+    expect(paradox.lastParadox?.violations.some((entry) => entry.reason === 'ObjectMismatch')).toBe(
+      true,
+    )
+    expect(paradox.status).toContain('paradox')
+  })
+
+  it('blocks gameplay actions after paradox until restart', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const seeded = {
+      ...initial,
+      causalAnchors: [
+        {
+          id: 'seed-broken-anchor',
+          requirement: {
+            kind: 'PlayerAt' as const,
+            position: { x: 999, y: 999, t: 1 },
+            sourceTurn: 0,
+          },
+        },
+      ],
+    }
+    const paradox = gameReducer(
+      seeded,
+      applyRift({ kind: 'tunnel', target: { x: 6, y: 5, t: 1 } }),
+    )
+
+    expect(paradox.phase).toBe('Paradox')
+
+    const blocked = gameReducer(paradox, movePlayer2D('east'))
+
+    expect(blocked.turn).toBe(paradox.turn)
+    expect(blocked.phase).toBe('Paradox')
+    expect(blocked.status).toBe('Game already ended. Press R to restart.')
+
+    const reset = gameReducer(blocked, restart())
+    expect(reset.phase).toBe('Playing')
+    expect(reset.lastParadox).toBeNull()
+    expect(reset.causalAnchors).toHaveLength(0)
+  })
+
+  it('keeps paradox priority over win and detection on the same action', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const configured = gameReducer(
+      initial,
+      configureDetectionConfig({ enabled: true, delayTurns: 1, maxDistance: 50 }),
+    )
+    const paradoxEnabled = gameReducer(configured, configureParadoxConfig({ enabled: true }))
+    const seeded = {
+      ...paradoxEnabled,
+      causalAnchors: [
+        {
+          id: 'seed-broken-anchor-priority',
+          requirement: {
+            kind: 'PlayerAt' as const,
+            position: { x: 1000, y: 1000, t: 1 },
+            sourceTurn: 0,
+          },
+        },
+      ],
+    }
+
+    const outcome = gameReducer(
+      seeded,
+      applyRift({ kind: 'tunnel', target: { x: 10, y: 10, t: 1 } }),
+    )
+
+    expect(outcome.phase).toBe('Paradox')
+    expect(outcome.lastParadox?.paradox).toBe(true)
+    expect(outcome.lastDetection).toBeNull()
+    expect(outcome.status).toContain('paradox')
+  })
+
+  it('updates content pack id selection before loading', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const next = gameReducer(initial, setContentPackId('variant'))
+
+    expect(next.contentPackId).toBe('variant')
+    expect(next.status).toBe('Loading content pack: variant')
+  })
+
+  it('applies loaded content payload and resets run state', () => {
+    const loaded = loadDefaultBootContent()
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) {
+      return
+    }
+
+    const initial = gameReducer(undefined, { type: 'init' })
+    const moved = gameReducer(initial, movePlayer2D('east'))
+    const applied = gameReducer(
+      moved,
+      applyLoadedContent({ packId: 'default', content: loaded.value }),
+    )
+
+    expect(applied.turn).toBe(0)
+    expect(applied.currentTime).toBe(loaded.value.startPosition.t)
+    expect(applied.worldLine.path.at(-1)).toEqual(loaded.value.startPosition)
+    expect(applied.phase).toBe('Playing')
+    expect(applied.contentPackId).toBe('default')
+    expect(applied.status).toBe('Loaded content pack: default')
   })
 })

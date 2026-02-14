@@ -43,6 +43,9 @@ npm run lint
 | `Space` | Use default rift |
 | `Enter` | Wait one turn |
 | `L` | Open/close full log overlay |
+| `M` | Open/close settings overlay |
+| `P` | Toggle danger preview overlay |
+| `V` | Cycle content pack (`default` / `variant`) |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |
@@ -50,13 +53,19 @@ npm run lint
 ## Assets
 
 - Levels and themes should live in `frontend/public/data/`.
+- Content pack manifest lives at `frontend/public/data/index.json`.
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
+- Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
+- Board action preview model lives under `frontend/src/render/board/preview.ts`.
 
 ## References
 
 - `docs/web-design/OVERALL.md`
+- `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-design/UI_WINDOW_SYSTEM.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
+- `docs/web-implementation/PHASE_07_PARADOX.md`
+- `docs/web-implementation/PHASE_08_POLISH.md`

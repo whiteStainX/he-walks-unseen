@@ -122,7 +122,7 @@ Display input hints and mode indicators.
 
 Example:
 ```
-F Menu | 1/2/3 Mode | WASD/Arrows Direction | Space Rift | Enter Wait | L Log | [ ] Rift +/- | - = Push Max +/- | R Restart
+F Menu | 1/2/3 Mode | WASD/Arrows Direction | Space Rift | Enter Wait | L Log | P Danger | V Pack | [ ] Rift +/- | - = Push Max +/- | R Restart
 ```
 
 ---

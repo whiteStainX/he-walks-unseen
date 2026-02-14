@@ -21,8 +21,12 @@ Current playable baseline:
 - Turn/time separation with `WorldLineState`
 - Rift-based time travel
 - Object occupancy with push/pull interactions
+- Detection + paradox failure phases (`Detected`, `Paradox`)
 - Isometric TimeCube helper panel
 - Windowed HUD with action-mode selection and log overlay
+- Intent-first input state machine with layer-aware directional gating
+- Settings overlay with persisted UI toggles
+- Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
 
 ## Requirements
 
@@ -47,6 +51,9 @@ npm run dev
 | `Space` | Use default rift |
 | `Enter` | Wait one turn |
 | `L` | Open/close full log overlay |
+| `M` | Open/close settings overlay |
+| `P` | Toggle danger preview overlay |
+| `V` | Cycle content pack (`default` / `variant`) |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |
@@ -54,10 +61,13 @@ npm run dev
 ## Documentation
 
 - [Web Design Docs](docs/web-design/OVERALL.md)
+- [Phase 6 Content System](docs/web-design/PHASE_06_CONTENT_SYSTEM.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
 - [Web Implementation Plan](docs/web-implementation/PLAN.md)
+- [Phase 7 Paradox Plan](docs/web-implementation/PHASE_07_PARADOX.md)
+- [Phase 8 Polish Plan](docs/web-implementation/PHASE_08_POLISH.md)
 - [Agent Guide](AGENTS.md)
 
 ## License
