@@ -183,10 +183,10 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_08_POLISH.md`
 
 ### Deliverables
-- [ ] Input buffering + intent preview
-- [ ] Render/runtime smoothing and chunking improvements
-- [ ] Accessibility baseline improvements
-- [ ] Settings panel (optional, non-destructive toggles)
+- [x] Input buffering + intent preview
+- [x] Render/runtime smoothing and chunking improvements
+- [x] Accessibility baseline improvements
+- [x] Settings panel (optional, non-destructive toggles)
 
 ### Exit Criteria
 - Stable rendering and no major UI jank on typical hardware

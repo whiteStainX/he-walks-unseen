@@ -5,6 +5,7 @@ import type { ResolvedObjectInstance } from '../../core/objects'
 import type { Position3D } from '../../core/position'
 import type { PositionAtTime } from '../../core/worldLine'
 import { minimalMonoTheme } from '../theme'
+import type { ActionPreview } from './preview'
 
 interface GameBoardCanvasProps {
   boardSize: number
@@ -13,6 +14,7 @@ interface GameBoardCanvasProps {
   currentTurn: number
   showDangerPreview: boolean
   detectionEvents: DetectionEvent[]
+  actionPreview: ActionPreview | null
 }
 
 const CANVAS_SIZE = 560
@@ -24,6 +26,7 @@ export function GameBoardCanvas({
   currentTurn,
   showDangerPreview,
   detectionEvents,
+  actionPreview,
 }: GameBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -127,6 +130,30 @@ export function GameBoardCanvas({
         context.fill()
       }
     }
+
+    if (actionPreview) {
+      const x = actionPreview.to.x * cellSize
+      const y = actionPreview.to.y * cellSize
+      const inset = cellSize * 0.12
+      const size = cellSize - inset * 2
+
+      context.strokeStyle = theme.objectStroke
+      context.fillStyle = actionPreview.blocked ? '#d7d7d7' : '#f2f2f2'
+      context.setLineDash([5, 3])
+      context.lineWidth = 2
+      context.fillRect(x + inset, y + inset, size, size)
+      context.strokeRect(x + inset, y + inset, size, size)
+      context.setLineDash([])
+
+      if (actionPreview.blocked) {
+        context.beginPath()
+        context.moveTo(x + inset, y + inset)
+        context.lineTo(x + cellSize - inset, y + cellSize - inset)
+        context.moveTo(x + cellSize - inset, y + inset)
+        context.lineTo(x + inset, y + cellSize - inset)
+        context.stroke()
+      }
+    }
   }, [
     boardSize,
     objectsAtCurrentTime,
@@ -134,6 +161,7 @@ export function GameBoardCanvas({
     currentTurn,
     showDangerPreview,
     detectionEvents,
+    actionPreview,
   ])
 
   return (
