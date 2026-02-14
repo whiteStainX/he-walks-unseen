@@ -195,8 +195,17 @@ export function GameShell() {
         timeDepth,
         intent: queuedIntent,
         maxPushChain: interactionConfig.maxPushChain,
+        allowPull: interactionConfig.allowPull,
       }),
-    [cube, worldLine, boardSize, timeDepth, queuedIntent, interactionConfig.maxPushChain],
+    [
+      cube,
+      worldLine,
+      boardSize,
+      timeDepth,
+      queuedIntent,
+      interactionConfig.maxPushChain,
+      interactionConfig.allowPull,
+    ],
   )
 
   const dispatchDirectionalIntent = useCallback(

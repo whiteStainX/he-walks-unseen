@@ -1,7 +1,7 @@
 import { hasComponent } from '../../core/components'
 import { isInBounds, movePosition, type Direction2D, type Position3D } from '../../core/position'
 import { objectsAt, type TimeCube } from '../../core/timeCube'
-import { currentPosition, type WorldLineState } from '../../core/worldLine'
+import { currentPosition, wouldIntersect, type WorldLineState } from '../../core/worldLine'
 
 export type PreviewMode = 'Move' | 'Push' | 'Pull'
 
@@ -129,8 +129,9 @@ export function buildActionPreview(input: {
   timeDepth: number
   intent: PreviewIntent | null
   maxPushChain: number
+  allowPull: boolean
 }): ActionPreview | null {
-  const { cube, worldLine, boardSize, timeDepth, intent, maxPushChain } = input
+  const { cube, worldLine, boardSize, timeDepth, intent, maxPushChain, allowPull } = input
 
   if (!intent) {
     return null
@@ -167,6 +168,16 @@ export function buildActionPreview(input: {
 
   const to = { x: nextSpatial.x, y: nextSpatial.y, t: nextTime }
 
+  if (wouldIntersect(worldLine, to)) {
+    return {
+      mode: intent.mode,
+      from,
+      to,
+      blocked: true,
+      reason: 'Blocked by self-intersection',
+    }
+  }
+
   switch (intent.mode) {
     case 'Move': {
       const blocked = blockingObjects(cube, to).length > 0
@@ -195,6 +206,16 @@ export function buildActionPreview(input: {
       }
     }
     case 'Pull': {
+      if (!allowPull) {
+        return {
+          mode: intent.mode,
+          from,
+          to,
+          blocked: true,
+          reason: 'Pull is disabled',
+        }
+      }
+
       const pullResult = isPullPreviewBlocked({
         cube,
         boardSize,
