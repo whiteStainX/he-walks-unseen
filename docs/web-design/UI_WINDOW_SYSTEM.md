@@ -79,6 +79,7 @@ Content:
   - `Enter` Wait
   - `L` Log overlay
   - `P` Danger preview toggle
+  - `V` Content pack cycle
   - `R` Restart
 
 Behavior:

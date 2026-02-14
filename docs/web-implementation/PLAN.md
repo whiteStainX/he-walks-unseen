@@ -149,7 +149,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Bundle default levels in `public/data/`
 
 ### Exit Criteria
-- [ ] Can switch levels without rebuild
+- [x] Can switch levels without rebuild
 - [x] Theme applies to canvas and UI
 - [x] Enemy behavior parameters load from content files
 

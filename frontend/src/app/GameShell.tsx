@@ -4,14 +4,17 @@ import { evaluateDetectionV1 } from '../core/detection'
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
+import { loadBootContentFromPublic } from '../data/loader'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
 import {
+  applyLoadedContent,
   applyRift,
   configureRiftSettings,
   movePlayer2D,
   pullPlayer2D,
   pushPlayer2D,
   restart,
+  setContentPackId,
   setStatus,
   setInteractionConfig,
   waitTurn,
@@ -19,9 +22,11 @@ import {
 import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
 import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 import { IsoTimeCubePanel } from '../render/iso/IsoTimeCubePanel'
+import { applyCssVars } from '../render/theme'
 
 type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 type DirectionalOption = { mode: DirectionalActionMode; keyLabel: '1' | '2' | '3'; description: string }
+const PUBLIC_CONTENT_PACKS = ['default', 'variant'] as const
 
 const directionalOptions: DirectionalOption[] = [
   { mode: 'Move', keyLabel: '1', description: 'Normal movement' },
@@ -78,9 +83,11 @@ export function GameShell() {
   const turn = useAppSelector((state) => state.game.turn)
   const timeDepth = useAppSelector((state) => state.game.timeDepth)
   const phase = useAppSelector((state) => state.game.phase)
+  const contentPackId = useAppSelector((state) => state.game.contentPackId)
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
   const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
+  const themeCssVars = useAppSelector((state) => state.game.themeCssVars)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
   const player = currentPosition(worldLine)
@@ -110,6 +117,33 @@ export function GameShell() {
   )
 
   useEffect(() => {
+    applyCssVars(themeCssVars)
+  }, [themeCssVars])
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const loaded = await loadBootContentFromPublic({ packId: contentPackId })
+
+      if (cancelled) {
+        return
+      }
+
+      if (!loaded.ok) {
+        dispatch(setStatus(`Content load failed (${contentPackId}): ${loaded.error.kind}`))
+        return
+      }
+
+      dispatch(applyLoadedContent({ packId: contentPackId, content: loaded.value }))
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [contentPackId, dispatch])
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) {
         return
@@ -132,6 +166,14 @@ export function GameShell() {
       if (event.key === 'p' || event.key === 'P') {
         event.preventDefault()
         setShowDangerPreview((enabled) => !enabled)
+        return
+      }
+
+      if (event.key === 'v' || event.key === 'V') {
+        event.preventDefault()
+        const currentIndex = PUBLIC_CONTENT_PACKS.findIndex((id) => id === contentPackId)
+        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % PUBLIC_CONTENT_PACKS.length
+        dispatch(setContentPackId(PUBLIC_CONTENT_PACKS[nextIndex]))
         return
       }
 
@@ -255,6 +297,7 @@ export function GameShell() {
     interactionConfig.maxPushChain,
     isActionMenuOpen,
     isLogOpen,
+    contentPackId,
     riftDefaultDelta,
   ])
 
@@ -314,6 +357,7 @@ export function GameShell() {
                 <span>Direction: WASD / Arrows</span>
                 <span>Space: Rift</span>
                 <span>Enter: Wait</span>
+                <span>V: Switch pack</span>
               </div>
             </div>
           </section>
@@ -348,6 +392,10 @@ export function GameShell() {
                     <div className="metric-item">
                       <span className="metric-label">Mode</span>
                       <span className="metric-value">{directionalActionMode}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Pack</span>
+                      <span className="metric-value">{contentPackId}</span>
                     </div>
                   </div>
                 </section>
@@ -436,6 +484,7 @@ export function GameShell() {
         <span>Enter Wait</span>
         <span>L Log</span>
         <span>P Danger</span>
+        <span>V Pack</span>
         <span>[ ] Rift +/-</span>
         <span>- = Push Max +/-</span>
         <span>R Restart</span>

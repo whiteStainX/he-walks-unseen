@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
+import { loadDefaultBootContent } from '../data/loader'
 import { objectsAt } from '../core/timeCube'
 import {
+  applyLoadedContent,
   applyRift,
   configureDetectionConfig,
   configureRiftSettings,
@@ -10,6 +12,7 @@ import {
   pullPlayer2D,
   pushPlayer2D,
   restart,
+  setContentPackId,
   setInteractionConfig,
   waitTurn,
 } from './gameSlice'
@@ -250,5 +253,35 @@ describe('gameSlice', () => {
     expect(won.phase).toBe('Won')
     expect(won.status).toContain('reached exit')
     expect(won.lastDetection).toBeNull()
+  })
+
+  it('updates content pack id selection before loading', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const next = gameReducer(initial, setContentPackId('variant'))
+
+    expect(next.contentPackId).toBe('variant')
+    expect(next.status).toBe('Loading content pack: variant')
+  })
+
+  it('applies loaded content payload and resets run state', () => {
+    const loaded = loadDefaultBootContent()
+    expect(loaded.ok).toBe(true)
+    if (!loaded.ok) {
+      return
+    }
+
+    const initial = gameReducer(undefined, { type: 'init' })
+    const moved = gameReducer(initial, movePlayer2D('east'))
+    const applied = gameReducer(
+      moved,
+      applyLoadedContent({ packId: 'default', content: loaded.value }),
+    )
+
+    expect(applied.turn).toBe(0)
+    expect(applied.currentTime).toBe(loaded.value.startPosition.t)
+    expect(applied.worldLine.path.at(-1)).toEqual(loaded.value.startPosition)
+    expect(applied.phase).toBe('Playing')
+    expect(applied.contentPackId).toBe('default')
+    expect(applied.status).toBe('Loaded content pack: default')
   })
 })

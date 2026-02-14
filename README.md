@@ -48,6 +48,7 @@ npm run dev
 | `Enter` | Wait one turn |
 | `L` | Open/close full log overlay |
 | `P` | Toggle danger preview overlay |
+| `V` | Cycle content pack (`default` / `variant`) |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "policies": {
+    "enemy_patrol_beta": {
+      "kind": "PatrolPingPong",
+      "path": [
+        { "x": 9, "y": 9 },
+        { "x": 8, "y": 9 },
+        { "x": 7, "y": 9 },
+        { "x": 6, "y": 9 }
+      ]
+    }
+  },
+  "assignments": {
+    "enemy.beta": "enemy_patrol_beta"
+  }
+}

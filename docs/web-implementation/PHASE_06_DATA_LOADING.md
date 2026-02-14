@@ -23,6 +23,7 @@ Progress in current pass:
 - default content pack mirrored under `public/data/`
 - async public-data loader entrypoint added (`loadBootContentFromPublic`)
 - behavior resolver module added (`Static`, `PatrolLoop`, `PatrolPingPong`, `ScriptedTimeline` position resolution)
+- runtime pack switching added (`V` cycles `default` / `variant` from `public/data`)
 - data-layer tests added
 
 ---

@@ -96,6 +96,7 @@ Detailed HUD and overlay specification:
   - `Enter` waits one turn
   - `L` opens/closes action log overlay
   - `P` toggles danger preview overlay
+  - `V` cycles loaded content pack
   - `R` restarts
 - **Pointer:** optional click-to-move (future)
 

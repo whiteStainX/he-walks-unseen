@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "rift": {
+    "defaultDelta": 2,
+    "baseEnergyCost": 0
+  },
+  "interaction": {
+    "maxPushChain": 3,
+    "allowPull": true
+  },
+  "detection": {
+    "enabled": true,
+    "delayTurns": 1,
+    "maxDistance": 3
+  }
+}

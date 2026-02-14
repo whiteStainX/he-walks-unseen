@@ -72,14 +72,18 @@ export const minimalMonoTheme: AppTheme = {
   },
 }
 
-export function applyThemeCssVars(theme: AppTheme): void {
+export function applyCssVars(cssVars: Record<string, string>): void {
   if (typeof document === 'undefined') {
     return
   }
 
   const root = document.documentElement
 
-  for (const [name, value] of Object.entries(theme.cssVars)) {
+  for (const [name, value] of Object.entries(cssVars)) {
     root.style.setProperty(name, value)
   }
+}
+
+export function applyThemeCssVars(theme: AppTheme): void {
+  applyCssVars(theme.cssVars)
 }

@@ -172,13 +172,19 @@ async function fetchJson(path: string): Promise<Result<unknown, PublicContentLoa
 }
 
 export async function loadBootContentFromPublic(
-  basePath = '/data',
+  options: {
+    basePath?: string
+    packId?: string
+  } = {},
 ): Promise<Result<LoadedBootContent, PublicContentLoadError>> {
+  const basePath = options.basePath ?? '/data'
+  const packId = options.packId ?? 'default'
+
   const [level, behavior, theme, rules] = await Promise.all([
-    fetchJson(`${basePath}/default.level.json`),
-    fetchJson(`${basePath}/default.behavior.json`),
-    fetchJson(`${basePath}/default.theme.json`),
-    fetchJson(`${basePath}/default.rules.json`),
+    fetchJson(`${basePath}/${packId}.level.json`),
+    fetchJson(`${basePath}/${packId}.behavior.json`),
+    fetchJson(`${basePath}/${packId}.theme.json`),
+    fetchJson(`${basePath}/${packId}.rules.json`),
   ])
 
   if (!level.ok) {
