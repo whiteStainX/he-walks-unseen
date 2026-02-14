@@ -19,7 +19,15 @@ Phase 7 target:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Implemented (baseline)
+
+Implemented in this pass:
+- core paradox contracts and evaluator (`frontend/src/core/paradox.ts`)
+- core paradox unit tests (`frontend/src/core/paradox.test.ts`)
+- game state integration (`paradoxConfig`, `lastParadox`, `causalAnchors`)
+- pipeline post-check ordering (`Paradox -> Won -> Detected`)
+- reducer/integration tests for paradox transitions and ordering
+- UI state window surface for paradox metrics
 
 ---
 

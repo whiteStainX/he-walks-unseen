@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 import type { DetectionConfig } from '../core/detection'
+import type { ParadoxConfig } from '../core/paradox'
 import type { Direction2D, Position3D } from '../core/position'
 import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
 import { createWorldLine } from '../core/worldLine'
@@ -47,6 +48,9 @@ const DEFAULT_DETECTION_CONFIG: DetectionConfig = bootContent.ok
       delayTurns: 1,
     maxDistance: 2,
   }
+const DEFAULT_PARADOX_CONFIG: ParadoxConfig = {
+  enabled: true,
+}
 const DEFAULT_LEVEL_OBJECTS_CONFIG: LevelObjectsConfig | null = bootContent.ok
   ? bootContent.value.levelObjectsConfig
   : null
@@ -62,6 +66,7 @@ export interface GameState extends InteractionState {
   defaultRiftSettings: RiftSettings
   defaultInteractionConfig: InteractionConfig
   defaultDetectionConfig: DetectionConfig
+  defaultParadoxConfig: ParadoxConfig
   themeCssVars: Record<string, string>
 }
 
@@ -145,11 +150,15 @@ function createInitialState(): GameState {
     defaultInteractionConfig: { ...DEFAULT_INTERACTION_CONFIG },
     detectionConfig: { ...DEFAULT_DETECTION_CONFIG },
     defaultDetectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    paradoxConfig: { ...DEFAULT_PARADOX_CONFIG },
+    defaultParadoxConfig: { ...DEFAULT_PARADOX_CONFIG },
     contentPackId: DEFAULT_CONTENT_PACK_ID,
     levelObjectsConfig: DEFAULT_LEVEL_OBJECTS_CONFIG,
     startPosition: DEFAULT_START_POSITION,
     themeCssVars: { ...DEFAULT_THEME_CSS_VARS },
     lastDetection: null,
+    lastParadox: null,
+    causalAnchors: [],
     history: [],
     status: objectState.status,
   }
@@ -192,6 +201,10 @@ const gameSlice = createSlice({
       state.detectionConfig = { ...state.detectionConfig, ...action.payload }
       state.status = `Detection config updated (enabled=${state.detectionConfig.enabled}, delay=${state.detectionConfig.delayTurns}, range=${state.detectionConfig.maxDistance})`
     },
+    configureParadoxConfig(state, action: PayloadAction<Partial<ParadoxConfig>>) {
+      state.paradoxConfig = { ...state.paradoxConfig, ...action.payload }
+      state.status = `Paradox config updated (enabled=${state.paradoxConfig.enabled})`
+    },
     setContentPackId(state, action: PayloadAction<string>) {
       if (state.contentPackId === action.payload) {
         return
@@ -229,8 +242,11 @@ const gameSlice = createSlice({
       state.interactionConfig = { ...action.payload.content.interactionConfig }
       state.defaultDetectionConfig = { ...action.payload.content.detectionConfig }
       state.detectionConfig = { ...action.payload.content.detectionConfig }
+      state.paradoxConfig = { ...state.defaultParadoxConfig }
       state.themeCssVars = { ...action.payload.content.themeCssVars }
       state.lastDetection = null
+      state.lastParadox = null
+      state.causalAnchors = []
       state.history = []
       state.status = `Loaded content pack: ${action.payload.packId}`
     },
@@ -255,6 +271,9 @@ const gameSlice = createSlice({
       state.interactionConfig = { ...state.defaultInteractionConfig }
       state.detectionConfig = { ...state.defaultDetectionConfig }
       state.lastDetection = null
+      state.paradoxConfig = { ...state.defaultParadoxConfig }
+      state.lastParadox = null
+      state.causalAnchors = []
       state.history = []
       state.status = 'Restarted'
     },
@@ -273,6 +292,7 @@ export const {
   configureRiftSettings,
   setInteractionConfig,
   configureDetectionConfig,
+  configureParadoxConfig,
   setContentPackId,
   applyLoadedContent,
   restart,

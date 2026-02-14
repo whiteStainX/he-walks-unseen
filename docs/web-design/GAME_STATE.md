@@ -1,7 +1,7 @@
 # Game State Design (Web)
 
 > **Module target:** `frontend/src/game/`
-> **Status:** Phase 6 implemented, Phase 7 planning
+> **Status:** Phase 7 implemented (baseline)
 
 This document defines the reducer state shape, interaction pipeline, and phase transitions for the web app.
 

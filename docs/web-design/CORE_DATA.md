@@ -1,7 +1,7 @@
 # Core Data Design (Web)
 
 > **Module target:** `frontend/src/core/`
-> **Status:** Phase 6 implemented, Phase 7 contracts planned
+> **Status:** Phase 7 implemented (baseline)
 
 This document defines canonical core data structures and reusable core contracts.
 

@@ -88,6 +88,9 @@ export function GameShell() {
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
   const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
+  const paradoxConfig = useAppSelector((state) => state.game.paradoxConfig)
+  const lastParadox = useAppSelector((state) => state.game.lastParadox)
+  const causalAnchors = useAppSelector((state) => state.game.causalAnchors)
   const themeCssVars = useAppSelector((state) => state.game.themeCssVars)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
@@ -341,7 +344,7 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 5: detection baseline + danger preview</p>
+        <p>Phase 7: paradox baseline + detection preview</p>
       </header>
 
       <main className="game-layout">
@@ -476,6 +479,28 @@ export function GameShell() {
                     <div className="metric-item">
                       <span className="metric-label">Events</span>
                       <span className="metric-value">{detectionPreviewReport.events.length}</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="state-block">
+                  <h3 className="state-block-title">Paradox</h3>
+                  <div className="metric-grid">
+                    <div className="metric-item">
+                      <span className="metric-label">Enabled</span>
+                      <span className="metric-value">{paradoxConfig.enabled ? 'on' : 'off'}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Anchors</span>
+                      <span className="metric-value">{causalAnchors.length}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Violations</span>
+                      <span className="metric-value">{lastParadox?.violations.length ?? 0}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">From T</span>
+                      <span className="metric-value">{lastParadox?.checkedFromTime ?? '-'}</span>
                     </div>
                   </div>
                 </section>

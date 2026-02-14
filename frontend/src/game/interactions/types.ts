@@ -4,8 +4,13 @@ import type { Direction2D, Position3D } from '../../core/position'
 import type { WorldLineState } from '../../core/worldLine'
 import type { Result } from '../../core/result'
 import type { DetectionConfig, DetectionReport } from '../../core/detection'
+import type {
+  CausalAnchor,
+  ParadoxConfig,
+  ParadoxReport,
+} from '../../core/paradox'
 
-export type GamePhase = 'Playing' | 'Won' | 'Detected'
+export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox'
 
 export type InteractionAction =
   | { kind: 'Move'; direction: Direction2D }
@@ -40,6 +45,8 @@ export interface InteractionHistoryEntry {
   turn: number
   action: InteractionAction
   outcome: SuccessfulOutcome
+  anchors?: CausalAnchor[]
+  affectedFromTime?: number
 }
 
 export interface InteractionConfig {
@@ -61,6 +68,9 @@ export interface InteractionState {
   history: InteractionHistoryEntry[]
   detectionConfig: DetectionConfig
   lastDetection: DetectionReport | null
+  paradoxConfig: ParadoxConfig
+  lastParadox: ParadoxReport | null
+  causalAnchors: CausalAnchor[]
   status: string
 }
 

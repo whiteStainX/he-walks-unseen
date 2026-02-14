@@ -162,18 +162,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_07_PARADOX.md`
 
 ### Deliverables
-- [ ] Core paradox contracts (`ParadoxConfig`, `CausalAnchor`, `ParadoxReport`)
-- [ ] Anchor capture from successful interaction outcomes
-- [ ] Paradox evaluator with affected-time windowing
-- [ ] Reducer pipeline order update: `Paradox -> Won -> Detected`
-- [ ] `GamePhase` update to include `Paradox` + UI status/log surface
-- [ ] Unit tests for paradox edge cases and ordering
+- [x] Core paradox contracts (`ParadoxConfig`, `CausalAnchor`, `ParadoxReport`)
+- [x] Anchor capture from successful interaction outcomes
+- [x] Paradox evaluator with affected-time windowing
+- [x] Reducer pipeline order update: `Paradox -> Won -> Detected`
+- [x] `GamePhase` update to include `Paradox` + UI status/log surface
+- [x] Unit tests for paradox edge cases and ordering
 
 ### Exit Criteria
-- Any action that violates committed anchors transitions the game to `Paradox`
-- `Paradox` blocks further actions until restart
-- If an action could both win and paradox, paradox takes priority
-- Existing detection and win behavior remains stable when no paradox exists
+- [x] Any action that violates committed anchors transitions the game to `Paradox`
+- [x] `Paradox` blocks further actions until restart
+- [x] If an action could both win and paradox, paradox takes priority
+- [x] Existing detection and win behavior remains stable when no paradox exists
 
 ---
 
