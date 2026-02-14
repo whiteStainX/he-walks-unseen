@@ -1,7 +1,7 @@
 # Core Data Design (Web)
 
 > **Module target:** `frontend/src/core/`
-> **Status:** Phase 4 implemented, Phase 5 contracts defined
+> **Status:** Phase 6 implemented, Phase 7 contracts planned
 
 This document defines canonical core data structures and reusable core contracts.
 
@@ -175,7 +175,58 @@ V1 model target:
 
 ---
 
-## 7. Core Error Families
+## 7. Paradox Contracts (Phase 7)
+
+Paradox contracts are core-level so reducer, render, and tests share one causality model.
+
+```ts
+export type CausalRequirement =
+  | { kind: 'PlayerAt'; position: Position3D; sourceTurn: number }
+  | { kind: 'ObjectAt'; objectId: string; position: Position3D; sourceTurn: number }
+
+export interface CausalAnchor {
+  id: string
+  requirement: CausalRequirement
+}
+
+export interface ParadoxConfig {
+  enabled: boolean
+}
+
+export interface ParadoxViolation {
+  anchorId: string
+  requirement: CausalRequirement
+  reason: 'PlayerMissing' | 'ObjectMissing' | 'ObjectMismatch'
+}
+
+export interface ParadoxReport {
+  paradox: boolean
+  checkedFromTime: number
+  earliestSourceTurn: number | null
+  violations: ParadoxViolation[]
+}
+```
+
+Planned core API:
+
+```ts
+evaluateParadoxV1(input: {
+  cube: TimeCube
+  worldLine: WorldLineState
+  anchors: CausalAnchor[]
+  checkedFromTime: number
+  config: ParadoxConfig
+}): ParadoxReport
+```
+
+V1 model target:
+- committed-prefix consistency, not speculative full-timeline solving
+- evaluate only anchors in the affected time window
+- pure read operation (no mutations)
+
+---
+
+## 8. Core Error Families
 
 ```ts
 type CubeError =
@@ -194,7 +245,7 @@ Interaction-specific and reducer-level errors should wrap these core errors rath
 
 ---
 
-## 8. Module Dependencies
+## 9. Module Dependencies
 
 ```
 result.ts       (leaf)
@@ -205,6 +256,7 @@ worldLine.ts    (position, result)
 rift.ts         (position, result)
 timeCube.ts     (objects, components, position, result)
 detection.ts    (timeCube, worldLine, position)
+paradox.ts      (timeCube, worldLine, position)
 ```
 
 ---
@@ -213,3 +265,4 @@ detection.ts    (timeCube, worldLine, position)
 - `docs/web-design/GAME_STATE.md`
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-implementation/PHASE_05_DETECTION.md`
+- `docs/web-implementation/PLAN.md`

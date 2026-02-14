@@ -1,7 +1,7 @@
 # Game State Design (Web)
 
 > **Module target:** `frontend/src/game/`
-> **Status:** Phase 4 implemented, Phase 5 planned
+> **Status:** Phase 6 implemented, Phase 7 planning
 
 This document defines the reducer state shape, interaction pipeline, and phase transitions for the web app.
 
@@ -26,7 +26,8 @@ Rules:
 Current game state is reducer-owned and interaction-first.
 
 ```ts
-export type GamePhase = 'Playing' | 'Won' | 'Detected'
+import type { CausalAnchor, ParadoxConfig, ParadoxReport } from '../core/paradox'
+export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox'
 
 export interface DetectionConfig {
   enabled: boolean
@@ -62,13 +63,15 @@ export interface GameState {
   history: InteractionHistoryEntry[]
   detectionConfig: DetectionConfig
   lastDetection: DetectionReport | null
+  paradoxConfig: ParadoxConfig
+  lastParadox: ParadoxReport | null
   status: string
 }
 ```
 
 Notes:
-- `Detected` is Phase 5 target and intentionally separate from Phase 7 paradox.
-- `Paradox` is deferred to Phase 7 and should not be mixed into Phase 5 detection logic.
+- Detection and paradox are separate checks with separate report types.
+- Detection reports line-of-sight outcomes; paradox reports causality consistency failures.
 
 ---
 
@@ -90,6 +93,8 @@ interface InteractionHistoryEntry {
   turn: number
   action: InteractionAction
   outcome: SuccessfulOutcome
+  anchors?: CausalAnchor[]
+  affectedFromTime?: number
 }
 ```
 
@@ -102,13 +107,16 @@ For each interaction action:
 1. Guard phase (`Playing` only).
 2. Execute interaction handler from registry.
 3. On success: update `turn`, `currentTime`, `history`, `status`.
-4. Check win (`hasExit`) first.
-5. If not won and detection enabled: run detection evaluator.
-6. If detected: set `phase = 'Detected'` with deterministic status message.
+4. Run paradox evaluator against committed anchors (Phase 7).
+5. If paradox is found: set `phase = 'Paradox'`, persist `lastParadox`, stop pipeline.
+6. If not paradox: check win (`hasExit`).
+7. If not won and detection enabled: run detection evaluator.
+8. If detected: set `phase = 'Detected'` with deterministic status message.
 
 Outcome priority in same action:
-1. `Won`
-2. `Detected`
+1. `Paradox`
+2. `Won`
+3. `Detected`
 
 ---
 
@@ -119,11 +127,12 @@ Outcome priority in same action:
 | `Playing` | Active gameplay | interactions allowed |
 | `Won` | Exit reached | blocked until restart |
 | `Detected` | Enemy detection triggered | blocked until restart |
+| `Paradox` | Causality consistency violated | blocked until restart |
 
 Restart semantics:
 - resets world line and occupancy state
 - resets turn/time/phase
-- clears history and last detection report
+- clears history, `lastDetection`, and `lastParadox`
 
 ---
 
@@ -152,7 +161,22 @@ The reducer is responsible for phase transition and status text.
 
 ---
 
+## 8. Paradox Integration (Phase 7)
+
+Paradox validation is a pure read over committed state and anchor history:
+- inputs: `TimeCube`, `WorldLineState`, `CausalAnchor[]`, `checkedFromTime`, `ParadoxConfig`
+- output: `ParadoxReport`
+- no mutation inside evaluator
+
+The reducer is responsible for:
+- creating/updating anchor history from interaction outcomes
+- choosing `checkedFromTime` from the interaction mutation footprint
+- applying phase transition to `Paradox`
+
+---
+
 ## Related Documents
 - `docs/web-design/CORE_DATA.md`
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-implementation/PHASE_05_DETECTION.md`
+- `docs/web-implementation/PLAN.md`

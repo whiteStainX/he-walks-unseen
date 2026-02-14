@@ -157,16 +157,23 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ## Phase 7: Paradox Detection
 
-**Goal:** Implement grandfather paradox validation.
+**Goal:** Implement committed-history paradox validation (grandfather class).
+**Design Detail:** `docs/web-design/MATH_MODEL.md`, `docs/web-design/GAME_STATE.md`, `docs/web-design/CORE_DATA.md`
+**Implementation Detail:** `docs/web-implementation/PHASE_07_PARADOX.md`
 
 ### Deliverables
-- [ ] Propagation consistency checks
-- [ ] Paradox errors surface to UI
-- [ ] Unit tests for paradox edge cases
+- [ ] Core paradox contracts (`ParadoxConfig`, `CausalAnchor`, `ParadoxReport`)
+- [ ] Anchor capture from successful interaction outcomes
+- [ ] Paradox evaluator with affected-time windowing
+- [ ] Reducer pipeline order update: `Paradox -> Won -> Detected`
+- [ ] `GamePhase` update to include `Paradox` + UI status/log surface
+- [ ] Unit tests for paradox edge cases and ordering
 
 ### Exit Criteria
-- Invalid paradox moves rejected
-- GamePhase updates to `Paradox`
+- Any action that violates committed anchors transitions the game to `Paradox`
+- `Paradox` blocks further actions until restart
+- If an action could both win and paradox, paradox takes priority
+- Existing detection and win behavior remains stable when no paradox exists
 
 ---
 

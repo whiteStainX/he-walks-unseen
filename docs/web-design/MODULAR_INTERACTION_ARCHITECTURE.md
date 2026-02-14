@@ -22,7 +22,8 @@ The reducer pipeline must not grow via large action-specific branching.
 ## Architectural Rules
 
 1. Keep one shared pipeline:
-- `validate -> apply -> propagate -> check`
+- `validate -> apply -> propagate -> commit -> post-checks`
+- post-check order: `paradox -> win -> detection`
 
 2. Keep action-specific logic in per-action handlers:
 - `move.ts`
@@ -37,6 +38,7 @@ The reducer pipeline must not grow via large action-specific branching.
 - outcome/error types
 - handler interface
 - context shape
+- post-check metadata (`affectedFromTime`, `anchors`)
 
 4. Keep `WorldLineState` and `TimeCube` truth boundaries unchanged:
 - player mutations via world-line operations
@@ -50,6 +52,11 @@ The reducer pipeline must not grow via large action-specific branching.
 - input layer selects an `InteractionAction` intent (mode + target)
 - interaction handlers execute typed actions only
 - avoid scaling controls via multi-key chords as the primary interaction model
+
+7. Keep paradox/detection checks outside action handlers:
+- handlers mutate only gameplay truth (`WorldLineState`, `TimeCube`)
+- pipeline-owned post-checks evaluate paradox/win/detection in fixed order
+- handlers expose enough metadata for post-check windowing
 
 ---
 
@@ -86,6 +93,15 @@ type InteractionHandler<K extends InteractionAction['kind']> = {
 };
 ```
 
+Outcome metadata for pipeline post-checks:
+
+```ts
+type InteractionCommitMeta = {
+  affectedFromTime: number
+  anchors: CausalAnchor[]
+}
+```
+
 Registry contract:
 
 ```ts
@@ -103,6 +119,7 @@ Every new interaction requires:
 2. Registry dispatch coverage
 3. Reducer integration tests
 4. Regression checks for existing interactions
+5. Post-check integration coverage (`paradox -> win -> detection` ordering)
 
 ---
 

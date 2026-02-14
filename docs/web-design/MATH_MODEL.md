@@ -216,10 +216,44 @@ Only check enemy positions within explored time range `[T_min, T_max]`.
 ### 7.1 Time Travel Detection
 Rifting to the past inserts new world line points; all enemies at `t > tp` can potentially see those points.
 
-### 7.2 Grandfather Paradox of Detection
-Enemy sees where player **was**, not where they **are**.
+### 7.2 Detection Is Not Paradox
+Enemy seeing where the player **was** is expected under the detection model.  
+This is a detection event, not a causality violation.
 
-### 7.3 Moving Enemies
+### 7.3 Grandfather Paradox (Phase 7)
+Paradox is defined as a consistency failure against already committed history.
+
+At turn `n`, let:
+- `P_n` be the committed player world-line prefix
+- `S_n` be the realized cube state derived from `P_n` + object propagation
+- `A_n` be the set of causal anchors captured from successful turns `<= n`
+
+Then:
+
+```
+Paradox(S_n, A_n) = ∃ a ∈ A_n : ¬satisfies(S_n, a)
+```
+
+V1 anchor requirements:
+- `PlayerAt(x, y, t)` for committed player positions used as causes
+- `ObjectAt(id, x, y, t)` for committed object positions used as causes
+
+If any anchor fails, the timeline is inconsistent and the game enters `Paradox`.
+
+### 7.4 Validation Window
+Paradox checks do not need full-history scans each turn.
+
+If an interaction mutates object occupancy from time `t_mut` forward, only anchors with:
+
+```
+anchor.position.t >= t_mut
+```
+
+must be revalidated in that action.
+
+This keeps runtime bounded and aligns with forward propagation semantics.
+
+### 7.5 Moving Enemies
 Enemy patrol positions at `te` determine what they can see, even if player position is older.
 
 ---
@@ -229,6 +263,7 @@ Enemy patrol positions at `te` determine what they can see, even if player posit
 1. Start with **Model A (Discrete Delay)**
 2. Allow **Model E (Layered Light Cone)** as optional per-level config
 3. Provide strong visual feedback (danger zones, fading trail)
+4. Implement paradox as a committed-anchor consistency check in Phase 7
 
 Config example:
 ```toml
@@ -351,6 +386,7 @@ Rifting to a cube-time already visited creates multiple positions at the same `t
 4. **No alert phase** (deferred)
 5. **Rift safety is geometric**
 6. **Turn-time semantics are committed-prefix (`P_n`, `S_n`)**
+7. **Outcome priority is `Paradox` > `Won` > `Detected` when multiple checks trigger on one action**
 
 ---
 
@@ -391,6 +427,7 @@ Start with **Discrete Delay**, then upgrade to full light cone later if needed.
 | `T_max` | Explored frontier |
 | `n` | Turn number |
 | `S_n(t)` | Realized slice at cube-time `t` under committed prefix `P_n` |
+| `A_n` | Causal anchor set captured from committed turns |
 
 ### Glossary
 | Term | Definition |
@@ -404,3 +441,4 @@ Start with **Discrete Delay**, then upgrade to full light cone later if needed.
 | Current-Turn Self | Latest turn position |
 | Past-Turn Self | Earlier turn positions |
 | Committed Prefix | World-line history fixed up to current turn `n` |
+| Causal Anchor | A requirement that must remain true for committed history to stay valid |
