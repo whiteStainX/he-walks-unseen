@@ -4,7 +4,7 @@ import { evaluateDetectionV1 } from '../core/detection'
 import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
-import { loadBootContentFromPublic } from '../data/loader'
+import { loadBootContentFromPublic, loadContentPackManifestFromPublic } from '../data/loader'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
 import {
   applyLoadedContent,
@@ -26,7 +26,7 @@ import { applyCssVars } from '../render/theme'
 
 type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 type DirectionalOption = { mode: DirectionalActionMode; keyLabel: '1' | '2' | '3'; description: string }
-const PUBLIC_CONTENT_PACKS = ['default', 'variant'] as const
+const DEFAULT_PACK_SEQUENCE = ['default', 'variant']
 
 const directionalOptions: DirectionalOption[] = [
   { mode: 'Move', keyLabel: '1', description: 'Normal movement' },
@@ -76,6 +76,7 @@ export function GameShell() {
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false)
   const [isLogOpen, setIsLogOpen] = useState(false)
   const [showDangerPreview, setShowDangerPreview] = useState(false)
+  const [availablePackIds, setAvailablePackIds] = useState<string[]>(DEFAULT_PACK_SEQUENCE)
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
@@ -115,6 +116,38 @@ export function GameShell() {
       }),
     [cube, worldLine, currentTime, detectionConfig],
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const manifest = await loadContentPackManifestFromPublic('/data')
+
+      if (cancelled || !manifest.ok) {
+        return
+      }
+
+      const packIds = manifest.value.packs.map((pack) => pack.id)
+
+      if (packIds.length > 0) {
+        setAvailablePackIds(packIds)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (availablePackIds.length === 0) {
+      return
+    }
+
+    if (!availablePackIds.includes(contentPackId)) {
+      dispatch(setContentPackId(availablePackIds[0]))
+    }
+  }, [availablePackIds, contentPackId, dispatch])
 
   useEffect(() => {
     applyCssVars(themeCssVars)
@@ -171,9 +204,11 @@ export function GameShell() {
 
       if (event.key === 'v' || event.key === 'V') {
         event.preventDefault()
-        const currentIndex = PUBLIC_CONTENT_PACKS.findIndex((id) => id === contentPackId)
-        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % PUBLIC_CONTENT_PACKS.length
-        dispatch(setContentPackId(PUBLIC_CONTENT_PACKS[nextIndex]))
+        if (availablePackIds.length > 0) {
+          const currentIndex = availablePackIds.findIndex((id) => id === contentPackId)
+          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % availablePackIds.length
+          dispatch(setContentPackId(availablePackIds[nextIndex]))
+        }
         return
       }
 
@@ -297,6 +332,7 @@ export function GameShell() {
     interactionConfig.maxPushChain,
     isActionMenuOpen,
     isLogOpen,
+    availablePackIds,
     contentPackId,
     riftDefaultDelta,
   ])

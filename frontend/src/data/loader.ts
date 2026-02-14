@@ -102,6 +102,7 @@ export interface LoadedBootContent {
 export type PublicContentLoadError =
   | ContentLoadError
   | { kind: 'FetchFailed'; file: string; status?: number; message: string }
+  | { kind: 'InvalidManifest'; message: string }
 
 function toLoadedBootContent(content: ContentPack): LoadedBootContent {
   return {
@@ -217,5 +218,69 @@ export async function loadBootContentFromPublic(
   return {
     ok: true,
     value: toLoadedBootContent(validated.value),
+  }
+}
+
+export interface PublicContentPackManifest {
+  schemaVersion: 1
+  packs: Array<{
+    id: string
+    name?: string
+  }>
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+export async function loadContentPackManifestFromPublic(
+  basePath = '/data',
+): Promise<Result<PublicContentPackManifest, PublicContentLoadError>> {
+  const manifest = await fetchJson(`${basePath}/index.json`)
+
+  if (!manifest.ok) {
+    return manifest
+  }
+
+  if (!isRecord(manifest.value)) {
+    return { ok: false, error: { kind: 'InvalidManifest', message: 'Manifest must be an object' } }
+  }
+
+  if (manifest.value.schemaVersion !== 1) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message: 'Manifest schemaVersion must be 1',
+      },
+    }
+  }
+
+  if (!Array.isArray(manifest.value.packs)) {
+    return { ok: false, error: { kind: 'InvalidManifest', message: 'Manifest packs must be an array' } }
+  }
+
+  const packs: PublicContentPackManifest['packs'] = []
+
+  for (const entry of manifest.value.packs) {
+    if (!isRecord(entry) || typeof entry.id !== 'string' || entry.id.length === 0) {
+      return {
+        ok: false,
+        error: { kind: 'InvalidManifest', message: 'Each pack must include non-empty id' },
+      }
+    }
+
+    packs.push({
+      id: entry.id,
+      name: typeof entry.name === 'string' ? entry.name : undefined,
+    })
+  }
+
+  return {
+    ok: true,
+    value: {
+      schemaVersion: 1,
+      packs,
+    },
   }
 }

@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { loadBootContentFromPublic, loadDefaultBootContent } from './loader'
+import {
+  loadBootContentFromPublic,
+  loadContentPackManifestFromPublic,
+  loadDefaultBootContent,
+} from './loader'
 
 describe('loadDefaultBootContent', () => {
   it('loads default content and maps baseline runtime settings', () => {
@@ -96,5 +100,38 @@ describe('loadBootContentFromPublic', () => {
     expect(loaded.value.boardSize).toBe(6)
     expect(loaded.value.timeDepth).toBe(8)
     expect(loaded.value.startPosition).toEqual({ x: 1, y: 1, t: 0 })
+  })
+})
+
+describe('loadContentPackManifestFromPublic', () => {
+  const originalFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.restoreAllMocks()
+  })
+
+  it('loads valid manifest and returns ordered pack ids', async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          schemaVersion: 1,
+          packs: [
+            { id: 'default', name: 'Default Lab' },
+            { id: 'variant', name: 'Variant Hall' },
+          ],
+        }),
+        { status: 200 },
+      ),
+    ) as typeof fetch
+
+    const manifest = await loadContentPackManifestFromPublic('/data')
+
+    expect(manifest.ok).toBe(true)
+    if (!manifest.ok) {
+      return
+    }
+
+    expect(manifest.value.packs.map((pack) => pack.id)).toEqual(['default', 'variant'])
   })
 })
