@@ -5,6 +5,7 @@ import type { DetectionConfig } from '../core/detection'
 import type { RiftSettings } from '../core/rift'
 import type { ContentComponent, ContentLoadError, ContentPack } from './contracts'
 import { validateContentPack } from './validate'
+import { behaviorToPatrolComponent } from './behaviorResolver'
 
 import defaultLevel from './content/default.level.json'
 import defaultBehavior from './content/default.behavior.json'
@@ -37,16 +38,9 @@ function applyBehaviorComponents(
 
   const nonPatrol = baseComponents.filter((component) => component.kind !== 'Patrol')
 
-  switch (policy.kind) {
-    case 'Static':
-      return nonPatrol
-    case 'PatrolLoop':
-      return [...nonPatrol, { kind: 'Patrol', path: policy.path, loops: true }]
-    case 'PatrolPingPong':
-      return [...nonPatrol, { kind: 'Patrol', path: policy.path, loops: false }]
-    case 'ScriptedTimeline':
-      return nonPatrol
-  }
+  const patrol = behaviorToPatrolComponent(policy)
+
+  return patrol ? [...nonPatrol, patrol] : nonPatrol
 }
 
 function toLevelObjectsConfig(content: ContentPack): LevelObjectsConfig {
@@ -105,6 +99,33 @@ export interface LoadedBootContent {
   themeCssVars: Record<string, string>
 }
 
+export type PublicContentLoadError =
+  | ContentLoadError
+  | { kind: 'FetchFailed'; file: string; status?: number; message: string }
+
+function toLoadedBootContent(content: ContentPack): LoadedBootContent {
+  return {
+    levelObjectsConfig: toLevelObjectsConfig(content),
+    boardSize: content.level.map.width,
+    timeDepth: content.level.map.timeDepth,
+    startPosition: content.level.map.start,
+    riftSettings: {
+      defaultDelta: content.rules.rift.defaultDelta,
+      baseEnergyCost: content.rules.rift.baseEnergyCost,
+    },
+    interactionConfig: {
+      maxPushChain: content.rules.interaction.maxPushChain,
+      allowPull: content.rules.interaction.allowPull,
+    },
+    detectionConfig: {
+      enabled: content.rules.detection.enabled,
+      delayTurns: content.rules.detection.delayTurns,
+      maxDistance: content.rules.detection.maxDistance,
+    },
+    themeCssVars: content.theme.cssVars,
+  }
+}
+
 export function loadDefaultBootContent(): Result<LoadedBootContent, ContentLoadError> {
   const validated = validateContentPack({
     level: defaultLevel,
@@ -117,27 +138,78 @@ export function loadDefaultBootContent(): Result<LoadedBootContent, ContentLoadE
     return validated
   }
 
+  return { ok: true, value: toLoadedBootContent(validated.value) }
+}
+
+async function fetchJson(path: string): Promise<Result<unknown, PublicContentLoadError>> {
+  try {
+    const response = await fetch(path)
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: {
+          kind: 'FetchFailed',
+          file: path,
+          status: response.status,
+          message: `HTTP ${response.status}`,
+        },
+      }
+    }
+
+    const value = await response.json()
+    return { ok: true, value }
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        kind: 'FetchFailed',
+        file: path,
+        message: error instanceof Error ? error.message : 'Unknown fetch error',
+      },
+    }
+  }
+}
+
+export async function loadBootContentFromPublic(
+  basePath = '/data',
+): Promise<Result<LoadedBootContent, PublicContentLoadError>> {
+  const [level, behavior, theme, rules] = await Promise.all([
+    fetchJson(`${basePath}/default.level.json`),
+    fetchJson(`${basePath}/default.behavior.json`),
+    fetchJson(`${basePath}/default.theme.json`),
+    fetchJson(`${basePath}/default.rules.json`),
+  ])
+
+  if (!level.ok) {
+    return level
+  }
+
+  if (!behavior.ok) {
+    return behavior
+  }
+
+  if (!theme.ok) {
+    return theme
+  }
+
+  if (!rules.ok) {
+    return rules
+  }
+
+  const validated = validateContentPack({
+    level: level.value,
+    behavior: behavior.value,
+    theme: theme.value,
+    rules: rules.value,
+  })
+
+  if (!validated.ok) {
+    return validated
+  }
+
   return {
     ok: true,
-    value: {
-      levelObjectsConfig: toLevelObjectsConfig(validated.value),
-      boardSize: validated.value.level.map.width,
-      timeDepth: validated.value.level.map.timeDepth,
-      startPosition: validated.value.level.map.start,
-      riftSettings: {
-        defaultDelta: validated.value.rules.rift.defaultDelta,
-        baseEnergyCost: validated.value.rules.rift.baseEnergyCost,
-      },
-      interactionConfig: {
-        maxPushChain: validated.value.rules.interaction.maxPushChain,
-        allowPull: validated.value.rules.interaction.allowPull,
-      },
-      detectionConfig: {
-        enabled: validated.value.rules.detection.enabled,
-        delayTurns: validated.value.rules.detection.delayTurns,
-        maxDistance: validated.value.rules.detection.maxDistance,
-      },
-      themeCssVars: validated.value.theme.cssVars,
-    },
+    value: toLoadedBootContent(validated.value),
   }
 }

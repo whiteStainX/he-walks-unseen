@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "minimal-mono",
+  "cssVars": {
+    "--ink": "#111111",
+    "--paper": "#ffffff",
+    "--panel": "#ffffff",
+    "--accent": "#111111",
+    "--grid": "#111111",
+    "--border": "#111111",
+    "--muted": "#666666"
+  }
+}

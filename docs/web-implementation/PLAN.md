@@ -146,12 +146,12 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Parser + validator with structured errors
 - [x] JSON level format parser (baseline fixture-backed)
 - [x] JSON theme loader (baseline fixture-backed)
-- [ ] Bundle default levels in `public/data/`
+- [x] Bundle default levels in `public/data/`
 
 ### Exit Criteria
 - [ ] Can switch levels without rebuild
-- [ ] Theme applies to canvas and UI
-- [ ] Enemy behavior parameters load from content files
+- [x] Theme applies to canvas and UI
+- [x] Enemy behavior parameters load from content files
 
 ---
 

@@ -20,6 +20,9 @@ Progress in current pass:
 - contracts + default content pack fixtures added
 - parser/validator baseline added
 - loader baseline added and wired into bootstrap defaults
+- default content pack mirrored under `public/data/`
+- async public-data loader entrypoint added (`loadBootContentFromPublic`)
+- behavior resolver module added (`Static`, `PatrolLoop`, `PatrolPingPong`, `ScriptedTimeline` position resolution)
 - data-layer tests added
 
 ---
