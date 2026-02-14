@@ -5,6 +5,7 @@ import type { Direction2D, Position3D } from '../core/position'
 import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
 import { createWorldLine } from '../core/worldLine'
 import type { ObjectRegistry } from '../core/objects'
+import { loadDefaultBootContent } from '../data/loader'
 import { bootstrapLevelObjects } from './levelObjects'
 import { runInteractionPipeline } from './interactions/pipeline'
 import type {
@@ -16,26 +17,35 @@ import type {
 } from './interactions/types'
 import type { TimeCube } from '../core/timeCube'
 
-const DEFAULT_BOARD_SIZE = 12
-const DEFAULT_TIME_DEPTH = 24
-const DEFAULT_RIFT_DELTA = 3
-const DEFAULT_START_POSITION: Position3D = { x: 5, y: 5, t: 0 }
-const DEFAULT_RIFT_SETTINGS: RiftSettings = {
-  defaultDelta: DEFAULT_RIFT_DELTA,
-  baseEnergyCost: 0,
-}
+const bootContent = loadDefaultBootContent()
+
+const DEFAULT_BOARD_SIZE = bootContent.ok ? bootContent.value.boardSize : 12
+const DEFAULT_TIME_DEPTH = bootContent.ok ? bootContent.value.timeDepth : 24
+const DEFAULT_START_POSITION: Position3D = bootContent.ok
+  ? bootContent.value.startPosition
+  : { x: 5, y: 5, t: 0 }
+const DEFAULT_RIFT_SETTINGS: RiftSettings = bootContent.ok
+  ? bootContent.value.riftSettings
+  : {
+      defaultDelta: 3,
+      baseEnergyCost: 0,
+    }
 const DEFAULT_RIFT_RESOURCES: RiftResources = {
   energy: null,
 }
-const DEFAULT_INTERACTION_CONFIG: InteractionConfig = {
-  maxPushChain: 4,
-  allowPull: true,
-}
-const DEFAULT_DETECTION_CONFIG: DetectionConfig = {
-  enabled: true,
-  delayTurns: 1,
-  maxDistance: 2,
-}
+const DEFAULT_INTERACTION_CONFIG: InteractionConfig = bootContent.ok
+  ? bootContent.value.interactionConfig
+  : {
+      maxPushChain: 4,
+      allowPull: true,
+    }
+const DEFAULT_DETECTION_CONFIG: DetectionConfig = bootContent.ok
+  ? bootContent.value.detectionConfig
+  : {
+      enabled: true,
+      delayTurns: 1,
+      maxDistance: 2,
+    }
 
 export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
@@ -46,7 +56,11 @@ function bootstrapObjectState(): {
   cube: TimeCube
   status: string
 } {
-  const bootstrap = bootstrapLevelObjects(DEFAULT_BOARD_SIZE, DEFAULT_TIME_DEPTH)
+  const bootstrap = bootstrapLevelObjects(
+    DEFAULT_BOARD_SIZE,
+    DEFAULT_TIME_DEPTH,
+    bootContent.ok ? bootContent.value.levelObjectsConfig : undefined,
+  )
 
   if (bootstrap.ok) {
     return {

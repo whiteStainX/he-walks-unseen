@@ -14,7 +14,13 @@ Ship a baseline content infrastructure where gameplay boots from validated exter
 
 ## Status
 
-- `Status`: Planned
+- `Status`: In Progress
+
+Progress in current pass:
+- contracts + default content pack fixtures added
+- parser/validator baseline added
+- loader baseline added and wired into bootstrap defaults
+- data-layer tests added
 
 ---
 

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "policies": {
+    "enemy_patrol_alpha": {
+      "kind": "PatrolLoop",
+      "path": [
+        { "x": 2, "y": 8 },
+        { "x": 3, "y": 8 },
+        { "x": 3, "y": 9 },
+        { "x": 2, "y": 9 }
+      ]
+    }
+  },
+  "assignments": {
+    "enemy.alpha": "enemy_patrol_alpha"
+  }
+}

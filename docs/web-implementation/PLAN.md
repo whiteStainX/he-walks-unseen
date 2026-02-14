@@ -142,10 +142,10 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_06_DATA_LOADING.md`
 
 ### Deliverables
-- [ ] Canonical content schemas (level, behavior, theme, rules)
-- [ ] Parser + validator with structured errors
-- [ ] JSON level format parser
-- [ ] JSON theme loader
+- [x] Canonical content schemas (level, behavior, theme, rules)
+- [x] Parser + validator with structured errors
+- [x] JSON level format parser (baseline fixture-backed)
+- [x] JSON theme loader (baseline fixture-backed)
 - [ ] Bundle default levels in `public/data/`
 
 ### Exit Criteria
