@@ -23,8 +23,8 @@ Phase 8 focuses on:
 - `Status`: Implemented (baseline)
 
 Implemented in this pass:
-- input state machine with layer-aware, queue-size-1 directional buffering
-- buffered intent preview on board canvas
+- input state machine with layer-aware directional gating (no cross-layer auto-dispatch)
+- board preview pipeline integrated (ready for intent-driven extensions)
 - lazy-loaded isometric panel to reduce initial bundle weight
 - accessibility baseline improvements (`role=\"status\"`, live updates, focusable overlays, keyboard layer closing)
 - optional settings panel with local-storage persistence for UI toggles

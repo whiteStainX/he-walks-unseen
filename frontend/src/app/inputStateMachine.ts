@@ -95,18 +95,8 @@ export function pushDirectionalInput(
     }
   }
 
-  if (machine.queuedDirectional) {
-    return {
-      next: machine,
-      immediate: null,
-    }
-  }
-
   return {
-    next: {
-      ...machine,
-      queuedDirectional: intent,
-    },
+    next: machine,
     immediate: null,
   }
 }

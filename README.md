@@ -24,7 +24,7 @@ Current playable baseline:
 - Detection + paradox failure phases (`Detected`, `Paradox`)
 - Isometric TimeCube helper panel
 - Windowed HUD with action-mode selection and log overlay
-- Input buffering (queue size 1) with board action preview
+- Intent-first input state machine with layer-aware directional gating
 - Settings overlay with persisted UI toggles
 - Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
 

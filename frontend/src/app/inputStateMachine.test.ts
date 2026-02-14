@@ -20,24 +20,19 @@ describe('inputStateMachine', () => {
     expect(result.next.queuedDirectional).toBeNull()
   })
 
-  it('buffers one directional intent in non-gameplay layers', () => {
+  it('does not buffer directional intent in non-gameplay layers', () => {
     const machine = toggleActionMenu(createInputStateMachine())
-    const first = pushDirectionalInput(machine, 'north')
-    const second = pushDirectionalInput(first.next, 'west')
+    const result = pushDirectionalInput(machine, 'north')
 
-    expect(first.immediate).toBeNull()
-    expect(first.next.queuedDirectional).toEqual({ mode: 'Move', direction: 'north' })
-    expect(second.immediate).toBeNull()
-    expect(second.next.queuedDirectional).toEqual({ mode: 'Move', direction: 'north' })
+    expect(result.immediate).toBeNull()
+    expect(result.next.queuedDirectional).toBeNull()
   })
 
-  it('flushes buffered intent when returning to gameplay', () => {
-    const machine = toggleActionMenu(createInputStateMachine())
-    const queued = pushDirectionalInput(machine, 'south').next
-    const resumed = closeTopLayer(queued)
-    const flushed = flushDirectionalInput(resumed)
+  it('flush keeps no-op behavior when no directional intent is queued', () => {
+    const machine = closeTopLayer(toggleActionMenu(createInputStateMachine()))
+    const flushed = flushDirectionalInput(machine)
 
-    expect(flushed.immediate).toEqual({ mode: 'Move', direction: 'south' })
+    expect(flushed.immediate).toBeNull()
     expect(flushed.next.queuedDirectional).toBeNull()
   })
 
