@@ -1,6 +1,8 @@
-import { Edges, Line } from '@react-three/drei'
+import { Edges, Line, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { MOUSE, type OrthographicCamera } from 'three'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 import type { IsoCubeViewModel } from './buildIsoViewModel'
 import { minimalMonoTheme } from '../theme'
@@ -18,6 +20,9 @@ const OBJECT_SIZE = 0.58
 const OBJECT_HEIGHT = 0.3
 const PLAYER_SIZE = 0.5
 const PLAYER_HEIGHT = 0.44
+const CAMERA_POSITION: [number, number, number] = [11.2, 12.8, 11.2]
+const DEFAULT_ZOOM_IN_STEPS = 5
+const ZOOM_STEP_FACTOR = 1.15
 
 function sliceOpacity(t: number, focusT: number): number {
   const delta = Math.abs(t - focusT)
@@ -112,13 +117,18 @@ function PlayerBlock({
 }
 
 export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeCubePanelProps) {
+  const cameraRef = useRef<OrthographicCamera | null>(null)
+  const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const theme = minimalMonoTheme.iso
   const levelCount = viewModel.slices.length
   const boardSpan = boardSize * CELL_SPACING
   const verticalSpan = Math.max(0, (levelCount - 1) * SLICE_SPACING)
   const verticalOffset = -verticalSpan / 2
   const framingSpan = Math.max(boardSpan * 1.4, verticalSpan * 2 + boardSpan * 0.58)
-  const dynamicZoom = Math.max(12, 110 / framingSpan)
+  const fitZoom = Math.max(12, 110 / framingSpan)
+  const baseZoom = fitZoom * ZOOM_STEP_FACTOR ** DEFAULT_ZOOM_IN_STEPS
+  const minZoom = fitZoom * 0.7
+  const maxZoom = fitZoom * 3.2
   const worldLinePoints = useMemo(() => {
     const points = viewModel.slices
       .flatMap((slice) =>
@@ -138,14 +148,82 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
     return points
   }, [boardSize, viewModel])
 
+  const applyResetView = useCallback(() => {
+    const camera = cameraRef.current
+    const controls = controlsRef.current
+
+    if (!camera || !controls) {
+      return
+    }
+
+    camera.position.set(CAMERA_POSITION[0], CAMERA_POSITION[1], CAMERA_POSITION[2])
+    camera.zoom = baseZoom
+    camera.updateProjectionMatrix()
+    controls.target.set(0, 0, 0)
+    controls.update()
+  }, [baseZoom])
+
+  const stepZoom = useCallback(
+    (delta: 'in' | 'out') => {
+      const camera = cameraRef.current
+      const controls = controlsRef.current
+
+      if (!camera || !controls) {
+        return
+      }
+
+      const factor = delta === 'in' ? ZOOM_STEP_FACTOR : 1 / ZOOM_STEP_FACTOR
+      const nextZoom = Math.min(maxZoom, Math.max(minZoom, camera.zoom * factor))
+
+      camera.zoom = nextZoom
+      camera.updateProjectionMatrix()
+      controls.update()
+    },
+    [maxZoom, minZoom],
+  )
+
+  useEffect(() => {
+    applyResetView()
+  }, [applyResetView])
+
   return (
     <div className="iso-cube-wrap" aria-label="Isometric TimeCube panel">
+      <div className="iso-controls" aria-label="Isometric camera controls">
+        <button
+          type="button"
+          className="iso-control-button"
+          onClick={() => stepZoom('out')}
+          aria-label="Zoom out isometric view"
+        >
+          -
+        </button>
+        <button
+          type="button"
+          className="iso-control-button"
+          onClick={() => stepZoom('in')}
+          aria-label="Zoom in isometric view"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          className="iso-control-button"
+          onClick={applyResetView}
+          aria-label="Reset isometric view"
+        >
+          Reset
+        </button>
+      </div>
       <Canvas
         orthographic
         dpr={[1, 1.5]}
+        onCreated={({ camera }) => {
+          cameraRef.current = camera as OrthographicCamera
+          applyResetView()
+        }}
         camera={{
-          position: [11.2, 12.8, 11.2],
-          zoom: dynamicZoom,
+          position: CAMERA_POSITION,
+          zoom: baseZoom,
           near: 0.1,
           far: 500,
         }}
@@ -239,6 +317,20 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             />
           )}
         </group>
+        <OrbitControls
+          ref={controlsRef}
+          enableRotate={false}
+          enablePan
+          enableZoom
+          screenSpacePanning
+          minZoom={minZoom}
+          maxZoom={maxZoom}
+          mouseButtons={{
+            LEFT: MOUSE.PAN,
+            RIGHT: MOUSE.PAN,
+            MIDDLE: MOUSE.DOLLY,
+          }}
+        />
       </Canvas>
     </div>
   )

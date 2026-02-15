@@ -35,6 +35,7 @@ For the isometric panel specifically, follow the readability-first style contrac
 - explicit slice slabs (thin opaque planes) instead of outline-only layers
 - strict occlusion/blocking cues (front objects hide back objects)
 - clear player/object visual hierarchy
+- fixed-angle camera with pan/zoom/reset controls (rotation locked)
 - tunable opacity/line tokens defined in `PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ### Component Layout

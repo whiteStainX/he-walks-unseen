@@ -1,6 +1,6 @@
 # Phase 3.5 Design: Isometric TimeCube View
 
-> **Status:** Planning
+> **Status:** Implemented baseline, iterating
 > **Primary UI role:** Mental-model aid beside the main time-slice board
 > **Scope type:** Read-only visualization (no gameplay mutation)
 
@@ -170,6 +170,23 @@ Palette policy:
 - default is grayscale only
 - optional single accent channel for player is allowed as a configurable token, off by default
 
+### 5.5 View Control Contract
+
+The isometric panel camera remains fixed-angle for mental-model consistency.
+
+Allowed view interaction:
+- pan (drag)
+- zoom in/out (`+` / `-` buttons, wheel/pinch)
+- reset (`Reset` button)
+
+Disallowed in baseline:
+- free rotation
+- perspective camera mode
+
+Reset behavior:
+- restore canonical camera position and target
+- restore computed default zoom for current board/time-window framing
+
 ---
 
 ## 6. Library Decision
@@ -233,6 +250,7 @@ Even with WebGL, visual language must stay minimal and diagrammatic:
 - orthographic camera only
 - fixed isometric angle
 - no perspective distortion
+- support pan/zoom/reset controls, but keep rotation locked
 
 5. Theme source of truth
 - colors should map to existing theme tokens from current monochrome baseline
@@ -302,6 +320,7 @@ Target:
 4. Player selves and objects are visible on correct layers.
 5. Main gameplay behavior remains unchanged.
 6. Occlusion/contour hierarchy makes blocking and depth readable without dense wireframes.
+7. Users can pan/zoom/reset the isometric helper without changing gameplay state.
 
 ---
 

@@ -37,6 +37,7 @@ Style constraints:
 - follow `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md` for contour-first linework
 - use slice slabs (thin opaque planes), not dense wireframe outlines
 - keep occlusion/blocking cues explicit and readable
+- allow pan/zoom/reset controls while keeping camera rotation locked
 
 ---
 
