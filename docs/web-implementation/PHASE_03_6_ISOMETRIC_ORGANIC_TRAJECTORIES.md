@@ -24,8 +24,9 @@ Implemented in this pass:
 - trajectory segmentation model with `local` vs `riftBridge` edges
 - organic (`Catmull-Rom`) and exact trajectory rendering modes
 - player anchors + dashed non-local connectors in isometric panel
-- static object temporal pillars and moving-object trajectory tracks
+- static object temporal pillars and moving-object tube-like trajectory tracks
 - mode controls (`Org` / `Exact`) in isometric panel
+- focus-slice-first object body meshes to avoid discrete per-slice clutter
 
 ---
 

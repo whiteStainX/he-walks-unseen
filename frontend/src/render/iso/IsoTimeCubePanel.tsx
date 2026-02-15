@@ -1,7 +1,7 @@
 import { Edges, Line, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MOUSE, type OrthographicCamera } from 'three'
+import { CatmullRomCurve3, MOUSE, type OrthographicCamera, Vector3 } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 import type { IsoCubeViewModel } from './buildIsoViewModel'
@@ -21,6 +21,7 @@ const OBJECT_SIZE = 0.58
 const OBJECT_HEIGHT = 0.3
 const PLAYER_SIZE = 0.5
 const PLAYER_HEIGHT = 0.44
+const OBJECT_TRACK_TUBE_RADIUS = 0.05
 const CAMERA_POSITION: [number, number, number] = [11.2, 12.8, 11.2]
 const DEFAULT_ZOOM_IN_STEPS = 5
 const ZOOM_STEP_FACTOR = 1.15
@@ -182,6 +183,42 @@ function ObjectPillar({
   )
 }
 
+function ObjectTrackTube({
+  points,
+  color,
+  opacity,
+}: {
+  points: Array<[number, number, number]>
+  color: string
+  opacity: number
+}) {
+  const curve = useMemo(() => {
+    if (points.length < 2) {
+      return null
+    }
+
+    return new CatmullRomCurve3(
+      points.map((point) => new Vector3(point[0], point[1], point[2])),
+      false,
+      'centripetal',
+      0.5,
+    )
+  }, [points])
+
+  if (!curve) {
+    return null
+  }
+
+  const tubularSegments = Math.max(12, points.length * 4)
+
+  return (
+    <mesh>
+      <tubeGeometry args={[curve, tubularSegments, OBJECT_TRACK_TUBE_RADIUS, 8, false]} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} />
+    </mesh>
+  )
+}
+
 export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeCubePanelProps) {
   const cameraRef = useRef<OrthographicCamera | null>(null)
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
@@ -196,11 +233,6 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
   const baseZoom = fitZoom * ZOOM_STEP_FACTOR ** DEFAULT_ZOOM_IN_STEPS
   const minZoom = fitZoom * 0.7
   const maxZoom = fitZoom * 3.2
-
-  const staticObjectIds = useMemo(
-    () => new Set(viewModel.objectPillars.map((pillar) => pillar.id)),
-    [viewModel.objectPillars],
-  )
 
   const playerTrack = useMemo(
     () => buildTrackRenderModel(viewModel.playerAnchors, pathMode),
@@ -375,13 +407,11 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
                   const averageT = path.reduce((sum, point) => sum + point.t, 0) / path.length
 
                   return (
-                    <Line
+                    <ObjectTrackTube
                       key={`object-track-local-${track.id}-${index}`}
                       points={worldPoints}
                       color={pathColor}
-                      transparent
                       opacity={pathOpacity(averageT, viewModel.focusT, 0.58)}
-                      lineWidth={1}
                     />
                   )
                 })}
@@ -420,7 +450,7 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             const objectOpacity = sliceOpacity(slice.t, viewModel.focusT)
 
             return slice.objects.map((object) => {
-              if (staticObjectIds.has(object.id) && !slice.isFocus) {
+              if (!slice.isFocus) {
                 return null
               }
 
