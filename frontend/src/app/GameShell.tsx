@@ -142,9 +142,6 @@ export function GameShell() {
   const riftDefaultDelta = useAppSelector((state) => state.game.riftSettings.defaultDelta)
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
   const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
-  const paradoxConfig = useAppSelector((state) => state.game.paradoxConfig)
-  const lastParadox = useAppSelector((state) => state.game.lastParadox)
-  const causalAnchors = useAppSelector((state) => state.game.causalAnchors)
   const themeCssVars = useAppSelector((state) => state.game.themeCssVars)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
@@ -159,9 +156,6 @@ export function GameShell() {
   const objectsAtCurrentTime = objectsAtTime(cube, currentTime)
   const recentHistory = useMemo(() => history.slice(-5).reverse(), [history])
   const queuedIntent = inputMachine.queuedDirectional
-  const queuedIntentLabel = queuedIntent
-    ? `${queuedIntent.mode.toUpperCase()} ${queuedIntent.direction.toUpperCase()}`
-    : 'none'
 
   const isoViewModel = useMemo(
     () =>
@@ -557,7 +551,6 @@ export function GameShell() {
                 <span>Space: Rift</span>
                 <span>Enter: Wait</span>
                 <span>M: Settings</span>
-                <span>Buffered: {queuedIntentLabel}</span>
               </div>
             </div>
           </section>
@@ -569,10 +562,6 @@ export function GameShell() {
                 <section className="state-block">
                   <h3 className="state-block-title">Core</h3>
                   <div className="metric-grid">
-                    <div className="metric-item">
-                      <span className="metric-label">Board</span>
-                      <span className="metric-value">{boardSize} x {boardSize}</span>
-                    </div>
                     <div className="metric-item">
                       <span className="metric-label">Turn</span>
                       <span className="metric-value">{turn}</span>
@@ -593,15 +582,11 @@ export function GameShell() {
                       <span className="metric-label">Mode</span>
                       <span className="metric-value">{directionalActionMode}</span>
                     </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Pack</span>
-                      <span className="metric-value">{contentPackId}</span>
-                    </div>
                   </div>
                 </section>
 
                 <section className="state-block">
-                  <h3 className="state-block-title">Interaction</h3>
+                  <h3 className="state-block-title">Tools</h3>
                   <div className="metric-grid">
                     <div className="metric-item">
                       <span className="metric-label">Rift Delta</span>
@@ -623,58 +608,10 @@ export function GameShell() {
                 </section>
 
                 <section className="state-block">
-                  <h3 className="state-block-title">Detection</h3>
-                  <div className="metric-grid">
-                    <div className="metric-item">
-                      <span className="metric-label">Enabled</span>
-                      <span className="metric-value">{detectionConfig.enabled ? 'on' : 'off'}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Delay</span>
-                      <span className="metric-value">{detectionConfig.delayTurns}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Range</span>
-                      <span className="metric-value">{detectionConfig.maxDistance}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Events</span>
-                      <span className="metric-value">{detectionPreviewReport.events.length}</span>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="state-block">
-                  <h3 className="state-block-title">Paradox</h3>
-                  <div className="metric-grid">
-                    <div className="metric-item">
-                      <span className="metric-label">Enabled</span>
-                      <span className="metric-value">{paradoxConfig.enabled ? 'on' : 'off'}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Anchors</span>
-                      <span className="metric-value">{causalAnchors.length}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Violations</span>
-                      <span className="metric-value">{lastParadox?.violations.length ?? 0}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">From T</span>
-                      <span className="metric-value">{lastParadox?.checkedFromTime ?? '-'}</span>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="state-block">
-                  <h3 className="state-block-title">Slice</h3>
+                  <h3 className="state-block-title">Snapshot</h3>
                   <div className="metric-grid metric-grid-single">
                     <div className="metric-item">
-                      <span className="metric-label">WorldLine</span>
-                      <span className="metric-value">{worldLine.path.length}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Slice Obj</span>
+                      <span className="metric-label">Objects</span>
                       <span className="metric-value">{objectsAtCurrentTime.length}</span>
                     </div>
                     <div className="metric-item metric-item-wide">
@@ -682,6 +619,14 @@ export function GameShell() {
                       <span className="metric-value">
                         {player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}
                       </span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Pack</span>
+                      <span className="metric-value">{contentPackId}</span>
+                    </div>
+                    <div className="metric-item">
+                      <span className="metric-label">Board</span>
+                      <span className="metric-value">{boardSize} x {boardSize}</span>
                     </div>
                   </div>
                 </section>
