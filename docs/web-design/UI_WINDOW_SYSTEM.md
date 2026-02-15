@@ -1,140 +1,129 @@
 # UI Window System Spec (Web)
 
-> **Purpose:** Define the current UI layout contract and the immediate UX-polish baseline.
+> **Purpose:** Define the HUD/overlay model for a map-first, low-cognitive-load experience.
 > **Scope:** `frontend/src/app/`, `frontend/src/render/`, input layers, overlays.
-> **References:** `docs/web-design/OVERALL.md`, `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
+> **References:** `docs/web-design/OVERALL.md`, `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`, `docs/web-design/RENDERING.md`, `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 ---
 
-## 1. Design Intent
+## 1. UX Direction
 
-The board remains the main focus. HUD and overlays support planning and readability with minimal visual noise.
+Primary goal:
+- keep moment-to-moment play readable at a glance
+- keep the map + 3D helper as the visual focus
+- expose deeper info only when the player requests it
 
-Constraints:
+This follows progressive disclosure:
+- **always-on minimum** for immediate decisions
+- **on-demand detail** for planning and troubleshooting
+
+---
+
+## 2. Visual Priority
+
+Priority order on screen:
+1. Main map (`GameBoardCanvas`)
+2. 3D helper (`IsoTimeCubePanel`)
+3. Compact HUD windows (`COMMAND`, `STATE`, `LOG`)
+4. Temporary overlays (log/history, settings, future state details)
+
+Style constraints:
 - no drop shadows
-- white background base
-- black lines and solid fills
-- grayscale accents only
-- desktop layout stays one screen (no page scroll)
+- white background, black lines, grayscale fills
+- no visual effects that compete with the board
+- no ASCII/glyph-only board entities; use icon/symbol graphics
+
+3D helper visual contract:
+- follow `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md` for contour-first linework
+- use slice slabs (thin translucent planes), not dense wireframe outlines
+- keep slab fills translucent enough that past/future traces remain visible
+- keep occlusion/blocking cues explicit and readable
+- allow pan/zoom/reset controls while keeping camera rotation locked
 
 ---
 
-## 2. Implemented Component Map
+## 3. Board Symbol System (Configurable)
 
-Current top-level UI components in `GameShell`:
+Goal:
+- keep board entities readable without terminal-style glyph limits
+- allow future players to swap icon sets without code changes
 
-1. `HeaderBar`
-- title + phase/status subtitle
+Format direction:
+- primary format: `SVG` (preferred for crisp scaling and style control)
+- optional fallback: `PNG` (fixed-size asset packs)
+- default shipped pack should be monochrome and match line/fill style
 
-2. `BoardPanel`
-- `GameBoardCanvas` (always visible)
-- `IsoTimeCubePanel` (optional, lazy-loaded, settings-controlled)
-- isometric caption row
+Contract:
+- renderer uses semantic slots, not hardcoded files (`player`, `enemy`, `marker`, `patrol`, `rift`, `wall`, `exit`, `block`, etc.)
+- icon packs map semantic slots to assets through a pack manifest
+- runtime loads one active pack ID from config/theme data
+- loaded assets are cached/rasterized once for board rendering (no per-frame raw SVG parse)
 
-3. `HudStack`
-- `CommandWindow`
-- `StateWindow`
-- `LogWindow`
+Style rules for default and curated packs:
+- high contrast on white background
+- flat fills + clean outlines (no gradients, glows, or shadows)
+- simple silhouettes first; detail only if it improves tactical readability
+- black/white baseline, grayscale optional for time-state distinctions
 
-4. `BottomHintsBar`
-- full or compact hint set (settings-controlled)
-
-5. Overlays
-- `LogOverlay` (`L`)
-- `SettingsOverlay` (`M`)
-
----
-
-## 3. Layout Contract
-
-### 3.1 Desktop (default)
-
-Main grid:
-- left gameplay column: `7fr`
-- right HUD column: `3fr` (minimum `300px`)
-
-Gameplay sub-grid:
-- with iso enabled: board `1.2fr`, iso `1fr`
-- with iso disabled: single board column
-
-HUD order:
-1. `CommandWindow`
-2. `StateWindow`
-3. `LogWindow`
-
-Bottom hints:
-- single row container, wraps when needed
-
-### 3.2 Responsive behavior
-
-At `<=1100px`:
-- layout becomes vertical (`board` above `hud`)
-- HUD windows shown in 3-column row
-
-At `<=900px`:
-- iso panel hidden
-- HUD becomes single column stack
-- page-level scroll is allowed on small screens
+Future extension target:
+- user-imported icon packs validated against manifest schema and size constraints
 
 ---
 
-## 4. Window Specs
+## 4. Information Levels
 
-### 4.1 CommandWindow
-
-Purpose:
-- mode visibility + control discoverability
-
-Required content:
-- active directional mode (`Move` / `Push` / `Pull`)
-- mode rows with keys `1/2/3`
-- key summary: direction, rift, wait, settings
-
-Behavior:
-- `F` toggles action menu layer
-- mode rows highlight when menu is active
-
-### 4.2 StateWindow
+## 4.1 Level 0 (Always Visible)
 
 Purpose:
-- tactical state for planning
+- fast, low-noise decision support during active play
 
-Required blocks:
-- core: turn, time, depth, phase, mode
-- tools: rift delta, push max, pull, danger
-- snapshot: objects on slice, player coordinate, pack, board size
+### COMMAND (compact)
+Show only:
+- active mode (`Move` / `Push` / `Pull`)
+- `F` menu
+- `Space` rift
+- `Enter` wait
+- `R` restart
 
-Note:
-- detection/paradox internals are model diagnostics and are intentionally hidden from default player-facing HUD.
+### STATE (compact)
+Show only:
+- `Turn`
+- `Time`
+- `Phase`
+- `Rift Δ`
+- `Danger` (`on/off`)
 
-### 4.3 LogWindow
+### LOG (compact)
+Show only:
+- latest status line
+
+## 4.2 Level 1 (On Demand)
 
 Purpose:
-- immediate status only (compact)
+- planning context when player chooses to open details
 
-Rules:
-- in-window status line only
-- full history in `LogOverlay`
-- log entries ordered newest first
+### COMMAND Menu (existing)
+Triggered by `F`:
+- mode list (`1/2/3`)
+- directional reminder
+- interaction key summary
 
-### 4.4 SettingsOverlay
+### STATE Details (proposed)
+Triggered by dedicated key (candidate: `Tab`):
+- depth, pack, board size
+- object count on current slice
+- player coordinate
+- selected advanced diagnostics (if enabled)
 
-Purpose:
-- runtime UI toggles only (no gameplay logic changes)
+## 4.3 Level 2 (Deep/Utility)
 
-Current toggles:
-- show/hide iso panel
-- compact/full bottom hints
-- default danger preview
-
-Persistence:
-- local storage key: `he-walks-unseen.ui-settings.v1`
+- `LogOverlay` full action history (`L`)
+- `SettingsOverlay` runtime display toggles (`M`)
+- future: story/dialog overlays
 
 ---
 
 ## 5. Input Layer Contract
-
-Input is layer-aware and intent-first.
 
 Current layers:
 1. `Gameplay`
@@ -142,73 +131,95 @@ Current layers:
 3. `LogOverlay`
 4. `SystemMenu` (settings)
 
-Active transitions:
+Planned extension:
+5. `StateOverlay` (detailed state)
+
+Ownership rule:
+- only active layer consumes its inputs
+- gameplay actions dispatch only in `Gameplay`
+- no cross-layer auto-dispatch queue
+
+Transition baseline:
 - `F`: `Gameplay <-> ActionMenu`
 - `L`: `Gameplay <-> LogOverlay`
 - `M`: `Gameplay <-> SystemMenu`
 - `Esc`: close active non-gameplay layer
 
-Ownership rule:
-- only `Gameplay` layer dispatches movement/rift/wait/restart actions
-- directional keys are ignored for gameplay dispatch in non-gameplay layers
-- no cross-layer auto-dispatch queue in current baseline
+Proposed transition:
+- `Tab`: `Gameplay <-> StateOverlay`
 
 ---
 
-## 6. Board Preview Contract
+## 6. Layout Contract
 
-`GameBoardCanvas` may render a non-committed action preview marker.
+Desktop:
+- gameplay column remains dominant
+- board and iso should visually outweigh HUD windows
+- compact HUD should not require scrolling
 
-Rules:
-- preview is read-only (no state mutation)
-- preview validity mirrors key reducer constraints used for interaction planning:
-  - bounds/time boundary
-  - blocked cell checks
-  - push chain limit
-  - pull enabled/disabled
-  - self-intersection prevention
-
-Rendering:
-- dashed preview box on target cell
-- blocked preview uses cross marker
+Responsive:
+- reduce HUD density on smaller widths
+- preserve board readability first
+- keep overlay interactions keyboard-first
 
 ---
 
-## 7. Accessibility Baseline
+## 7. Diagnostics Policy
 
-Current accessibility requirements:
-- overlays use `role="dialog"` + `aria-modal="true"`
-- status line uses live region semantics (`role="status"`, `aria-live="polite"`)
-- overlay containers are focusable and focused on open
-- full gameplay remains keyboard-operable
+Default player HUD should avoid internal debugging metrics.
 
----
+Hidden by default:
+- detection internals (`delay`, `range`, event count)
+- paradox internals (`anchor count`, violation count)
 
-## 8. Immediate Polish Targets (Next Iteration)
-
-Use this file as basis for visual/UX improvements:
-
-1. Reduce cognitive load in `StateWindow`
-- collapse less-critical metrics behind a compact/expanded mode
-
-2. Strengthen board-first hierarchy
-- keep board area visually dominant when both board and iso are shown
-
-3. Improve overlay affordance
-- clearer layer indicator (active overlay label in header or command window)
-
-4. Improve preview readability
-- differentiate preview by mode (`Move`/`Push`/`Pull`) without breaking monochrome style
-
-5. Mobile ergonomics
-- reduce vertical density in HUD when stacked on small screens
+Rule:
+- diagnostics are allowed in on-demand detail views or debug mode, not in default glance HUD
 
 ---
 
-## 9. Acceptance Criteria
+## 8. Open Decisions For Next Iteration
 
-1. Component boundaries and layout behavior are explicit and testable.
-2. Desktop remains single-screen during normal play.
-3. Input-layer ownership prevents interaction conflicts.
-4. Overlay behavior is keyboard-consistent.
-5. This spec can be used directly for the next UX iteration without re-deriving current structure.
+1. Confirm key for state detail overlay (`Tab` vs another key).
+2. Decide whether compact `STATE` includes `Depth` or keeps it detail-only.
+3. Decide whether `Danger` toggle remains always visible or moves to detail/settings.
+4. Define exact content of `StateOverlay` (player-focused only vs optional diagnostics section).
+5. Finalize icon-pack manifest schema (`SVG`-first with `PNG` fallback) and validation strategy.
+6. Decide whether icon pack is level-bound, theme-bound, or player setting.
+
+---
+
+## 9. Implementation Anchors
+
+Use this mapping when planning implementation tasks from this spec:
+
+1. HUD composition and overlays
+- `frontend/src/app/GameShell.tsx`
+
+2. Layout and responsive behavior
+- `frontend/src/App.css`
+
+3. Board rendering and preview readability
+- `frontend/src/render/board/GameBoardCanvas.tsx`
+- `frontend/src/render/board/preview.ts`
+
+4. Isometric helper visual style and depth readability
+- `frontend/src/render/iso/IsoTimeCubePanel.tsx`
+- `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
+
+5. Input layers and transitions
+- `frontend/src/app/inputStateMachine.ts`
+
+6. Planned icon-pack rendering integration
+- `frontend/src/render/board/` (board draw pipeline)
+- `frontend/src/data/` (pack manifest loading/validation)
+- `frontend/public/data/` (default icon-pack assets/manifests)
+
+---
+
+## 10. Acceptance Criteria
+
+1. At-a-glance HUD can be read in 2–3 seconds.
+2. Player can access deeper command/state info without crowding main screen.
+3. Map + 3D helper remain the primary visual focus throughout play.
+4. Input layer transitions remain deterministic and conflict-free.
+5. Board entities remain readable with default icon pack and can be remapped via semantic icon slots.

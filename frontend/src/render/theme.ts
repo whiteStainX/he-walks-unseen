@@ -13,14 +13,21 @@ export interface CanvasTheme {
 
 export interface IsoTheme {
   background: string
+  layerFill: string
+  layerFillFocus: string
   layerLine: string
   layerLineFocus: string
   objectFill: string
   objectStroke: string
+  enemyFill: string
+  enemyStroke: string
+  exitFill: string
+  exitStroke: string
   selfFill: string
   selfStroke: string
   pastSelfFill: string
   pastSelfStroke: string
+  worldLine: string
 }
 
 export interface AppTheme {
@@ -61,14 +68,21 @@ export const minimalMonoTheme: AppTheme = {
   },
   iso: {
     background: '#ffffff',
+    layerFill: '#f6f6f6',
+    layerFillFocus: '#ececec',
     layerLine: '#777777',
     layerLineFocus: '#111111',
     objectFill: '#efefef',
     objectStroke: '#111111',
+    enemyFill: '#c9c9c9',
+    enemyStroke: '#111111',
+    exitFill: '#ffffff',
+    exitStroke: '#111111',
     selfFill: '#111111',
     selfStroke: '#111111',
     pastSelfFill: '#9a9a9a',
     pastSelfStroke: '#4d4d4d',
+    worldLine: '#111111',
   },
 }
 

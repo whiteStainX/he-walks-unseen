@@ -87,11 +87,42 @@
 }
 
 .iso-cube-wrap {
-  width: min(100%, 56dvh);
+  position: relative;
+  width: min(100%, 72dvh);
   aspect-ratio: 1 / 1;
   border: 2px solid var(--ui-line);
   background: var(--paper);
   overflow: hidden;
+}
+
+.iso-controls {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+}
+
+.iso-control-button {
+  border: 1px solid var(--ui-line);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-family: var(--ui-font-mono);
+  font-size: 0.7rem;
+  line-height: 1;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.iso-control-button:hover {
+  background: var(--ui-fill-alt);
+}
+
+.iso-control-button.is-active {
+  background: var(--ui-fill-selected);
+  color: var(--ui-bg);
 }
 
 .iso-caption {
@@ -106,7 +137,7 @@
 .iso-fallback {
   display: grid;
   place-items: center;
-  width: min(100%, 56dvh);
+  width: min(100%, 72dvh);
   aspect-ratio: 1 / 1;
   border: 2px solid var(--ui-line);
   font-family: var(--ui-font-mono);
@@ -205,6 +236,12 @@
   color: var(--ui-muted);
 }
 
+.command-meta-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
 .state-sections {
   display: grid;
   gap: 8px;
@@ -214,6 +251,10 @@
 
 .state-window .ui-window-body {
   overflow: hidden;
+}
+
+.state-zoom-note {
+  margin-top: 8px;
 }
 
 .state-block {
@@ -353,6 +394,12 @@
   overflow: auto;
   font-family: var(--ui-font-mono);
   font-size: 0.84rem;
+}
+
+.state-overlay-body {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
 }
 
 .settings-window {

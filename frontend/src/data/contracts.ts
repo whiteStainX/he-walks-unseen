@@ -14,6 +14,7 @@ export type ContentComponent =
   | { kind: 'Rift'; target: Position3D; bidirectional: boolean }
 
 export interface ContentRender {
+  symbol?: string
   glyph?: string
   fill?: string
   stroke?: string
@@ -62,7 +63,28 @@ export interface BehaviorConfig {
 export interface ThemeConfig {
   schemaVersion: 1
   id: string
+  iconPackId: string
   cssVars: Record<string, string>
+}
+
+export interface IconAssetRef {
+  svg: string
+  png?: string
+}
+
+export interface IconPackConfig {
+  schemaVersion: 1
+  id: string
+  meta?: {
+    name?: string
+    author?: string
+  }
+  defaults?: {
+    cellPx?: number
+    stroke?: string
+    fill?: string
+  }
+  slots: Record<string, IconAssetRef>
 }
 
 export interface GameRulesConfig {
@@ -92,9 +114,11 @@ export interface ContentPack {
 export type ContentLoadError =
   | { kind: 'InvalidShape'; file: string; message: string }
   | { kind: 'InvalidSchemaVersion'; file: string; expected: number; actual: unknown }
+  | { kind: 'MissingIconPackId'; themeId: string }
   | { kind: 'UnknownArchetypeReference'; instanceId: string; archetype: string }
   | { kind: 'UnknownBehaviorReference'; instanceId: string; behavior: string }
   | { kind: 'UnknownBehaviorAssignmentInstance'; instanceId: string }
+  | { kind: 'InvalidIconSlotReference'; archetype: string; symbol: string }
   | { kind: 'InvalidMapBounds'; width: number; height: number; timeDepth: number }
   | { kind: 'InvalidStartPosition'; start: Position3D }
   | { kind: 'UnsupportedBehaviorPolicy'; key: string; policyKind: string }

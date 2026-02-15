@@ -42,7 +42,7 @@ function makeCube() {
       archetype: {
         kind: 'enemy',
         components: [{ kind: 'BlocksMovement' }],
-        render: { fill: '#cccccc', stroke: '#111111', glyph: 'X' },
+        render: { fill: '#cccccc', stroke: '#111111', symbol: 'enemy' },
       },
     },
   ]
@@ -70,6 +70,8 @@ describe('buildIsoViewModel', () => {
     expect(model.focusT).toBe(2)
     expect(model.slices).toHaveLength(6)
     expect(model.slices[2].isFocus).toBe(true)
+    expect(model.playerAnchors.length).toBeGreaterThan(0)
+    expect(model.objectPillars.length).toBeGreaterThan(0)
   })
 
   it('maps player selves and objects onto each time slice', () => {
@@ -90,6 +92,7 @@ describe('buildIsoViewModel', () => {
 
     expect(sliceAt2.playerSelves).toEqual([{ x: 3, y: 1, turn: 2 }])
     expect(sliceAt2.objects.map((object) => object.id)).toEqual(['wall.1', 'enemy.1'])
+    expect(model.playerAnchors.map((entry) => entry.turn)).toEqual([0, 1, 2])
+    expect(model.objectPillars.map((entry) => entry.id)).toContain('wall.1')
   })
 })
-

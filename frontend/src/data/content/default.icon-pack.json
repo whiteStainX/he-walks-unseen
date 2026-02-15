@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "default-mono",
+  "meta": {
+    "name": "Default Mono"
+  },
+  "defaults": {
+    "cellPx": 64,
+    "stroke": "#111111",
+    "fill": "#f5f5f5"
+  },
+  "slots": {
+    "player": { "svg": "/data/icons/default/player.svg" },
+    "pastSelf": { "svg": "/data/icons/default/past-self.svg" },
+    "wall": { "svg": "/data/icons/default/wall.svg" },
+    "box": { "svg": "/data/icons/default/box.svg" },
+    "exit": { "svg": "/data/icons/default/exit.svg" },
+    "enemy": { "svg": "/data/icons/default/enemy.svg" },
+    "rift": { "svg": "/data/icons/default/rift.svg" },
+    "danger": { "svg": "/data/icons/default/danger.svg" }
+  }
+}

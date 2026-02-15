@@ -3,6 +3,7 @@ import type { Component } from './components'
 import type { Result } from './result'
 
 export interface ObjectRender {
+  symbol?: string
   glyph?: string
   fill?: string
   stroke?: string

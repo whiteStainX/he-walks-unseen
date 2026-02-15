@@ -8,6 +8,7 @@ import {
   selectDirectionalMode,
   toggleActionMenu,
   toggleLogOverlay,
+  toggleStateOverlay,
   toggleSystemMenu,
 } from './inputStateMachine'
 
@@ -40,9 +41,11 @@ describe('inputStateMachine', () => {
     const machine = toggleSystemMenu(createInputStateMachine())
     const actionAttempt = toggleActionMenu(machine)
     const logAttempt = toggleLogOverlay(machine)
+    const stateAttempt = toggleStateOverlay(machine)
 
     expect(actionAttempt.layer).toBe('SystemMenu')
     expect(logAttempt.layer).toBe('SystemMenu')
+    expect(stateAttempt.layer).toBe('SystemMenu')
   })
 
   it('selecting mode from action menu returns to gameplay', () => {
@@ -51,5 +54,13 @@ describe('inputStateMachine', () => {
 
     expect(selected.mode).toBe('Push')
     expect(selected.layer).toBe('Gameplay')
+  })
+
+  it('toggles state overlay from gameplay and back', () => {
+    const opened = toggleStateOverlay(createInputStateMachine())
+    expect(opened.layer).toBe('StateOverlay')
+
+    const closed = toggleStateOverlay(opened)
+    expect(closed.layer).toBe('Gameplay')
   })
 })

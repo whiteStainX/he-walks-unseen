@@ -1,6 +1,6 @@
 # Phase 3.5 Design: Isometric TimeCube View
 
-> **Status:** Planning
+> **Status:** Implemented baseline, iterating
 > **Primary UI role:** Mental-model aid beside the main time-slice board
 > **Scope type:** Read-only visualization (no gameplay mutation)
 
@@ -94,13 +94,175 @@ Encoding rules:
 - future slices fade by distance
 - player selves rendered on matching layers from `positionsAtTime(t)`
 - objects rendered from `objectsAtTime(t)`
+- trajectory visuals may be continuous, but must be derived from discrete truth anchors
 
 No detection cones in this phase.
 No interaction affordances in this phase.
 
 ---
 
-## 5. Library Decision
+## 5. Style Direction (Moebius-Inspired)
+
+Target direction:
+- simple contour lines
+- strong 3D form readability
+- clear occlusion and blocking
+- low-noise grayscale rendering
+
+This is not a comic imitation; it is a geometric readability contract.
+
+### 5.1 Readability Goals
+
+1. Player and objects must be distinguishable in under 2 seconds.
+2. Time slices must be explicit volumes (not only outlines).
+3. Users should not reconstruct slice depth mentally from wireframe clutter.
+
+### 5.2 Geometry Rules
+
+1. Slice slabs, not outline-only planes:
+- every slice renders as a thin translucent slab
+- slab fills are intentionally light so past/future traces stay visible through layers
+- focus slice has strongest contour, not heavy fill
+- non-focus slices fade by temporal distance
+
+2. Contour-first linework:
+- show outer edges and key internal boundaries only
+- remove dense diagonal wireframe lines
+- hidden edges are suppressed or heavily de-emphasized
+
+3. Occlusion is mandatory:
+- front entity geometry blocks back geometry
+- slice slabs should not act as hard occluders (`depthWrite: false` policy)
+- no x-ray style overlap by default
+- depth order must communicate blocking cleanly
+
+### 5.3 Entity Differentiation Rules
+
+1. Player:
+- strongest contour weight
+- highest visual contrast in panel
+- always distinct from object fill values
+
+2. Objects:
+- medium contour weight
+- flatter fills than player
+- consistent silhouettes by kind
+
+3. Past selves:
+- reduced opacity and line weight
+- never compete with current-turn player
+
+### 5.4 Tunable Parameters (Spec Defaults)
+
+These are spec-level tokens and can be tuned later without changing direction:
+
+| Token | Default | Purpose |
+|------|---------|---------|
+| `iso.slice.opacity.focus` | `0.08` | focus slab fill opacity |
+| `iso.slice.opacity.near` | `0.05` | near-slice slab opacity |
+| `iso.slice.opacity.far` | `0.02` | far-slice slab opacity |
+| `iso.slice.line.focus` | `2.2` | focus slab edge width |
+| `iso.slice.line.normal` | `1.2` | non-focus edge width |
+| `iso.entity.line.player` | `2.4` | player contour weight |
+| `iso.entity.line.object` | `1.4` | object contour weight |
+| `iso.entity.opacity.pastSelf` | `0.45` | past-self visual attenuation |
+| `iso.hiddenEdge.opacity` | `0.15` | hidden edge visibility |
+| `iso.slice.thickness` | `0.16` | slab thickness in iso world units |
+| `iso.slice.depthWrite` | `false` | prevents slab fill from hiding past traces |
+| `iso.path.mode.default` | `organic` | default trajectory rendering mode |
+| `iso.path.player.width` | `1.4` | player trajectory line width |
+| `iso.path.object.width` | `1.0` | object trajectory line width |
+| `iso.path.anchor.size` | `0.07` | anchor marker radius in iso world units |
+| `iso.path.anchor.opacity` | `0.8` | anchor marker opacity |
+| `iso.path.tail.opacity` | `0.35` | oldest visible trajectory opacity |
+| `iso.path.riftBridge.dash` | `[0.12, 0.08]` | dashed pattern for non-local jump edges |
+| `iso.path.riftBridge.width` | `1.1` | line width for discontinuity connector |
+
+Palette policy:
+- default is grayscale only
+- optional single accent channel for player is allowed as a configurable token, off by default
+
+### 5.5 View Control Contract
+
+The isometric panel camera remains fixed-angle for mental-model consistency.
+
+Allowed view interaction:
+- pan (drag)
+- zoom in/out (`+` / `-` buttons, wheel/pinch)
+- reset (`Reset` button)
+
+Disallowed in baseline:
+- free rotation
+- perspective camera mode
+
+Reset behavior:
+- restore canonical camera position and target
+- restore computed default zoom for current board/time-window framing
+
+### 5.6 Organic Trajectory Contract (Next Iteration Spec)
+
+Goal:
+- keep simulation discrete and exact
+- make trajectory reading continuous and technical-illustration-like
+
+Truth vs illustration rule:
+- truth remains `WorldLineState` and `TimeCube`
+- smooth curves are render-only derivatives and never mutate gameplay state
+
+Player worldline rendering:
+1. Anchor nodes:
+- one node per turn anchor `(x,y,t)` in the visible window
+- nodes are exact and must align with discrete coordinates
+
+2. Organic path:
+- default mode uses a centripetal Catmull-Rom spline through anchors sorted by turn
+- spline is segmented by discontinuities (see rift rule below)
+
+3. Rift/discontinuity rule:
+- if edge has `|Δt| > 1` or spatial jump (`manhattan(Δx,Δy) > 1`), do not smooth across it
+- render that edge as a short dashed connector to signal non-local jump
+
+Object temporal rendering:
+1. Time-persistent static object (same `(x,y)` across window):
+- render as a thin vertical pillar spanning visible window time range
+
+2. Moving object:
+- render object trajectory as a thin curve with anchor ticks per sampled time
+- keep anchor ticks visible even when curve smoothing is enabled
+
+3. Object/player contrast:
+- player trajectory is visually dominant
+- object trajectories are lighter and thinner
+
+Optional event connectors (if interaction anchor data is available):
+- draw a short connector from player anchor to object anchor at interaction time
+- keep connector visual weight low to avoid clutter
+
+Display modes:
+- default: `Organic` (smooth curves + anchors)
+- optional view mode: `Exact` (polyline only, no smoothing)
+
+### 5.7 Scientific Illustration References
+
+Reference direction:
+1. Minkowski spacetime diagrams:
+- worldlines and event anchors are explicit
+- non-local jumps are clearly marked
+
+2. Space-time cube visualization:
+- trajectories read as 3D paths through layered time
+- slice context and path continuity are both visible
+
+3. Flow/pathline technical plots:
+- smooth directional traces with anchor cues and temporal fading
+
+Adoption rule:
+- borrow diagram precision and readability cues
+- avoid decorative complexity that reduces tactical readability
+
+---
+
+## 6. Library Decision
 
 ## Candidates
 
@@ -161,6 +323,7 @@ Even with WebGL, visual language must stay minimal and diagrammatic:
 - orthographic camera only
 - fixed isometric angle
 - no perspective distortion
+- support pan/zoom/reset controls, but keep rotation locked
 
 5. Theme source of truth
 - colors should map to existing theme tokens from current monochrome baseline
@@ -172,7 +335,7 @@ Even with WebGL, visual language must stay minimal and diagrammatic:
 
 ---
 
-## 6. Data Contract (Render Input)
+## 7. Data Contract (Render Input)
 
 ```ts
 type IsoWindowSlice = {
@@ -184,7 +347,7 @@ type IsoWindowSlice = {
     x: number;
     y: number;
     kind: string;
-    render: { fill?: string; stroke?: string; glyph?: string };
+    render: { fill?: string; stroke?: string; symbol?: string };
   }>;
 };
 
@@ -202,7 +365,7 @@ Builder rule:
 
 ---
 
-## 7. Performance Constraints
+## 8. Performance Constraints
 
 - recompute view model only when `currentT`, `worldLine`, or `cube` changes
 - cap slices at 10 always
@@ -213,7 +376,7 @@ Target:
 
 ---
 
-## 8. Out of Scope (Phase 3.5)
+## 9. Out of Scope (Phase 3.5)
 
 - click-to-seek time
 - tunnel/rift authoring from isometric panel
@@ -222,17 +385,23 @@ Target:
 
 ---
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
 1. Isometric panel renders beside main board on desktop.
 2. Time window follows the 10-slice rules above.
 3. Current slice is visually identifiable.
 4. Player selves and objects are visible on correct layers.
 5. Main gameplay behavior remains unchanged.
+6. Occlusion/contour hierarchy makes blocking and depth readable without dense wireframes.
+7. Users can pan/zoom/reset the isometric helper without changing gameplay state.
+8. Slice slabs indicate time layers without obscuring past/future traces.
+9. Organic mode shows smooth trajectories while preserving exact anchor positions.
+10. Rift/non-local jumps are visually explicit and not falsely smoothed.
+11. Static objects read as temporal pillars; moving objects read as trajectories.
 
 ---
 
-## 10. Related Documents
+## 11. Related Documents
 
 - `docs/web-design/OVERALL.md`
 - `docs/web-design/RENDERING.md`

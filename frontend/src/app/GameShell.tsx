@@ -6,6 +6,7 @@ import {
   flushDirectionalInput,
   pushDirectionalInput,
   selectDirectionalMode,
+  toggleStateOverlay,
   toggleActionMenu,
   toggleLogOverlay,
   toggleSystemMenu,
@@ -130,6 +131,7 @@ export function GameShell() {
   const [availablePackIds, setAvailablePackIds] = useState<string[]>(DEFAULT_PACK_SEQUENCE)
   const logOverlayRef = useRef<HTMLElement | null>(null)
   const settingsOverlayRef = useRef<HTMLElement | null>(null)
+  const stateOverlayRef = useRef<HTMLElement | null>(null)
 
   const boardSize = useAppSelector((state) => state.game.boardSize)
   const cube = useAppSelector((state) => state.game.cube)
@@ -143,11 +145,13 @@ export function GameShell() {
   const interactionConfig = useAppSelector((state) => state.game.interactionConfig)
   const detectionConfig = useAppSelector((state) => state.game.detectionConfig)
   const themeCssVars = useAppSelector((state) => state.game.themeCssVars)
+  const iconPackId = useAppSelector((state) => state.game.iconPackId)
   const history = useAppSelector((state) => state.game.history)
   const status = useAppSelector((state) => state.game.status)
 
   const directionalActionMode = inputMachine.mode
   const isActionMenuOpen = inputMachine.layer === 'ActionMenu'
+  const isStateOverlayOpen = inputMachine.layer === 'StateOverlay'
   const isLogOpen = inputMachine.layer === 'LogOverlay'
   const isSystemMenuOpen = inputMachine.layer === 'SystemMenu'
 
@@ -311,6 +315,12 @@ export function GameShell() {
   }, [isSystemMenuOpen])
 
   useEffect(() => {
+    if (isStateOverlayOpen) {
+      stateOverlayRef.current?.focus()
+    }
+  }, [isStateOverlayOpen])
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.repeat) {
         return
@@ -321,6 +331,12 @@ export function GameShell() {
       if (event.key === 'f' || event.key === 'F') {
         event.preventDefault()
         applyMachineTransition(toggleActionMenu(inputMachine))
+        return
+      }
+
+      if (event.key === 'Tab') {
+        event.preventDefault()
+        applyMachineTransition(toggleStateOverlay(inputMachine))
         return
       }
 
@@ -469,14 +485,16 @@ export function GameShell() {
     inputMachine,
     interactionConfig.maxPushChain,
     isActionMenuOpen,
+    isStateOverlayOpen,
     riftDefaultDelta,
   ])
 
   const bottomHints = uiSettings.compactHints
-    ? ['F Menu', '1/2/3 Mode', 'WASD/Arrows', 'Space Rift', 'Enter Wait', 'M Settings', 'R Restart']
+    ? ['F Menu', 'Tab State', 'WASD/Arrows', 'Space Rift', 'Enter Wait', 'M Settings', 'R Restart']
     : [
         'F Menu',
         '1/2/3 Mode',
+        'Tab State',
         'WASD/Arrows Direction',
         'Space Rift',
         'Enter Wait',
@@ -493,7 +511,7 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>Phase 8: input buffering + preview + accessibility baseline</p>
+        <p>Phase 9: HUD + Isometric + Icon System</p>
       </header>
 
       <main className="game-layout">
@@ -502,6 +520,7 @@ export function GameShell() {
             <div className="board-stage-item">
               <GameBoardCanvas
                 boardSize={boardSize}
+                iconPackId={iconPackId}
                 objectsAtCurrentTime={objectsAtCurrentTime}
                 selvesAtCurrentTime={selvesAtCurrentTime}
                 currentTurn={turn}
@@ -527,110 +546,62 @@ export function GameShell() {
           <section className="ui-window command-window" aria-label="Command Window">
             <h2 className="ui-window-title">Command</h2>
             <div className="ui-window-body">
-              <p className="window-note">F: {isActionMenuOpen ? 'close menu' : 'open menu'}</p>
-              <div className="command-list">
-                {directionalOptions.map((option) => (
-                  <div
-                    key={option.mode}
-                    className={[
-                      'command-row',
-                      directionalActionMode === option.mode ? 'is-selected' : '',
-                      isActionMenuOpen ? 'is-menu-active' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <span className="command-key">{option.keyLabel}</span>
-                    <span className="command-text">{option.mode}</span>
-                    <span className="command-desc">{option.description}</span>
-                  </div>
-                ))}
+              <p className="window-note">Mode: {directionalActionMode}</p>
+              <div className="command-meta command-meta-compact">
+                <span>F Menu</span>
+                <span>Space Rift</span>
+                <span>Enter Wait</span>
+                <span>R Restart</span>
               </div>
-              <div className="command-meta">
-                <span>Direction: WASD / Arrows</span>
-                <span>Space: Rift</span>
-                <span>Enter: Wait</span>
-                <span>M: Settings</span>
-              </div>
+              {isActionMenuOpen ? (
+                <div className="command-list">
+                  {directionalOptions.map((option) => (
+                    <div
+                      key={option.mode}
+                      className={[
+                        'command-row',
+                        directionalActionMode === option.mode ? 'is-selected' : '',
+                        isActionMenuOpen ? 'is-menu-active' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
+                      <span className="command-key">{option.keyLabel}</span>
+                      <span className="command-text">{option.mode}</span>
+                      <span className="command-desc">{option.description}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </section>
 
           <section className="ui-window state-window" aria-label="State Window">
             <h2 className="ui-window-title">State</h2>
             <div className="ui-window-body">
-              <div className="state-sections">
-                <section className="state-block">
-                  <h3 className="state-block-title">Core</h3>
-                  <div className="metric-grid">
-                    <div className="metric-item">
-                      <span className="metric-label">Turn</span>
-                      <span className="metric-value">{turn}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Time</span>
-                      <span className="metric-value">{currentTime}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Depth</span>
-                      <span className="metric-value">{timeDepth}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Phase</span>
-                      <span className="metric-value">{phase}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Mode</span>
-                      <span className="metric-value">{directionalActionMode}</span>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="state-block">
-                  <h3 className="state-block-title">Tools</h3>
-                  <div className="metric-grid">
-                    <div className="metric-item">
-                      <span className="metric-label">Rift Delta</span>
-                      <span className="metric-value">-{riftDefaultDelta}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Push Max</span>
-                      <span className="metric-value">{interactionConfig.maxPushChain}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Pull</span>
-                      <span className="metric-value">{interactionConfig.allowPull ? 'on' : 'off'}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Danger</span>
-                      <span className="metric-value">{showDangerPreview ? 'on' : 'off'}</span>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="state-block">
-                  <h3 className="state-block-title">Snapshot</h3>
-                  <div className="metric-grid metric-grid-single">
-                    <div className="metric-item">
-                      <span className="metric-label">Objects</span>
-                      <span className="metric-value">{objectsAtCurrentTime.length}</span>
-                    </div>
-                    <div className="metric-item metric-item-wide">
-                      <span className="metric-label">Player</span>
-                      <span className="metric-value">
-                        {player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}
-                      </span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Pack</span>
-                      <span className="metric-value">{contentPackId}</span>
-                    </div>
-                    <div className="metric-item">
-                      <span className="metric-label">Board</span>
-                      <span className="metric-value">{boardSize} x {boardSize}</span>
-                    </div>
-                  </div>
-                </section>
+              <div className="metric-grid">
+                <div className="metric-item">
+                  <span className="metric-label">Turn</span>
+                  <span className="metric-value">{turn}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Time</span>
+                  <span className="metric-value">{currentTime}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Phase</span>
+                  <span className="metric-value">{phase}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Rift Delta</span>
+                  <span className="metric-value">-{riftDefaultDelta}</span>
+                </div>
+                <div className="metric-item">
+                  <span className="metric-label">Danger</span>
+                  <span className="metric-value">{showDangerPreview ? 'on' : 'off'}</span>
+                </div>
               </div>
+              <p className="window-note state-zoom-note">Tab: details</p>
             </div>
           </section>
 
@@ -672,6 +643,90 @@ export function GameShell() {
                     </div>
                   ))
               )}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {isStateOverlayOpen ? (
+        <div className="overlay-backdrop" role="dialog" aria-modal="true" aria-label="State Details">
+          <section className="overlay-window" ref={stateOverlayRef} tabIndex={-1}>
+            <header className="overlay-header">
+              <h2>State Details</h2>
+              <p>Tab / Esc: close</p>
+            </header>
+            <div className="overlay-body state-overlay-body">
+              <section className="state-block">
+                <h3 className="state-block-title">Core</h3>
+                <div className="metric-grid">
+                  <div className="metric-item">
+                    <span className="metric-label">Board</span>
+                    <span className="metric-value">{boardSize} x {boardSize}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Depth</span>
+                    <span className="metric-value">{timeDepth}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Turn</span>
+                    <span className="metric-value">{turn}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Time</span>
+                    <span className="metric-value">{currentTime}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Phase</span>
+                    <span className="metric-value">{phase}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Mode</span>
+                    <span className="metric-value">{directionalActionMode}</span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="state-block">
+                <h3 className="state-block-title">Tools</h3>
+                <div className="metric-grid">
+                  <div className="metric-item">
+                    <span className="metric-label">Rift Delta</span>
+                    <span className="metric-value">-{riftDefaultDelta}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Push Max</span>
+                    <span className="metric-value">{interactionConfig.maxPushChain}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Pull</span>
+                    <span className="metric-value">{interactionConfig.allowPull ? 'on' : 'off'}</span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Danger</span>
+                    <span className="metric-value">{showDangerPreview ? 'on' : 'off'}</span>
+                  </div>
+                </div>
+              </section>
+
+              <section className="state-block">
+                <h3 className="state-block-title">Snapshot</h3>
+                <div className="metric-grid metric-grid-single">
+                  <div className="metric-item">
+                    <span className="metric-label">Slice Objects</span>
+                    <span className="metric-value">{objectsAtCurrentTime.length}</span>
+                  </div>
+                  <div className="metric-item metric-item-wide">
+                    <span className="metric-label">Player</span>
+                    <span className="metric-value">
+                      {player ? `${player.x},${player.y},t=${player.t}` : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="metric-item">
+                    <span className="metric-label">Content Pack</span>
+                    <span className="metric-value">{contentPackId}</span>
+                  </div>
+                </div>
+              </section>
             </div>
           </section>
         </div>
