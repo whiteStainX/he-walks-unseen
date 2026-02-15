@@ -1,10 +1,11 @@
 import { Edges, Line, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MOUSE, type OrthographicCamera } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
 import type { IsoCubeViewModel } from './buildIsoViewModel'
+import { buildTrackRenderModel, type IsoPathMode, type IsoTrackPoint } from './trajectory'
 import { minimalMonoTheme } from '../theme'
 
 interface IsoTimeCubePanelProps {
@@ -39,6 +40,11 @@ function slabOpacity(t: number, focusT: number): number {
   return Math.max(0.02, 0.05 - (delta - 1) * 0.008)
 }
 
+function pathOpacity(t: number, focusT: number, maxOpacity = 0.8): number {
+  const delta = Math.abs(t - focusT)
+  return Math.max(0.25, maxOpacity - delta * 0.08)
+}
+
 function cellToWorld(
   x: number,
   y: number,
@@ -48,6 +54,16 @@ function cellToWorld(
 ): [number, number, number] {
   const half = (boardSize - 1) / 2
   return [(x - half) * CELL_SPACING, (t - startT) * SLICE_SPACING, (y - half) * CELL_SPACING]
+}
+
+function trackPointToWorld(
+  point: IsoTrackPoint,
+  startT: number,
+  boardSize: number,
+  yOffset: number,
+): [number, number, number] {
+  const world = cellToWorld(point.x, point.y, point.t, startT, boardSize)
+  return [world[0], world[1] + yOffset, world[2]]
 }
 
 function sliceFramePoints(boardSize: number, levelY: number): Array<[number, number, number]> {
@@ -121,9 +137,55 @@ function PlayerBlock({
   )
 }
 
+function TrackAnchor({
+  position,
+  size,
+  color,
+  opacity,
+}: {
+  position: [number, number, number]
+  size: number
+  color: string
+  opacity: number
+}) {
+  return (
+    <mesh position={position}>
+      <boxGeometry args={[size, size, size]} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} />
+    </mesh>
+  )
+}
+
+function ObjectPillar({
+  x,
+  z,
+  centerY,
+  height,
+  colorFill,
+  colorStroke,
+}: {
+  x: number
+  z: number
+  centerY: number
+  height: number
+  colorFill: string
+  colorStroke: string
+}) {
+  return (
+    <group position={[x, centerY, z]}>
+      <mesh>
+        <boxGeometry args={[OBJECT_SIZE * 0.22, height, OBJECT_SIZE * 0.22]} />
+        <meshBasicMaterial color={colorFill} transparent opacity={0.36} />
+        <Edges color={colorStroke} scale={1.001} threshold={15} transparent opacity={0.55} />
+      </mesh>
+    </group>
+  )
+}
+
 export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeCubePanelProps) {
   const cameraRef = useRef<OrthographicCamera | null>(null)
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
+  const [pathMode, setPathMode] = useState<IsoPathMode>('organic')
   const theme = minimalMonoTheme.iso
   const levelCount = viewModel.slices.length
   const boardSpan = boardSize * CELL_SPACING
@@ -134,24 +196,25 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
   const baseZoom = fitZoom * ZOOM_STEP_FACTOR ** DEFAULT_ZOOM_IN_STEPS
   const minZoom = fitZoom * 0.7
   const maxZoom = fitZoom * 3.2
-  const worldLinePoints = useMemo(() => {
-    const points = viewModel.slices
-      .flatMap((slice) =>
-        slice.playerSelves.map((self) => ({
-          x: self.x,
-          y: self.y,
-          t: slice.t,
-          turn: self.turn,
-        })),
-      )
-      .sort((a, b) => a.turn - b.turn)
-      .map((point) => {
-        const world = cellToWorld(point.x, point.y, point.t, viewModel.startT, boardSize)
-        return [world[0], world[1] + PLAYER_HEIGHT + 0.16, world[2]] as [number, number, number]
-      })
 
-    return points
-  }, [boardSize, viewModel])
+  const staticObjectIds = useMemo(
+    () => new Set(viewModel.objectPillars.map((pillar) => pillar.id)),
+    [viewModel.objectPillars],
+  )
+
+  const playerTrack = useMemo(
+    () => buildTrackRenderModel(viewModel.playerAnchors, pathMode),
+    [pathMode, viewModel.playerAnchors],
+  )
+
+  const movingObjectTracks = useMemo(
+    () =>
+      viewModel.movingObjectTracks.map((track) => ({
+        ...track,
+        renderTrack: buildTrackRenderModel(track.anchors, pathMode),
+      })),
+    [pathMode, viewModel.movingObjectTracks],
+  )
 
   const applyResetView = useCallback(() => {
     const camera = cameraRef.current
@@ -218,6 +281,22 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
         >
           Reset
         </button>
+        <button
+          type="button"
+          className={['iso-control-button', pathMode === 'organic' ? 'is-active' : ''].join(' ')}
+          onClick={() => setPathMode('organic')}
+          aria-label="Use organic trajectory view"
+        >
+          Org
+        </button>
+        <button
+          type="button"
+          className={['iso-control-button', pathMode === 'exact' ? 'is-active' : ''].join(' ')}
+          onClick={() => setPathMode('exact')}
+          aria-label="Use exact trajectory view"
+        >
+          Exact
+        </button>
       </div>
       <Canvas
         orthographic
@@ -264,10 +343,87 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             )
           })}
 
+          {viewModel.objectPillars.map((pillar) => {
+            const base = cellToWorld(pillar.x, pillar.y, pillar.startT, viewModel.startT, boardSize)
+            const startY = (pillar.startT - viewModel.startT) * SLICE_SPACING + SLICE_THICKNESS / 2
+            const endY = (pillar.endT - viewModel.startT) * SLICE_SPACING + SLICE_THICKNESS / 2
+            const height = Math.max(SLICE_SPACING * 0.65, endY - startY + OBJECT_HEIGHT * 0.55)
+            const centerY = (startY + endY) / 2 + OBJECT_HEIGHT * 0.1
+
+            return (
+              <ObjectPillar
+                key={`pillar-${pillar.id}`}
+                x={base[0]}
+                z={base[2]}
+                centerY={centerY}
+                height={height}
+                colorFill={pillar.render.fill ?? theme.objectFill}
+                colorStroke={pillar.render.stroke ?? theme.objectStroke}
+              />
+            )
+          })}
+
+          {movingObjectTracks.map((track) => {
+            const pathColor = track.render.stroke ?? theme.objectStroke
+
+            return (
+              <group key={`object-track-${track.id}`}>
+                {track.renderTrack.localPaths.map((path, index) => {
+                  const worldPoints = path.map((point) =>
+                    trackPointToWorld(point, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
+                  )
+                  const averageT = path.reduce((sum, point) => sum + point.t, 0) / path.length
+
+                  return (
+                    <Line
+                      key={`object-track-local-${track.id}-${index}`}
+                      points={worldPoints}
+                      color={pathColor}
+                      transparent
+                      opacity={pathOpacity(averageT, viewModel.focusT, 0.58)}
+                      lineWidth={1}
+                    />
+                  )
+                })}
+
+                {track.renderTrack.riftBridges.map((bridge, index) => (
+                  <Line
+                    key={`object-track-rift-${track.id}-${index}`}
+                    points={[
+                      trackPointToWorld(bridge.from, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
+                      trackPointToWorld(bridge.to, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
+                    ]}
+                    color={pathColor}
+                    dashed
+                    dashSize={0.12}
+                    gapSize={0.08}
+                    transparent
+                    opacity={0.48}
+                    lineWidth={1}
+                  />
+                ))}
+
+                {track.renderTrack.anchors.map((anchor, index) => (
+                  <TrackAnchor
+                    key={`object-track-anchor-${track.id}-${index}`}
+                    position={trackPointToWorld(anchor, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12)}
+                    size={0.055}
+                    color={pathColor}
+                    opacity={0.6}
+                  />
+                ))}
+              </group>
+            )
+          })}
+
           {viewModel.slices.map((slice) => {
             const objectOpacity = sliceOpacity(slice.t, viewModel.focusT)
 
             return slice.objects.map((object) => {
+              if (staticObjectIds.has(object.id) && !slice.isFocus) {
+                return null
+              }
+
               const position = cellToWorld(object.x, object.y, slice.t, viewModel.startT, boardSize)
               const palette =
                 object.kind === 'enemy'
@@ -317,15 +473,55 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             })
           })}
 
-          {worldLinePoints.length >= 2 && (
+          {playerTrack.localPaths.map((path, index) => {
+            const worldPoints = path.map((point) =>
+              trackPointToWorld(point, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
+            )
+            const averageT = path.reduce((sum, point) => sum + point.t, 0) / path.length
+
+            return (
+              <Line
+                key={`player-track-local-${index}`}
+                points={worldPoints}
+                color={theme.worldLine}
+                transparent
+                opacity={pathOpacity(averageT, viewModel.focusT, 0.9)}
+                lineWidth={1.35}
+              />
+            )
+          })}
+
+          {playerTrack.riftBridges.map((bridge, index) => (
             <Line
-              points={worldLinePoints}
+              key={`player-track-rift-${index}`}
+              points={[
+                trackPointToWorld(bridge.from, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
+                trackPointToWorld(bridge.to, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
+              ]}
               color={theme.worldLine}
+              dashed
+              dashSize={0.14}
+              gapSize={0.1}
               transparent
-              opacity={0.65}
-              lineWidth={1.3}
+              opacity={0.72}
+              lineWidth={1.15}
             />
-          )}
+          ))}
+
+          {playerTrack.anchors.map((anchor) => {
+            const isCurrentTurnAnchor = anchor.turn === currentTurn
+            const position = trackPointToWorld(anchor, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16)
+
+            return (
+              <TrackAnchor
+                key={`player-anchor-${anchor.turn ?? `${anchor.x}-${anchor.y}-${anchor.t}`}`}
+                position={position}
+                size={isCurrentTurnAnchor ? 0.11 : 0.085}
+                color={isCurrentTurnAnchor ? theme.selfStroke : theme.pastSelfStroke}
+                opacity={isCurrentTurnAnchor ? 1 : 0.78}
+              />
+            )
+          })}
         </group>
         <OrbitControls
           ref={controlsRef}

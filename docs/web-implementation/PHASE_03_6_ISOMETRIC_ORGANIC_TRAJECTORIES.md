@@ -18,7 +18,14 @@ Implement an organic, scientific-illustration style in the isometric panel while
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Implemented (baseline)
+
+Implemented in this pass:
+- trajectory segmentation model with `local` vs `riftBridge` edges
+- organic (`Catmull-Rom`) and exact trajectory rendering modes
+- player anchors + dashed non-local connectors in isometric panel
+- static object temporal pillars and moving-object trajectory tracks
+- mode controls (`Org` / `Exact`) in isometric panel
 
 ---
 
@@ -183,4 +190,3 @@ Exit criteria:
 
 Create review checklist after implementation:
 - `docs/review/PHASE_03_6_ISOMETRIC_ORGANIC_REVIEW.md`
-

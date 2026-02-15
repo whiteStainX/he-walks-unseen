@@ -120,6 +120,11 @@
   background: var(--ui-fill-alt);
 }
 
+.iso-control-button.is-active {
+  background: var(--ui-fill-selected);
+  color: var(--ui-bg);
+}
+
 .iso-caption {
   margin: 6px 0 0;
   font-size: 0.72rem;
