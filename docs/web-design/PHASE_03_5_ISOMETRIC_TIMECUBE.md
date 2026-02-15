@@ -100,7 +100,79 @@ No interaction affordances in this phase.
 
 ---
 
-## 5. Library Decision
+## 5. Style Direction (Moebius-Inspired)
+
+Target direction:
+- simple contour lines
+- strong 3D form readability
+- clear occlusion and blocking
+- low-noise grayscale rendering
+
+This is not a comic imitation; it is a geometric readability contract.
+
+### 5.1 Readability Goals
+
+1. Player and objects must be distinguishable in under 2 seconds.
+2. Time slices must be explicit volumes (not only outlines).
+3. Users should not reconstruct slice depth mentally from wireframe clutter.
+
+### 5.2 Geometry Rules
+
+1. Slice slabs, not outline-only planes:
+- every slice renders as a thin opaque slab
+- focus slice has strongest contour and opacity
+- non-focus slices fade by temporal distance
+
+2. Contour-first linework:
+- show outer edges and key internal boundaries only
+- remove dense diagonal wireframe lines
+- hidden edges are suppressed or heavily de-emphasized
+
+3. Occlusion is mandatory:
+- front geometry blocks back geometry
+- no x-ray style overlap by default
+- depth order must communicate blocking cleanly
+
+### 5.3 Entity Differentiation Rules
+
+1. Player:
+- strongest contour weight
+- highest visual contrast in panel
+- always distinct from object fill values
+
+2. Objects:
+- medium contour weight
+- flatter fills than player
+- consistent silhouettes by kind
+
+3. Past selves:
+- reduced opacity and line weight
+- never compete with current-turn player
+
+### 5.4 Tunable Parameters (Spec Defaults)
+
+These are spec-level tokens and can be tuned later without changing direction:
+
+| Token | Default | Purpose |
+|------|---------|---------|
+| `iso.slice.opacity.focus` | `0.22` | focus slab fill opacity |
+| `iso.slice.opacity.near` | `0.12` | near-slice slab opacity |
+| `iso.slice.opacity.far` | `0.06` | far-slice slab opacity |
+| `iso.slice.line.focus` | `2.2` | focus slab edge width |
+| `iso.slice.line.normal` | `1.2` | non-focus edge width |
+| `iso.entity.line.player` | `2.4` | player contour weight |
+| `iso.entity.line.object` | `1.4` | object contour weight |
+| `iso.entity.opacity.pastSelf` | `0.45` | past-self visual attenuation |
+| `iso.hiddenEdge.opacity` | `0.15` | hidden edge visibility |
+| `iso.slice.thickness` | `0.16` | slab thickness in iso world units |
+
+Palette policy:
+- default is grayscale only
+- optional single accent channel for player is allowed as a configurable token, off by default
+
+---
+
+## 6. Library Decision
 
 ## Candidates
 
@@ -172,7 +244,7 @@ Even with WebGL, visual language must stay minimal and diagrammatic:
 
 ---
 
-## 6. Data Contract (Render Input)
+## 7. Data Contract (Render Input)
 
 ```ts
 type IsoWindowSlice = {
@@ -202,7 +274,7 @@ Builder rule:
 
 ---
 
-## 7. Performance Constraints
+## 8. Performance Constraints
 
 - recompute view model only when `currentT`, `worldLine`, or `cube` changes
 - cap slices at 10 always
@@ -213,7 +285,7 @@ Target:
 
 ---
 
-## 8. Out of Scope (Phase 3.5)
+## 9. Out of Scope (Phase 3.5)
 
 - click-to-seek time
 - tunnel/rift authoring from isometric panel
@@ -222,17 +294,18 @@ Target:
 
 ---
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
 1. Isometric panel renders beside main board on desktop.
 2. Time window follows the 10-slice rules above.
 3. Current slice is visually identifiable.
 4. Player selves and objects are visible on correct layers.
 5. Main gameplay behavior remains unchanged.
+6. Occlusion/contour hierarchy makes blocking and depth readable without dense wireframes.
 
 ---
 
-## 10. Related Documents
+## 11. Related Documents
 
 - `docs/web-design/OVERALL.md`
 - `docs/web-design/RENDERING.md`
