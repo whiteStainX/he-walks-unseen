@@ -195,6 +195,28 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ---
 
+## Phase 9: UI Upgrade 01 (HUD + Moebius Iso + Icon Packs)
+
+**Goal:** Deliver the first major UI upgrade across HUD progressive disclosure, isometric readability style, and configurable board icon loading.
+**Implementation Detail:** `docs/web-implementation/PHASE_09_UI_UPGRADE_01.md`
+**Design Anchor:** `docs/web-design/UI_WINDOW_SYSTEM.md`
+
+### Deliverables
+- [ ] Minimal-at-glance `COMMAND`/`STATE`/`LOG` with on-demand detail overlays
+- [ ] Moebius-style isometric readability pass (contour-first, slab + occlusion clarity)
+- [ ] Semantic icon-pack loading system (`SVG` first, `PNG` fallback) integrated with board render
+- [ ] Theme-driven active icon pack selection and graceful fallback behavior
+- [ ] Tests and docs alignment for all three parts
+
+### Exit Criteria
+- [ ] Player-facing HUD stays compact by default and keyboard-first for detail views
+- [ ] Isometric helper is clearer and consistent with design direction
+- [ ] Board entities no longer depend on glyph text rendering
+- [ ] Missing icon assets never block gameplay
+- [ ] `npm run lint`, `npm run test`, and `npm run build` all pass
+
+---
+
 ## Future Phases (Optional)
 
 - Full light cone model (distance-based)
