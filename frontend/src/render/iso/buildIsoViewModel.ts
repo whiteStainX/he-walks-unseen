@@ -7,7 +7,7 @@ export interface IsoRenderObject {
   x: number
   y: number
   kind: string
-  render: { fill?: string; stroke?: string; glyph?: string }
+  render: { fill?: string; stroke?: string; symbol?: string }
 }
 
 export interface IsoRenderSelf {
@@ -72,4 +72,3 @@ export function buildIsoViewModel(input: BuildIsoViewModelInput): IsoCubeViewMod
     slices,
   }
 }
-

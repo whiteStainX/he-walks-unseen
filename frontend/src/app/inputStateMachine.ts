@@ -2,7 +2,7 @@ import type { Direction2D } from '../core/position'
 
 export type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 
-export type InputLayer = 'Gameplay' | 'ActionMenu' | 'LogOverlay' | 'SystemMenu'
+export type InputLayer = 'Gameplay' | 'ActionMenu' | 'StateOverlay' | 'LogOverlay' | 'SystemMenu'
 
 export interface BufferedDirectionalIntent {
   mode: DirectionalActionMode
@@ -29,7 +29,11 @@ export function createInputStateMachine(): InputStateMachine {
 }
 
 export function toggleActionMenu(machine: InputStateMachine): InputStateMachine {
-  if (machine.layer === 'SystemMenu' || machine.layer === 'LogOverlay') {
+  if (
+    machine.layer === 'SystemMenu' ||
+    machine.layer === 'LogOverlay' ||
+    machine.layer === 'StateOverlay'
+  ) {
     return machine
   }
 
@@ -40,7 +44,7 @@ export function toggleActionMenu(machine: InputStateMachine): InputStateMachine 
 }
 
 export function toggleLogOverlay(machine: InputStateMachine): InputStateMachine {
-  if (machine.layer === 'SystemMenu') {
+  if (machine.layer === 'SystemMenu' || machine.layer === 'StateOverlay') {
     return machine
   }
 
@@ -51,9 +55,24 @@ export function toggleLogOverlay(machine: InputStateMachine): InputStateMachine 
 }
 
 export function toggleSystemMenu(machine: InputStateMachine): InputStateMachine {
+  if (machine.layer === 'StateOverlay') {
+    return machine
+  }
+
   return {
     ...machine,
     layer: machine.layer === 'SystemMenu' ? 'Gameplay' : 'SystemMenu',
+  }
+}
+
+export function toggleStateOverlay(machine: InputStateMachine): InputStateMachine {
+  if (machine.layer === 'SystemMenu' || machine.layer === 'LogOverlay' || machine.layer === 'ActionMenu') {
+    return machine
+  }
+
+  return {
+    ...machine,
+    layer: machine.layer === 'StateOverlay' ? 'Gameplay' : 'StateOverlay',
   }
 }
 

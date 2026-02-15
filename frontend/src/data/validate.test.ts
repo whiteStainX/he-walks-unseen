@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { validateContentPack } from './validate'
+import { validateContentPack, validateIconPackConfig } from './validate'
 
 function minimalValidInputs() {
   return {
@@ -29,6 +29,7 @@ function minimalValidInputs() {
     theme: {
       schemaVersion: 1,
       id: 'mono',
+      iconPackId: 'default-mono',
       cssVars: { '--ink': '#111111' },
     },
     rules: {
@@ -96,6 +97,46 @@ describe('validateContentPack', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.error.kind).toBe('UnsupportedBehaviorPolicy')
+    }
+  })
+
+  it('rejects theme without icon pack id', () => {
+    const input = minimalValidInputs()
+    const theme = input.theme as { iconPackId?: string }
+    delete theme.iconPackId
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('MissingIconPackId')
+    }
+  })
+})
+
+describe('validateIconPackConfig', () => {
+  it('accepts a valid icon pack', () => {
+    const validated = validateIconPackConfig({
+      schemaVersion: 1,
+      id: 'default-mono',
+      slots: {
+        player: { svg: '/data/icons/default/player.svg' },
+      },
+    })
+
+    expect(validated.ok).toBe(true)
+  })
+
+  it('rejects icon pack without slots', () => {
+    const validated = validateIconPackConfig({
+      schemaVersion: 1,
+      id: 'default-mono',
+      slots: {},
+    })
+
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidShape')
     }
   })
 })

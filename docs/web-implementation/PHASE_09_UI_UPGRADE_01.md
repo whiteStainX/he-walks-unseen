@@ -20,7 +20,12 @@ This phase is a UI/data presentation upgrade. Core game logic and truth models d
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Implemented (baseline)
+
+Implemented in this pass:
+- compact-by-default `COMMAND` and `STATE` windows with `Tab` state overlay
+- Moebius-style isometric readability refinements (slice slabs, contour emphasis, clearer actor separation)
+- semantic icon-pack pipeline (`iconPackId` in theme, icon-pack manifest validation, cached board icon rendering)
 
 ---
 

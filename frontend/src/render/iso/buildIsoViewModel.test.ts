@@ -42,7 +42,7 @@ function makeCube() {
       archetype: {
         kind: 'enemy',
         components: [{ kind: 'BlocksMovement' }],
-        render: { fill: '#cccccc', stroke: '#111111', glyph: 'X' },
+        render: { fill: '#cccccc', stroke: '#111111', symbol: 'enemy' },
       },
     },
   ]
@@ -92,4 +92,3 @@ describe('buildIsoViewModel', () => {
     expect(sliceAt2.objects.map((object) => object.id)).toEqual(['wall.1', 'enemy.1'])
   })
 })
-

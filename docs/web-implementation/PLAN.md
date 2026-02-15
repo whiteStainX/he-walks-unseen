@@ -202,18 +202,18 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Anchor:** `docs/web-design/UI_WINDOW_SYSTEM.md`
 
 ### Deliverables
-- [ ] Minimal-at-glance `COMMAND`/`STATE`/`LOG` with on-demand detail overlays
-- [ ] Moebius-style isometric readability pass (contour-first, slab + occlusion clarity)
-- [ ] Semantic icon-pack loading system (`SVG` first, `PNG` fallback) integrated with board render
-- [ ] Theme-driven active icon pack selection and graceful fallback behavior
-- [ ] Tests and docs alignment for all three parts
+- [x] Minimal-at-glance `COMMAND`/`STATE`/`LOG` with on-demand detail overlays
+- [x] Moebius-style isometric readability pass (contour-first, slab + occlusion clarity)
+- [x] Semantic icon-pack loading system (`SVG` first, `PNG` fallback) integrated with board render
+- [x] Theme-driven active icon pack selection and graceful fallback behavior
+- [x] Tests and docs alignment for all three parts
 
 ### Exit Criteria
-- [ ] Player-facing HUD stays compact by default and keyboard-first for detail views
-- [ ] Isometric helper is clearer and consistent with design direction
-- [ ] Board entities no longer depend on glyph text rendering
-- [ ] Missing icon assets never block gameplay
-- [ ] `npm run lint`, `npm run test`, and `npm run build` all pass
+- [x] Player-facing HUD stays compact by default and keyboard-first for detail views
+- [x] Isometric helper is clearer and consistent with design direction
+- [x] Board entities no longer depend on glyph text rendering
+- [x] Missing icon assets never block gameplay
+- [x] `npm run lint`, `npm run test`, and `npm run build` all pass
 
 ---
 

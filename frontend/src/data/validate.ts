@@ -5,6 +5,7 @@ import type {
   ContentLoadError,
   ContentPack,
   GameRulesConfig,
+  IconPackConfig,
   LevelConfig,
   ThemeConfig,
 } from './contracts'
@@ -73,6 +74,20 @@ function parseThemeConfig(input: unknown): Result<ThemeConfig, ContentLoadError>
         expected: 1,
         actual: input.schemaVersion,
       },
+    }
+  }
+
+  if (typeof input.id !== 'string' || input.id.length === 0) {
+    return {
+      ok: false,
+      error: { kind: 'InvalidShape', file: 'theme', message: 'Theme id must be a non-empty string' },
+    }
+  }
+
+  if (typeof input.iconPackId !== 'string' || input.iconPackId.length === 0) {
+    return {
+      ok: false,
+      error: { kind: 'MissingIconPackId', themeId: input.id },
     }
   }
 
@@ -216,6 +231,25 @@ function validateArchetypeAndInstanceRefs(
   return { ok: true, value: null }
 }
 
+function validateArchetypeRenderSymbols(level: LevelConfig): Result<null, ContentLoadError> {
+  for (const [key, archetype] of Object.entries(level.archetypes)) {
+    const symbol = archetype.render.symbol
+
+    if (symbol !== undefined && (typeof symbol !== 'string' || symbol.length === 0)) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidShape',
+          file: 'level',
+          message: `Archetype ${key} render.symbol must be a non-empty string`,
+        },
+      }
+    }
+  }
+
+  return { ok: true, value: null }
+}
+
 export function validateContentPack(input: {
   level: unknown
   behavior: unknown
@@ -258,6 +292,12 @@ export function validateContentPack(input: {
     return refValidation
   }
 
+  const symbolValidation = validateArchetypeRenderSymbols(level.value)
+
+  if (!symbolValidation.ok) {
+    return symbolValidation
+  }
+
   return {
     ok: true,
     value: {
@@ -267,4 +307,106 @@ export function validateContentPack(input: {
       rules: rules.value,
     },
   }
+}
+
+export function validateIconPackConfig(input: unknown): Result<IconPackConfig, ContentLoadError> {
+  if (!isObject(input)) {
+    return { ok: false, error: { kind: 'InvalidShape', file: 'icon-pack', message: 'Expected object' } }
+  }
+
+  if (input.schemaVersion !== 1) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidSchemaVersion',
+        file: 'icon-pack',
+        expected: 1,
+        actual: input.schemaVersion,
+      },
+    }
+  }
+
+  if (typeof input.id !== 'string' || input.id.length === 0) {
+    return {
+      ok: false,
+      error: { kind: 'InvalidShape', file: 'icon-pack', message: 'id must be a non-empty string' },
+    }
+  }
+
+  if (!isObject(input.slots)) {
+    return {
+      ok: false,
+      error: { kind: 'InvalidShape', file: 'icon-pack', message: 'slots must be an object' },
+    }
+  }
+
+  const slotEntries = Object.entries(input.slots)
+
+  if (slotEntries.length === 0) {
+    return {
+      ok: false,
+      error: { kind: 'InvalidShape', file: 'icon-pack', message: 'slots must not be empty' },
+    }
+  }
+
+  for (const [slot, value] of slotEntries) {
+    if (!isObject(value)) {
+      return {
+        ok: false,
+        error: { kind: 'InvalidShape', file: 'icon-pack', message: `Slot ${slot} must be an object` },
+      }
+    }
+
+    if (typeof value.svg !== 'string' || value.svg.length === 0) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidShape',
+          file: 'icon-pack',
+          message: `Slot ${slot} must include non-empty svg path`,
+        },
+      }
+    }
+
+    if (value.png !== undefined && (typeof value.png !== 'string' || value.png.length === 0)) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidShape',
+          file: 'icon-pack',
+          message: `Slot ${slot} png must be a non-empty string when provided`,
+        },
+      }
+    }
+  }
+
+  return { ok: true, value: input as unknown as IconPackConfig }
+}
+
+export function validateLevelSymbolSlots(
+  level: LevelConfig,
+  iconPack: IconPackConfig,
+): Result<null, ContentLoadError> {
+  const knownSlots = new Set(Object.keys(iconPack.slots))
+
+  for (const archetype of Object.values(level.archetypes)) {
+    const symbol = archetype.render.symbol
+
+    if (typeof symbol !== 'string') {
+      continue
+    }
+
+    if (!knownSlots.has(symbol)) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidIconSlotReference',
+          archetype: archetype.kind,
+          symbol,
+        },
+      }
+    }
+  }
+
+  return { ok: true, value: null }
 }

@@ -57,6 +57,7 @@ const DEFAULT_LEVEL_OBJECTS_CONFIG: LevelObjectsConfig | null = bootContent.ok
 const DEFAULT_THEME_CSS_VARS: Record<string, string> = bootContent.ok
   ? bootContent.value.themeCssVars
   : {}
+const DEFAULT_ICON_PACK_ID = bootContent.ok ? bootContent.value.iconPackId : 'default-mono'
 
 export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
@@ -68,6 +69,7 @@ export interface GameState extends InteractionState {
   defaultDetectionConfig: DetectionConfig
   defaultParadoxConfig: ParadoxConfig
   themeCssVars: Record<string, string>
+  iconPackId: string
 }
 
 function bootstrapObjectState(): {
@@ -156,6 +158,7 @@ function createInitialState(): GameState {
     levelObjectsConfig: DEFAULT_LEVEL_OBJECTS_CONFIG,
     startPosition: DEFAULT_START_POSITION,
     themeCssVars: { ...DEFAULT_THEME_CSS_VARS },
+    iconPackId: DEFAULT_ICON_PACK_ID,
     lastDetection: null,
     lastParadox: null,
     causalAnchors: [],
@@ -244,6 +247,7 @@ const gameSlice = createSlice({
       state.detectionConfig = { ...action.payload.content.detectionConfig }
       state.paradoxConfig = { ...state.defaultParadoxConfig }
       state.themeCssVars = { ...action.payload.content.themeCssVars }
+      state.iconPackId = action.payload.content.iconPackId
       state.lastDetection = null
       state.lastParadox = null
       state.causalAnchors = []

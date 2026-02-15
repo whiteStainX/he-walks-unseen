@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { DetectionEvent } from '../../core/detection'
 import type { ResolvedObjectInstance } from '../../core/objects'
@@ -6,9 +6,17 @@ import type { Position3D } from '../../core/position'
 import type { PositionAtTime } from '../../core/worldLine'
 import { minimalMonoTheme } from '../theme'
 import type { ActionPreview } from './preview'
+import {
+  DANGER_ICON_SLOT,
+  PAST_SELF_ICON_SLOT,
+  PLAYER_ICON_SLOT,
+  resolveObjectIconSlot,
+} from './iconPack'
+import { loadIconPackCached, warmIconPackSlots } from './iconCache'
 
 interface GameBoardCanvasProps {
   boardSize: number
+  iconPackId: string
   objectsAtCurrentTime: ResolvedObjectInstance[]
   selvesAtCurrentTime: PositionAtTime[]
   currentTurn: number
@@ -19,8 +27,71 @@ interface GameBoardCanvasProps {
 
 const CANVAS_SIZE = 560
 
+function drawFallbackIcon(
+  context: CanvasRenderingContext2D,
+  slot: string,
+  x: number,
+  y: number,
+  size: number,
+): void {
+  const centerX = x + size / 2
+  const centerY = y + size / 2
+
+  context.strokeStyle = '#111111'
+  context.fillStyle = '#efefef'
+  context.lineWidth = 2
+
+  switch (slot) {
+    case PLAYER_ICON_SLOT:
+      context.fillStyle = '#111111'
+      context.fillRect(x, y, size, size)
+      context.fillStyle = '#ffffff'
+      context.beginPath()
+      context.arc(centerX, centerY, Math.max(2, size * 0.15), 0, Math.PI * 2)
+      context.fill()
+      break
+    case PAST_SELF_ICON_SLOT:
+      context.fillStyle = '#b5b5b5'
+      context.fillRect(x, y, size, size)
+      context.strokeRect(x, y, size, size)
+      break
+    case 'enemy':
+      context.beginPath()
+      context.moveTo(centerX, y)
+      context.lineTo(x + size, centerY)
+      context.lineTo(centerX, y + size)
+      context.lineTo(x, centerY)
+      context.closePath()
+      context.fill()
+      context.stroke()
+      break
+    case 'exit':
+      context.strokeRect(x, y, size, size)
+      context.beginPath()
+      context.moveTo(x + size * 0.3, centerY)
+      context.lineTo(x + size * 0.8, centerY)
+      context.lineTo(x + size * 0.65, centerY - size * 0.18)
+      context.moveTo(x + size * 0.8, centerY)
+      context.lineTo(x + size * 0.65, centerY + size * 0.18)
+      context.stroke()
+      break
+    case DANGER_ICON_SLOT:
+      context.strokeRect(x, y, size, size)
+      context.beginPath()
+      context.moveTo(x, y)
+      context.lineTo(x + size, y + size)
+      context.moveTo(x + size, y)
+      context.lineTo(x, y + size)
+      context.stroke()
+      break
+    default:
+      context.strokeRect(x, y, size, size)
+  }
+}
+
 export function GameBoardCanvas({
   boardSize,
+  iconPackId,
   objectsAtCurrentTime,
   selvesAtCurrentTime,
   currentTurn,
@@ -29,6 +100,37 @@ export function GameBoardCanvas({
   actionPreview,
 }: GameBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [loadedIconsState, setLoadedIconsState] = useState<{
+    packId: string
+    slots: Record<string, HTMLImageElement>
+  } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      const iconPack = await loadIconPackCached(iconPackId)
+
+      if (cancelled) {
+        return
+      }
+
+      if (!iconPack.ok) {
+        console.warn(`Icon pack load failed (${iconPackId}): ${iconPack.error.kind}`)
+        return
+      }
+
+      const slots = await warmIconPackSlots(iconPack.value)
+
+      if (!cancelled) {
+        setLoadedIconsState({ packId: iconPackId, slots })
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [iconPackId])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -45,6 +147,7 @@ export function GameBoardCanvas({
 
     const cellSize = CANVAS_SIZE / boardSize
     const theme = minimalMonoTheme.canvas
+    const loadedSlotIcons = loadedIconsState?.packId === iconPackId ? loadedIconsState.slots : {}
 
     context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
 
@@ -64,23 +167,29 @@ export function GameBoardCanvas({
       context.strokeRect(x, y, size, size)
     }
 
+    const drawIconAt = (position: Position3D, slot: string, inset = 0.2) => {
+      const x = position.x * cellSize + cellSize * inset
+      const y = position.y * cellSize + cellSize * inset
+      const size = cellSize * (1 - inset * 2)
+      const loaded = loadedSlotIcons[slot]
+
+      if (loaded) {
+        context.drawImage(loaded, x, y, size, size)
+        return
+      }
+
+      drawFallbackIcon(context, slot, x, y, size)
+    }
+
     for (const object of objectsAtCurrentTime) {
       const fill = object.archetype.render.fill ?? theme.objectFill
       const stroke = object.archetype.render.stroke ?? theme.objectStroke
-      const glyph = object.archetype.render.glyph
+      const slot = resolveObjectIconSlot(object.archetype.kind, object.archetype.render)
 
       drawRect(object.position, fill, stroke, 0.08)
 
-      if (glyph) {
-        context.fillStyle = theme.objectGlyph
-        context.font = `${Math.max(11, Math.floor(cellSize * 0.45))}px monospace`
-        context.textAlign = 'center'
-        context.textBaseline = 'middle'
-        context.fillText(
-          glyph,
-          object.position.x * cellSize + cellSize * 0.5,
-          object.position.y * cellSize + cellSize * 0.52,
-        )
+      if (slot) {
+        drawIconAt(object.position, slot)
       }
     }
 
@@ -90,12 +199,14 @@ export function GameBoardCanvas({
       }
 
       drawRect(self.position, theme.pastSelfFill, theme.pastSelfStroke, 0.2)
+      drawIconAt(self.position, PAST_SELF_ICON_SLOT, 0.26)
     }
 
     const currentSelf = selvesAtCurrentTime.find((self) => self.turn === currentTurn)
 
     if (currentSelf) {
       drawRect(currentSelf.position, theme.playerFill, theme.playerStroke, 0.18)
+      drawIconAt(currentSelf.position, PLAYER_ICON_SLOT, 0.24)
     }
 
     if (showDangerPreview) {
@@ -105,29 +216,8 @@ export function GameBoardCanvas({
         uniqueMarkers.set(event.enemyId, event.enemyPosition)
       }
 
-      context.strokeStyle = theme.dangerMarkerStroke
-      context.fillStyle = theme.dangerMarkerFill
-      context.lineWidth = 2
-
       for (const position of uniqueMarkers.values()) {
-        const x = position.x * cellSize
-        const y = position.y * cellSize
-        const inset = cellSize * 0.06
-        const size = cellSize - inset * 2
-        const centerX = x + cellSize * 0.5
-        const centerY = y + cellSize * 0.5
-
-        context.strokeRect(x + inset, y + inset, size, size)
-        context.beginPath()
-        context.moveTo(x + inset, y + inset)
-        context.lineTo(x + cellSize - inset, y + cellSize - inset)
-        context.moveTo(x + cellSize - inset, y + inset)
-        context.lineTo(x + inset, y + cellSize - inset)
-        context.stroke()
-
-        context.beginPath()
-        context.arc(centerX, centerY, Math.max(3, cellSize * 0.08), 0, Math.PI * 2)
-        context.fill()
+        drawIconAt(position, DANGER_ICON_SLOT, 0.12)
       }
     }
 
@@ -156,6 +246,8 @@ export function GameBoardCanvas({
     }
   }, [
     boardSize,
+    iconPackId,
+    loadedIconsState,
     objectsAtCurrentTime,
     selvesAtCurrentTime,
     currentTurn,

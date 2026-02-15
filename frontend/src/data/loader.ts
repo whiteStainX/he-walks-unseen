@@ -3,14 +3,15 @@ import type { ObjectArchetype, ObjectInstance, LevelObjectsConfig } from '../cor
 import type { Result } from '../core/result'
 import type { DetectionConfig } from '../core/detection'
 import type { RiftSettings } from '../core/rift'
-import type { ContentComponent, ContentLoadError, ContentPack } from './contracts'
-import { validateContentPack } from './validate'
+import type { ContentComponent, ContentLoadError, ContentPack, IconPackConfig } from './contracts'
+import { validateContentPack, validateIconPackConfig, validateLevelSymbolSlots } from './validate'
 import { behaviorToPatrolComponent } from './behaviorResolver'
 
 import defaultLevel from './content/default.level.json'
 import defaultBehavior from './content/default.behavior.json'
 import defaultTheme from './content/default.theme.json'
 import defaultRules from './content/default.rules.json'
+import defaultIconPack from './content/default.icon-pack.json'
 
 function toCoreComponent(component: ContentComponent): Component {
   switch (component.kind) {
@@ -90,6 +91,7 @@ export interface LoadedBootContent {
   boardSize: number
   timeDepth: number
   startPosition: ContentPack['level']['map']['start']
+  iconPackId: string
   riftSettings: RiftSettings
   interactionConfig: {
     maxPushChain: number
@@ -110,6 +112,7 @@ function toLoadedBootContent(content: ContentPack): LoadedBootContent {
     boardSize: content.level.map.width,
     timeDepth: content.level.map.timeDepth,
     startPosition: content.level.map.start,
+    iconPackId: content.theme.iconPackId,
     riftSettings: {
       defaultDelta: content.rules.rift.defaultDelta,
       baseEnergyCost: content.rules.rift.baseEnergyCost,
@@ -137,6 +140,18 @@ export function loadDefaultBootContent(): Result<LoadedBootContent, ContentLoadE
 
   if (!validated.ok) {
     return validated
+  }
+
+  const iconPack = validateIconPackConfig(defaultIconPack)
+
+  if (!iconPack.ok) {
+    return iconPack
+  }
+
+  const symbolValidation = validateLevelSymbolSlots(validated.value.level, iconPack.value)
+
+  if (!symbolValidation.ok) {
+    return symbolValidation
   }
 
   return { ok: true, value: toLoadedBootContent(validated.value) }
@@ -215,10 +230,46 @@ export async function loadBootContentFromPublic(
     return validated
   }
 
+  const iconPack = await loadIconPackFromPublic({
+    basePath: `${basePath}/icons`,
+    packId: validated.value.theme.iconPackId,
+  })
+
+  if (!iconPack.ok) {
+    return iconPack
+  }
+
+  const symbolValidation = validateLevelSymbolSlots(validated.value.level, iconPack.value)
+
+  if (!symbolValidation.ok) {
+    return symbolValidation
+  }
+
   return {
     ok: true,
     value: toLoadedBootContent(validated.value),
   }
+}
+
+export async function loadIconPackFromPublic(options: {
+  basePath?: string
+  packId: string
+}): Promise<Result<IconPackConfig, PublicContentLoadError>> {
+  const basePath = options.basePath ?? '/data/icons'
+  const path = `${basePath}/${options.packId}.pack.json`
+  const raw = await fetchJson(path)
+
+  if (!raw.ok) {
+    return raw
+  }
+
+  const validated = validateIconPackConfig(raw.value)
+
+  if (!validated.ok) {
+    return validated
+  }
+
+  return validated
 }
 
 export interface PublicContentPackManifest {

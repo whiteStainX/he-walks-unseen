@@ -9,5 +9,6 @@
     "--grid": "#111111",
     "--border": "#111111",
     "--muted": "#666666"
-  }
+  },
+  "iconPackId": "default-mono"
 }

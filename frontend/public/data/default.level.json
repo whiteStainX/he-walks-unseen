@@ -8,50 +8,132 @@
     "width": 12,
     "height": 12,
     "timeDepth": 24,
-    "start": { "x": 5, "y": 5, "t": 0 }
+    "start": {
+      "x": 5,
+      "y": 5,
+      "t": 0
+    }
   },
   "archetypes": {
     "wall": {
       "kind": "wall",
       "components": [
-        { "kind": "BlocksMovement" },
-        { "kind": "BlocksVision" },
-        { "kind": "TimePersistent" }
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "BlocksVision"
+        },
+        {
+          "kind": "TimePersistent"
+        }
       ],
-      "render": { "fill": "#f0f0f0", "stroke": "#111111" }
+      "render": {
+        "fill": "#f0f0f0",
+        "stroke": "#111111",
+        "symbol": "wall"
+      }
     },
     "exit": {
       "kind": "exit",
       "components": [
-        { "kind": "Exit" },
-        { "kind": "TimePersistent" }
+        {
+          "kind": "Exit"
+        },
+        {
+          "kind": "TimePersistent"
+        }
       ],
-      "render": { "fill": "#ffffff", "stroke": "#111111", "glyph": "E" }
+      "render": {
+        "fill": "#ffffff",
+        "stroke": "#111111",
+        "symbol": "exit"
+      }
     },
     "box": {
       "kind": "box",
       "components": [
-        { "kind": "BlocksMovement" },
-        { "kind": "Pushable" },
-        { "kind": "Pullable" },
-        { "kind": "TimePersistent" }
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "Pushable"
+        },
+        {
+          "kind": "Pullable"
+        },
+        {
+          "kind": "TimePersistent"
+        }
       ],
-      "render": { "fill": "#d9d9d9", "stroke": "#111111" }
+      "render": {
+        "fill": "#d9d9d9",
+        "stroke": "#111111",
+        "symbol": "box"
+      }
     },
     "enemy": {
       "kind": "enemy",
       "components": [
-        { "kind": "BlocksMovement" },
-        { "kind": "TimePersistent" }
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "TimePersistent"
+        }
       ],
-      "render": { "fill": "#c6c6c6", "stroke": "#111111", "glyph": "X" }
+      "render": {
+        "fill": "#c6c6c6",
+        "stroke": "#111111",
+        "symbol": "enemy"
+      }
     }
   },
   "instances": [
-    { "id": "wall.north-start", "archetype": "wall", "position": { "x": 5, "y": 4, "t": 0 } },
-    { "id": "wall.center", "archetype": "wall", "position": { "x": 6, "y": 6, "t": 0 } },
-    { "id": "exit.main", "archetype": "exit", "position": { "x": 10, "y": 10, "t": 0 } },
-    { "id": "box.main", "archetype": "box", "position": { "x": 8, "y": 6, "t": 0 } },
-    { "id": "enemy.alpha", "archetype": "enemy", "position": { "x": 2, "y": 8, "t": 0 } }
+    {
+      "id": "wall.north-start",
+      "archetype": "wall",
+      "position": {
+        "x": 5,
+        "y": 4,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.center",
+      "archetype": "wall",
+      "position": {
+        "x": 6,
+        "y": 6,
+        "t": 0
+      }
+    },
+    {
+      "id": "exit.main",
+      "archetype": "exit",
+      "position": {
+        "x": 10,
+        "y": 10,
+        "t": 0
+      }
+    },
+    {
+      "id": "box.main",
+      "archetype": "box",
+      "position": {
+        "x": 8,
+        "y": 6,
+        "t": 0
+      }
+    },
+    {
+      "id": "enemy.alpha",
+      "archetype": "enemy",
+      "position": {
+        "x": 2,
+        "y": 8,
+        "t": 0
+      }
+    }
   ]
 }

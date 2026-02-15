@@ -4,6 +4,7 @@ import {
   loadBootContentFromPublic,
   loadContentPackManifestFromPublic,
   loadDefaultBootContent,
+  loadIconPackFromPublic,
 } from './loader'
 
 describe('loadDefaultBootContent', () => {
@@ -18,6 +19,7 @@ describe('loadDefaultBootContent', () => {
     expect(result.value.boardSize).toBe(12)
     expect(result.value.timeDepth).toBe(24)
     expect(result.value.startPosition).toEqual({ x: 5, y: 5, t: 0 })
+    expect(result.value.iconPackId).toBe('default-mono')
     expect(result.value.detectionConfig.enabled).toBe(true)
     expect(result.value.interactionConfig.maxPushChain).toBe(4)
     expect(result.value.levelObjectsConfig.instances.length).toBeGreaterThan(0)
@@ -69,7 +71,15 @@ describe('loadBootContentFromPublic', () => {
       '/data/variant.theme.json': {
         schemaVersion: 1,
         id: 't',
+        iconPackId: 'default-mono',
         cssVars: { '--ink': '#111111' },
+      },
+      '/data/icons/default-mono.pack.json': {
+        schemaVersion: 1,
+        id: 'default-mono',
+        slots: {
+          enemy: { svg: '/data/icons/default/enemy.svg' },
+        },
       },
       '/data/variant.rules.json': {
         schemaVersion: 1,
@@ -100,6 +110,7 @@ describe('loadBootContentFromPublic', () => {
     expect(loaded.value.boardSize).toBe(6)
     expect(loaded.value.timeDepth).toBe(8)
     expect(loaded.value.startPosition).toEqual({ x: 1, y: 1, t: 0 })
+    expect(loaded.value.iconPackId).toBe('default-mono')
   })
 })
 
@@ -133,5 +144,39 @@ describe('loadContentPackManifestFromPublic', () => {
     }
 
     expect(manifest.value.packs.map((pack) => pack.id)).toEqual(['default', 'variant'])
+  })
+})
+
+describe('loadIconPackFromPublic', () => {
+  const originalFetch = globalThis.fetch
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.restoreAllMocks()
+  })
+
+  it('loads and validates icon pack manifest', async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response(
+        JSON.stringify({
+          schemaVersion: 1,
+          id: 'default-mono',
+          slots: {
+            player: { svg: '/data/icons/default/player.svg' },
+          },
+        }),
+        { status: 200 },
+      ),
+    ) as typeof fetch
+
+    const pack = await loadIconPackFromPublic({ basePath: '/data/icons', packId: 'default-mono' })
+
+    expect(pack.ok).toBe(true)
+    if (!pack.ok) {
+      return
+    }
+
+    expect(pack.value.id).toBe('default-mono')
+    expect(Object.keys(pack.value.slots)).toContain('player')
   })
 })

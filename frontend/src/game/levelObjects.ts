@@ -12,7 +12,7 @@ export const defaultLevelObjectsConfig: LevelObjectsConfig = {
     exit: {
       kind: 'exit',
       components: [{ kind: 'Exit' }, { kind: 'TimePersistent' }],
-      render: { fill: '#ffffff', stroke: '#111111', glyph: 'E' },
+      render: { fill: '#ffffff', stroke: '#111111', symbol: 'exit' },
     },
     box: {
       kind: 'box',
@@ -40,7 +40,7 @@ export const defaultLevelObjectsConfig: LevelObjectsConfig = {
           loops: true,
         },
       ],
-      render: { fill: '#c6c6c6', stroke: '#111111', glyph: 'X' },
+      render: { fill: '#c6c6c6', stroke: '#111111', symbol: 'enemy' },
     },
   },
   instances: [

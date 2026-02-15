@@ -205,6 +205,12 @@
   color: var(--ui-muted);
 }
 
+.command-meta-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
 .state-sections {
   display: grid;
   gap: 8px;
@@ -214,6 +220,10 @@
 
 .state-window .ui-window-body {
   overflow: hidden;
+}
+
+.state-zoom-note {
+  margin-top: 8px;
 }
 
 .state-block {
@@ -353,6 +363,12 @@
   overflow: auto;
   font-family: var(--ui-font-mono);
   font-size: 0.84rem;
+}
+
+.state-overlay-body {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
 }
 
 .settings-window {
