@@ -94,6 +94,7 @@ Encoding rules:
 - future slices fade by distance
 - player selves rendered on matching layers from `positionsAtTime(t)`
 - objects rendered from `objectsAtTime(t)`
+- trajectory visuals may be continuous, but must be derived from discrete truth anchors
 
 No detection cones in this phase.
 No interaction affordances in this phase.
@@ -168,6 +169,14 @@ These are spec-level tokens and can be tuned later without changing direction:
 | `iso.hiddenEdge.opacity` | `0.15` | hidden edge visibility |
 | `iso.slice.thickness` | `0.16` | slab thickness in iso world units |
 | `iso.slice.depthWrite` | `false` | prevents slab fill from hiding past traces |
+| `iso.path.mode.default` | `organic` | default trajectory rendering mode |
+| `iso.path.player.width` | `1.4` | player trajectory line width |
+| `iso.path.object.width` | `1.0` | object trajectory line width |
+| `iso.path.anchor.size` | `0.07` | anchor marker radius in iso world units |
+| `iso.path.anchor.opacity` | `0.8` | anchor marker opacity |
+| `iso.path.tail.opacity` | `0.35` | oldest visible trajectory opacity |
+| `iso.path.riftBridge.dash` | `[0.12, 0.08]` | dashed pattern for non-local jump edges |
+| `iso.path.riftBridge.width` | `1.1` | line width for discontinuity connector |
 
 Palette policy:
 - default is grayscale only
@@ -189,6 +198,67 @@ Disallowed in baseline:
 Reset behavior:
 - restore canonical camera position and target
 - restore computed default zoom for current board/time-window framing
+
+### 5.6 Organic Trajectory Contract (Next Iteration Spec)
+
+Goal:
+- keep simulation discrete and exact
+- make trajectory reading continuous and technical-illustration-like
+
+Truth vs illustration rule:
+- truth remains `WorldLineState` and `TimeCube`
+- smooth curves are render-only derivatives and never mutate gameplay state
+
+Player worldline rendering:
+1. Anchor nodes:
+- one node per turn anchor `(x,y,t)` in the visible window
+- nodes are exact and must align with discrete coordinates
+
+2. Organic path:
+- default mode uses a centripetal Catmull-Rom spline through anchors sorted by turn
+- spline is segmented by discontinuities (see rift rule below)
+
+3. Rift/discontinuity rule:
+- if edge has `|Δt| > 1` or spatial jump (`manhattan(Δx,Δy) > 1`), do not smooth across it
+- render that edge as a short dashed connector to signal non-local jump
+
+Object temporal rendering:
+1. Time-persistent static object (same `(x,y)` across window):
+- render as a thin vertical pillar spanning visible window time range
+
+2. Moving object:
+- render object trajectory as a thin curve with anchor ticks per sampled time
+- keep anchor ticks visible even when curve smoothing is enabled
+
+3. Object/player contrast:
+- player trajectory is visually dominant
+- object trajectories are lighter and thinner
+
+Optional event connectors (if interaction anchor data is available):
+- draw a short connector from player anchor to object anchor at interaction time
+- keep connector visual weight low to avoid clutter
+
+Display modes:
+- default: `Organic` (smooth curves + anchors)
+- optional view mode: `Exact` (polyline only, no smoothing)
+
+### 5.7 Scientific Illustration References
+
+Reference direction:
+1. Minkowski spacetime diagrams:
+- worldlines and event anchors are explicit
+- non-local jumps are clearly marked
+
+2. Space-time cube visualization:
+- trajectories read as 3D paths through layered time
+- slice context and path continuity are both visible
+
+3. Flow/pathline technical plots:
+- smooth directional traces with anchor cues and temporal fading
+
+Adoption rule:
+- borrow diagram precision and readability cues
+- avoid decorative complexity that reduces tactical readability
 
 ---
 
@@ -325,6 +395,9 @@ Target:
 6. Occlusion/contour hierarchy makes blocking and depth readable without dense wireframes.
 7. Users can pan/zoom/reset the isometric helper without changing gameplay state.
 8. Slice slabs indicate time layers without obscuring past/future traces.
+9. Organic mode shows smooth trajectories while preserving exact anchor positions.
+10. Rift/non-local jumps are visually explicit and not falsely smoothed.
+11. Static objects read as temporal pillars; moving objects read as trajectories.
 
 ---
 
