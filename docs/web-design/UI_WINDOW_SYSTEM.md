@@ -35,7 +35,8 @@ Style constraints:
 
 3D helper visual contract:
 - follow `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md` for contour-first linework
-- use slice slabs (thin opaque planes), not dense wireframe outlines
+- use slice slabs (thin translucent planes), not dense wireframe outlines
+- keep slab fills translucent enough that past/future traces remain visible
 - keep occlusion/blocking cues explicit and readable
 - allow pan/zoom/reset controls while keeping camera rotation locked
 

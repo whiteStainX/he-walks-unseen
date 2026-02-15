@@ -32,7 +32,8 @@ If WebGL is used for the isometric panel, preserve current visual language:
 
 For the isometric panel specifically, follow the readability-first style contract:
 - contour-first linework (no dense wireframe diagonals)
-- explicit slice slabs (thin opaque planes) instead of outline-only layers
+- explicit slice slabs (thin translucent planes) instead of outline-only layers
+- slice slabs are translucent and non-occluding for past/future trace readability
 - strict occlusion/blocking cues (front objects hide back objects)
 - clear player/object visual hierarchy
 - fixed-angle camera with pan/zoom/reset controls (rotation locked)

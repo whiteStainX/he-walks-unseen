@@ -119,8 +119,9 @@ This is not a comic imitation; it is a geometric readability contract.
 ### 5.2 Geometry Rules
 
 1. Slice slabs, not outline-only planes:
-- every slice renders as a thin opaque slab
-- focus slice has strongest contour and opacity
+- every slice renders as a thin translucent slab
+- slab fills are intentionally light so past/future traces stay visible through layers
+- focus slice has strongest contour, not heavy fill
 - non-focus slices fade by temporal distance
 
 2. Contour-first linework:
@@ -129,7 +130,8 @@ This is not a comic imitation; it is a geometric readability contract.
 - hidden edges are suppressed or heavily de-emphasized
 
 3. Occlusion is mandatory:
-- front geometry blocks back geometry
+- front entity geometry blocks back geometry
+- slice slabs should not act as hard occluders (`depthWrite: false` policy)
 - no x-ray style overlap by default
 - depth order must communicate blocking cleanly
 
@@ -155,9 +157,9 @@ These are spec-level tokens and can be tuned later without changing direction:
 
 | Token | Default | Purpose |
 |------|---------|---------|
-| `iso.slice.opacity.focus` | `0.22` | focus slab fill opacity |
-| `iso.slice.opacity.near` | `0.12` | near-slice slab opacity |
-| `iso.slice.opacity.far` | `0.06` | far-slice slab opacity |
+| `iso.slice.opacity.focus` | `0.08` | focus slab fill opacity |
+| `iso.slice.opacity.near` | `0.05` | near-slice slab opacity |
+| `iso.slice.opacity.far` | `0.02` | far-slice slab opacity |
 | `iso.slice.line.focus` | `2.2` | focus slab edge width |
 | `iso.slice.line.normal` | `1.2` | non-focus edge width |
 | `iso.entity.line.player` | `2.4` | player contour weight |
@@ -165,6 +167,7 @@ These are spec-level tokens and can be tuned later without changing direction:
 | `iso.entity.opacity.pastSelf` | `0.45` | past-self visual attenuation |
 | `iso.hiddenEdge.opacity` | `0.15` | hidden edge visibility |
 | `iso.slice.thickness` | `0.16` | slab thickness in iso world units |
+| `iso.slice.depthWrite` | `false` | prevents slab fill from hiding past traces |
 
 Palette policy:
 - default is grayscale only
@@ -274,7 +277,7 @@ type IsoWindowSlice = {
     x: number;
     y: number;
     kind: string;
-    render: { fill?: string; stroke?: string; glyph?: string };
+    render: { fill?: string; stroke?: string; symbol?: string };
   }>;
 };
 
@@ -321,6 +324,7 @@ Target:
 5. Main gameplay behavior remains unchanged.
 6. Occlusion/contour hierarchy makes blocking and depth readable without dense wireframes.
 7. Users can pan/zoom/reset the isometric helper without changing gameplay state.
+8. Slice slabs indicate time layers without obscuring past/future traces.
 
 ---
 

@@ -31,7 +31,12 @@ function sliceOpacity(t: number, focusT: number): number {
 
 function slabOpacity(t: number, focusT: number): number {
   const delta = Math.abs(t - focusT)
-  return Math.max(0.08, 0.24 - delta * 0.022)
+
+  if (delta === 0) {
+    return 0.08
+  }
+
+  return Math.max(0.02, 0.05 - (delta - 1) * 0.008)
 }
 
 function cellToWorld(
@@ -241,7 +246,12 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
               <group key={`slice-frame-${slice.t}`}>
                 <mesh position={[0, levelY, 0]}>
                   <boxGeometry args={[boardSpan, SLICE_THICKNESS, boardSpan]} />
-                  <meshBasicMaterial color={slabFill} transparent opacity={slabFillOpacity} />
+                  <meshBasicMaterial
+                    color={slabFill}
+                    transparent
+                    opacity={slabFillOpacity}
+                    depthWrite={false}
+                  />
                 </mesh>
                 <Line
                   points={sliceFramePoints(boardSize, levelY + SLICE_THICKNESS / 2 + 0.01)}
