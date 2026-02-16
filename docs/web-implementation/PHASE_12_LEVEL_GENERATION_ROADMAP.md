@@ -20,12 +20,13 @@ Already done:
 1. Seeded candidate generator exists.
 2. Schema validation, basic solver gate, quality gate exist.
 3. Enemy generation and behavior assignment exist.
+4. Export script writes generated packs + updates manifest (`npm run gen:pack`).
 
 Current gaps:
 1. Core defaults are profile-driven, but topology/placement strategies are still code-fixed.
 2. Rift generation is baseline-only; strategy tuning is still code-fixed.
 3. Solver is interaction-aware but still bounded/approximate for generation throughput tuning.
-4. Export utilities exist, but no dedicated CLI/UI workflow yet for writing files to disk.
+4. Export workflow is CLI-only (`npm run gen:pack`); in-app generation UI does not exist yet.
 
 ---
 
@@ -115,8 +116,8 @@ Exit criteria:
 ## 6. Acceptance Checklist
 
 - [ ] Generation fully driven by external profile data
-- [ ] Rift generation integrated and validated
-- [ ] Solver checks gameplay-rule solvability
-- [ ] Generated packs export and load via standard pipeline
-- [ ] Deterministic output by seed/profile
-- [ ] Full lint/test/build pass
+- [x] Rift generation integrated and validated
+- [x] Solver checks gameplay-rule solvability
+- [x] Generated packs export and load via standard pipeline
+- [x] Deterministic output by seed/profile
+- [x] Full lint/test/build pass

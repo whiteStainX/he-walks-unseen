@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
   "packs": [
-    { "id": "default", "name": "Default Lab" },
-    { "id": "variant", "name": "Variant Hall" }
+    {
+      "id": "default",
+      "name": "Default Lab"
+    },
+    {
+      "id": "variant",
+      "name": "Variant Hall"
+    },
+    {
+      "id": "generated/fixture-001",
+      "name": "Generated fixture-001"
+    }
   ]
 }

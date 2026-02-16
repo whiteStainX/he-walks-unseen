@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:pack": "vite-node scripts/export-generated-pack.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

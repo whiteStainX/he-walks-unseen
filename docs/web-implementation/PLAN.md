@@ -271,11 +271,13 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Deterministic solvability validator
 - [x] Quality scoring + bounded retry loop
 - [x] Fixture output + loader-path compatibility checks
+- [x] Export CLI flow writes generated packs to `frontend/public/data/` and registers them in manifest
 
 ### Exit Criteria
 - [x] Accepted generated packs are schema-valid and solvable
 - [x] Same seed + params produce identical output
 - [x] No gameplay reducer special-casing for generated content
+- [x] Generated packs are loadable through standard manifest (`frontend/public/data/index.json`) without code edits
 - [x] `npm run lint`, `npm run test`, and `npm run build` pass
 
 ---

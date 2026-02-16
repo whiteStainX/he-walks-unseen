@@ -1,0 +1,669 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "id": "generated-fixture-001-0",
+    "name": "Generated fixture-001 #0"
+  },
+  "map": {
+    "width": 12,
+    "height": 12,
+    "timeDepth": 16,
+    "start": {
+      "x": 1,
+      "y": 1,
+      "t": 0
+    }
+  },
+  "archetypes": {
+    "wall": {
+      "kind": "wall",
+      "components": [
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "BlocksVision"
+        },
+        {
+          "kind": "TimePersistent"
+        }
+      ],
+      "render": {
+        "fill": "#f0f0f0",
+        "stroke": "#111111",
+        "symbol": "wall"
+      }
+    },
+    "exit": {
+      "kind": "exit",
+      "components": [
+        {
+          "kind": "Exit"
+        },
+        {
+          "kind": "TimePersistent"
+        }
+      ],
+      "render": {
+        "fill": "#ffffff",
+        "stroke": "#111111",
+        "symbol": "exit"
+      }
+    },
+    "box": {
+      "kind": "box",
+      "components": [
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "Pushable"
+        },
+        {
+          "kind": "Pullable"
+        },
+        {
+          "kind": "TimePersistent"
+        }
+      ],
+      "render": {
+        "fill": "#d9d9d9",
+        "stroke": "#111111",
+        "symbol": "box"
+      }
+    },
+    "enemy": {
+      "kind": "enemy",
+      "components": [
+        {
+          "kind": "BlocksMovement"
+        },
+        {
+          "kind": "TimePersistent"
+        }
+      ],
+      "render": {
+        "fill": "#c6c6c6",
+        "stroke": "#111111",
+        "symbol": "enemy"
+      }
+    },
+    "rift.gen.0.a": {
+      "kind": "rift",
+      "components": [
+        {
+          "kind": "TimePersistent"
+        },
+        {
+          "kind": "Rift",
+          "target": {
+            "x": 5,
+            "y": 6,
+            "t": 0
+          },
+          "bidirectional": true
+        }
+      ],
+      "render": {
+        "fill": "#ffffff",
+        "stroke": "#111111",
+        "symbol": "rift"
+      }
+    },
+    "rift.gen.0.b": {
+      "kind": "rift",
+      "components": [
+        {
+          "kind": "TimePersistent"
+        },
+        {
+          "kind": "Rift",
+          "target": {
+            "x": 7,
+            "y": 9,
+            "t": 0
+          },
+          "bidirectional": true
+        }
+      ],
+      "render": {
+        "fill": "#ffffff",
+        "stroke": "#111111",
+        "symbol": "rift"
+      }
+    }
+  },
+  "instances": [
+    {
+      "id": "wall.border.0",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.1",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.2",
+      "archetype": "wall",
+      "position": {
+        "x": 1,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.3",
+      "archetype": "wall",
+      "position": {
+        "x": 1,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.4",
+      "archetype": "wall",
+      "position": {
+        "x": 2,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.5",
+      "archetype": "wall",
+      "position": {
+        "x": 2,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.6",
+      "archetype": "wall",
+      "position": {
+        "x": 3,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.7",
+      "archetype": "wall",
+      "position": {
+        "x": 3,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.8",
+      "archetype": "wall",
+      "position": {
+        "x": 4,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.9",
+      "archetype": "wall",
+      "position": {
+        "x": 4,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.10",
+      "archetype": "wall",
+      "position": {
+        "x": 5,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.11",
+      "archetype": "wall",
+      "position": {
+        "x": 5,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.12",
+      "archetype": "wall",
+      "position": {
+        "x": 6,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.13",
+      "archetype": "wall",
+      "position": {
+        "x": 6,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.14",
+      "archetype": "wall",
+      "position": {
+        "x": 7,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.15",
+      "archetype": "wall",
+      "position": {
+        "x": 7,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.16",
+      "archetype": "wall",
+      "position": {
+        "x": 8,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.17",
+      "archetype": "wall",
+      "position": {
+        "x": 8,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.18",
+      "archetype": "wall",
+      "position": {
+        "x": 9,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.19",
+      "archetype": "wall",
+      "position": {
+        "x": 9,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.20",
+      "archetype": "wall",
+      "position": {
+        "x": 10,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.21",
+      "archetype": "wall",
+      "position": {
+        "x": 10,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.22",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 0,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.23",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 11,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.24",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 1,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.25",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 1,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.26",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 2,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.27",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 2,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.28",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 3,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.29",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 3,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.30",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 4,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.31",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 4,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.32",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 5,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.33",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 5,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.34",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 6,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.35",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 6,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.36",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 7,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.37",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 7,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.38",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 8,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.39",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 8,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.40",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 9,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.41",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 9,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.42",
+      "archetype": "wall",
+      "position": {
+        "x": 0,
+        "y": 10,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.border.43",
+      "archetype": "wall",
+      "position": {
+        "x": 11,
+        "y": 10,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.44",
+      "archetype": "wall",
+      "position": {
+        "x": 3,
+        "y": 10,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.45",
+      "archetype": "wall",
+      "position": {
+        "x": 10,
+        "y": 7,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.46",
+      "archetype": "wall",
+      "position": {
+        "x": 7,
+        "y": 4,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.47",
+      "archetype": "wall",
+      "position": {
+        "x": 10,
+        "y": 2,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.48",
+      "archetype": "wall",
+      "position": {
+        "x": 9,
+        "y": 5,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.49",
+      "archetype": "wall",
+      "position": {
+        "x": 8,
+        "y": 9,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.50",
+      "archetype": "wall",
+      "position": {
+        "x": 10,
+        "y": 6,
+        "t": 0
+      }
+    },
+    {
+      "id": "wall.inner.51",
+      "archetype": "wall",
+      "position": {
+        "x": 7,
+        "y": 5,
+        "t": 0
+      }
+    },
+    {
+      "id": "exit.main",
+      "archetype": "exit",
+      "position": {
+        "x": 8,
+        "y": 8,
+        "t": 0
+      }
+    },
+    {
+      "id": "box.0",
+      "archetype": "box",
+      "position": {
+        "x": 3,
+        "y": 7,
+        "t": 0
+      }
+    },
+    {
+      "id": "box.1",
+      "archetype": "box",
+      "position": {
+        "x": 1,
+        "y": 4,
+        "t": 0
+      }
+    },
+    {
+      "id": "enemy.0",
+      "archetype": "enemy",
+      "position": {
+        "x": 9,
+        "y": 1,
+        "t": 0
+      }
+    },
+    {
+      "id": "enemy.1",
+      "archetype": "enemy",
+      "position": {
+        "x": 4,
+        "y": 9,
+        "t": 0
+      }
+    },
+    {
+      "id": "rift.0.a",
+      "archetype": "rift.gen.0.a",
+      "position": {
+        "x": 7,
+        "y": 9,
+        "t": 0
+      }
+    },
+    {
+      "id": "rift.0.b",
+      "archetype": "rift.gen.0.b",
+      "position": {
+        "x": 5,
+        "y": 6,
+        "t": 0
+      }
+    }
+  ]
+}
