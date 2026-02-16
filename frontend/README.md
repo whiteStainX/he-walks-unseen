@@ -59,6 +59,7 @@ npm run lint
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.
 - Enemy motion projection during bootstrap/load lives in `frontend/src/game/levelObjects.ts`.
 - Map-generation foundation lives in `frontend/src/data/generation/`.
+- Default generation profile fixture lives in `frontend/public/data/generation/default.profile.json`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.

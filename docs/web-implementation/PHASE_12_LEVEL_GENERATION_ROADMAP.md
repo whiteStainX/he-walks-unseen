@@ -22,7 +22,7 @@ Already done:
 3. Enemy generation and behavior assignment exist.
 
 Current gaps:
-1. Generator logic is hardcoded, not profile-driven.
+1. Core defaults are profile-driven, but topology/placement strategies are still code-fixed.
 2. Rift generation is not implemented.
 3. Solver is simplified (`t=0` spatial BFS).
 4. No generated-pack export + manifest integration.

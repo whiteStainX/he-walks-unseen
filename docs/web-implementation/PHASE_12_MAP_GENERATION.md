@@ -183,17 +183,22 @@ Exit criteria:
 
 Implemented foundation modules:
 1. `frontend/src/data/generation/contracts.ts`
-2. `frontend/src/data/generation/random.ts`
-3. `frontend/src/data/generation/generator.ts`
-4. `frontend/src/data/generation/solver.ts`
-5. `frontend/src/data/generation/quality.ts`
-6. `frontend/src/data/generation/index.ts`
-7. `frontend/src/data/generation/random.test.ts`
-8. `frontend/src/data/generation/solver.test.ts`
-9. `frontend/src/data/generation/index.test.ts`
+2. `frontend/src/data/generation/profile.ts`
+3. `frontend/src/data/generation/random.ts`
+4. `frontend/src/data/generation/generator.ts`
+5. `frontend/src/data/generation/solver.ts`
+6. `frontend/src/data/generation/quality.ts`
+7. `frontend/src/data/generation/index.ts`
+8. `frontend/src/data/generation/random.test.ts`
+9. `frontend/src/data/generation/solver.test.ts`
+10. `frontend/src/data/generation/index.test.ts`
+11. `frontend/src/data/generation/profile.test.ts`
+12. `frontend/src/data/content/default.generation-profile.json`
+13. `frontend/public/data/generation/default.profile.json`
 
 Current behavior:
 1. Seeded deterministic candidate generation is available.
-2. Candidates are schema-validated, solvability-checked, and quality-gated.
-3. Output is in-memory content-pack data; fixture export tooling remains next.
-4. Rift placement generation is not implemented yet in this foundation pass.
+2. Generation defaults are profile-driven (via validated generation profile).
+3. Candidates are schema-validated, solvability-checked, and quality-gated.
+4. Output is in-memory content-pack data; fixture export tooling remains next.
+5. Rift placement generation is not implemented yet in this foundation pass.

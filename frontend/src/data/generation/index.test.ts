@@ -56,4 +56,62 @@ describe('generateMapPack', () => {
       expect(result.error.kind).toBe('GenerationFailed')
     }
   })
+
+  it('uses profile board minima when validating requests', () => {
+    const result = generateMapPack({
+      seed: 'profile-min',
+      board: { width: 8, height: 8, timeDepth: 8 },
+      profile: {
+        schemaVersion: 1,
+        id: 'strict-profile',
+        boardMin: { width: 10, height: 10, timeDepth: 6 },
+        maxAttempts: 2,
+        defaultDifficulty: 'normal',
+        startInset: 1,
+        exitInset: 1,
+        defaultFeatureFlags: { allowPull: true, allowPushChains: true, allowFutureRifts: false },
+        interaction: { maxPushChainWhenEnabled: 4, maxPushChainWhenDisabled: 1 },
+        rift: { defaultDelta: 3, baseEnergyCost: 0 },
+        detection: { enabled: false, delayTurns: 1 },
+        difficultyProfiles: {
+          easy: {
+            budgets: { maxWalls: 6, maxDynamicObjects: 1, maxEnemies: 1, maxRifts: 0 },
+            minWallRatio: 0.5,
+            detectionRange: 1,
+            qualityThreshold: 20,
+          },
+          normal: {
+            budgets: { maxWalls: 10, maxDynamicObjects: 2, maxEnemies: 2, maxRifts: 0 },
+            minWallRatio: 0.5,
+            detectionRange: 2,
+            qualityThreshold: 30,
+          },
+          hard: {
+            budgets: { maxWalls: 12, maxDynamicObjects: 3, maxEnemies: 3, maxRifts: 0 },
+            minWallRatio: 0.5,
+            detectionRange: 3,
+            qualityThreshold: 40,
+          },
+        },
+        theme: {
+          id: 'generated-mono',
+          iconPackId: 'default-mono',
+          cssVars: {
+            '--ink': '#111111',
+            '--paper': '#ffffff',
+            '--panel': '#ffffff',
+            '--accent': '#111111',
+            '--grid': '#111111',
+            '--border': '#111111',
+            '--muted': '#666666',
+          },
+        },
+      },
+    })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('InvalidGenerationRequest')
+    }
+  })
 })
