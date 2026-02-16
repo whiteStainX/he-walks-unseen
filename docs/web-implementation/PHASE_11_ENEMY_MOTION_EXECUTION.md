@@ -19,7 +19,7 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Completed (2026-02-16)
 
 ---
 
@@ -138,6 +138,20 @@ Exit criteria:
 2. Same content + same actions always yield same enemy trajectories.
 3. No regression in paradox/win/detection ordering.
 4. No schema migration required for existing content packs.
+
+---
+
+## Implementation Notes
+
+Implemented in:
+1. `frontend/src/game/levelObjects.ts`
+2. `frontend/src/game/levelObjects.test.ts`
+3. `frontend/src/game/gameSlice.test.ts`
+
+Execution detail:
+1. Enemy patrol motion is projected into cube occupancy during bootstrap/load/restart.
+2. Projection is deterministic by absolute slice time `t`.
+3. Detection continues to read enemy positions from `TimeCube` occupancy (no new pipeline stage).
 
 ---
 

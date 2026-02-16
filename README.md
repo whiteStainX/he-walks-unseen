@@ -28,6 +28,7 @@ Current playable baseline:
 - Settings overlay with persisted UI toggles
 - Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
 - Data-driven enemy logic with validated movement policies and per-enemy detection profile overrides
+- Enemy patrol motion projected across time slices (loop/ping-pong)
 
 ## Requirements
 

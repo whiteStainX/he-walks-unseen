@@ -245,16 +245,16 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/ENEMY_MOTION_EXECUTION_V1.md`
 
 ### Deliverables
-- [ ] Deterministic enemy motion projector by absolute time `t`
-- [ ] Bootstrap/load/restart integration for projected enemy occupancy
-- [ ] Detection integration verified against moved enemy positions
-- [ ] Tests for loop/ping-pong trajectory execution and reproducibility
+- [x] Deterministic enemy motion projector by absolute time `t`
+- [x] Bootstrap/load/restart integration for projected enemy occupancy
+- [x] Detection integration verified against moved enemy positions
+- [x] Tests for loop/ping-pong trajectory execution and reproducibility
 
 ### Exit Criteria
-- [ ] Enemy position is slice-dependent and policy-driven
-- [ ] Existing paradox/win/detection ordering is unchanged
-- [ ] Existing content packs remain compatible
-- [ ] `npm run lint`, `npm run test`, and `npm run build` pass
+- [x] Enemy position is slice-dependent and policy-driven
+- [x] Existing paradox/win/detection ordering is unchanged
+- [x] Existing content packs remain compatible
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass
 
 ---
 

@@ -1,6 +1,8 @@
+import { hasComponent, type Component } from '../core/components'
 import { type ObjectRegistryError, createObjectRegistry, resolveObjectInstance, type LevelObjectsConfig, type ObjectRegistry, type ResolvedObjectInstance } from '../core/objects'
 import type { Result } from '../core/result'
-import { createTimeCube, placeObjects, type CubeError, type TimeCube } from '../core/timeCube'
+import { applyRelocationsFromTime, createTimeCube, placeObjects, type CubeError, type RelocationError, type TimeCube } from '../core/timeCube'
+import type { Position2D } from '../core/position'
 
 export const defaultLevelObjectsConfig: LevelObjectsConfig = {
   archetypes: {
@@ -54,12 +56,127 @@ export const defaultLevelObjectsConfig: LevelObjectsConfig = {
 
 export type ObjectBootstrapError =
   | { kind: 'RegistryError'; error: ObjectRegistryError }
-  | { kind: 'CubeError'; error: CubeError }
+  | { kind: 'CubeError'; error: CubeError | RelocationError }
 
 export interface BootstrapObjectsResult {
   objectRegistry: ObjectRegistry
   cube: TimeCube
   objects: ResolvedObjectInstance[]
+}
+
+interface PatrolProjectionState {
+  id: string
+  loops: boolean
+  path: Position2D[]
+  previous: Position2D
+}
+
+function modulo(value: number, divisor: number): number {
+  return ((value % divisor) + divisor) % divisor
+}
+
+function getPatrolComponent(
+  components: Component[],
+): Extract<Component, { kind: 'Patrol' }> | null {
+  for (const component of components) {
+    if (component.kind === 'Patrol') {
+      return component
+    }
+  }
+
+  return null
+}
+
+function resolvePatrolPosition(path: Position2D[], loops: boolean, t: number): Position2D {
+  if (path.length === 0) {
+    return { x: 0, y: 0 }
+  }
+
+  if (loops) {
+    return path[modulo(t, path.length)]
+  }
+
+  if (path.length === 1) {
+    return path[0]
+  }
+
+  const period = path.length * 2 - 2
+  const offset = modulo(t, period)
+
+  if (offset < path.length) {
+    return path[offset]
+  }
+
+  return path[period - offset]
+}
+
+function buildPatrolProjectionStates(objects: ResolvedObjectInstance[]): PatrolProjectionState[] {
+  const states: PatrolProjectionState[] = []
+
+  for (const object of objects) {
+    const patrol = getPatrolComponent(object.archetype.components)
+
+    if (!patrol || !hasComponent(object.archetype.components, 'TimePersistent')) {
+      continue
+    }
+
+    states.push({
+      id: object.id,
+      loops: patrol.loops,
+      path: patrol.path,
+      previous: { x: object.position.x, y: object.position.y },
+    })
+  }
+
+  return states
+}
+
+function applyProjectedPatrolOccupancy(
+  cube: TimeCube,
+  objects: ResolvedObjectInstance[],
+): Result<TimeCube, CubeError | RelocationError> {
+  const projectionStates = buildPatrolProjectionStates(objects)
+
+  if (projectionStates.length === 0) {
+    return { ok: true, value: cube }
+  }
+
+  let nextCube = cube
+
+  for (let t = 0; t < cube.timeDepth; t += 1) {
+    const relocations = projectionStates
+      .map((state) => {
+        const target = resolvePatrolPosition(state.path, state.loops, t)
+        const from = state.previous
+
+        state.previous = target
+
+        if (target.x === from.x && target.y === from.y) {
+          return null
+        }
+
+        return {
+          id: state.id,
+          from: { x: from.x, y: from.y, t },
+          to: { x: target.x, y: target.y, t },
+        }
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+
+    if (relocations.length === 0) {
+      continue
+    }
+
+    const relocated = applyRelocationsFromTime(nextCube, t, relocations)
+
+    if (!relocated.ok) {
+      return relocated
+    }
+
+    nextCube = relocated.value
+  }
+
+  return { ok: true, value: nextCube }
 }
 
 export function bootstrapLevelObjects(
@@ -99,11 +216,23 @@ export function bootstrapLevelObjects(
     }
   }
 
+  const projected = applyProjectedPatrolOccupancy(placed.value, resolvedObjects)
+
+  if (!projected.ok) {
+    return {
+      ok: false,
+      error: {
+        kind: 'CubeError',
+        error: projected.error,
+      },
+    }
+  }
+
   return {
     ok: true,
     value: {
       objectRegistry,
-      cube: placed.value,
+      cube: projected.value,
       objects: resolvedObjects,
     },
   }

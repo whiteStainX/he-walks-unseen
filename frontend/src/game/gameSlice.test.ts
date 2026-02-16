@@ -49,6 +49,20 @@ describe('gameSlice', () => {
     expect(next.worldLine.path.at(-1)).toEqual({ x: 4, y: 5, t: 1 })
   })
 
+  it('advances enemy occupancy by patrol policy as time advances', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+
+    expect(objectsAt(initial.cube, { x: 2, y: 8, t: 0 }).map((obj) => obj.id)).toContain('enemy.alpha')
+
+    const waited = gameReducer(initial, waitTurn())
+
+    expect(waited.phase).toBe('Playing')
+    expect(objectsAt(waited.cube, { x: 3, y: 8, t: 1 }).map((obj) => obj.id)).toContain('enemy.alpha')
+    expect(objectsAt(waited.cube, { x: 2, y: 8, t: 1 }).map((obj) => obj.id)).not.toContain(
+      'enemy.alpha',
+    )
+  })
+
   it('rifts to past time and increments turn', () => {
     const initial = gameReducer(undefined, { type: 'init' })
     const moved = gameReducer(initial, movePlayer2D('east'))

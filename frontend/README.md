@@ -57,6 +57,7 @@ npm run lint
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.
+- Enemy motion projection during bootstrap/load lives in `frontend/src/game/levelObjects.ts`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
