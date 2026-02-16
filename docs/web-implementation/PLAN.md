@@ -219,6 +219,8 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ## Future Phases (Optional)
 
+- Phase 10 enemy logic data-driven extension:
+  - `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
 - Full light cone model (distance-based)
 - Alert/chase variants
 - Level editor

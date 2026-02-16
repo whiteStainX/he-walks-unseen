@@ -135,6 +135,7 @@ A level is composed of:
 ## 5. Enemy Config Model
 
 Enemy content must be data-driven from day one.
+Canonical reference: `docs/web-design/ENEMY_LOGIC_V1.md`
 
 Baseline policy types:
 
@@ -154,6 +155,18 @@ Perception block (for detection):
 - detection mode (`DiscreteDelayV1` for now)
 - delay turns
 - max distance
+
+Concrete v1 config pattern:
+1. `policies`: reusable movement profiles
+2. `assignments`: `enemy instance id -> policy key`
+3. optional extension:
+- `detectionProfiles`
+- `detectionAssignments`
+- `defaultDetectionProfile`
+
+Resolution precedence:
+1. movement uses direct `assignments` mapping
+2. detection uses `enemy override -> behavior default profile -> rules default`
 
 Design rule:
 - behavior config is data only
