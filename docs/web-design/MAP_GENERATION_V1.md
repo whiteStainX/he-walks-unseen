@@ -160,9 +160,9 @@ Rift generation:
 ## 10. Runtime Integration Model
 
 1. Generator can run:
-- offline script (preferred initial path), or
+- offline script (current path: `frontend/scripts/export-generated-pack.ts` via `npm run gen:pack`), or
 - in-browser utility mode for local play
-2. Runtime consumes generated pack through existing content loader.
+2. Runtime consumes generated pack through existing content loader and manifest (`frontend/public/data/index.json`).
 3. No gameplay reducer special-casing for generated content.
 
 ---

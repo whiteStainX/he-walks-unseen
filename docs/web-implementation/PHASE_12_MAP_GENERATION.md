@@ -19,7 +19,7 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: In Progress (foundation implemented on 2026-02-16)
+- `Status`: Completed (V1 baseline, 2026-02-16)
 
 ---
 
@@ -39,6 +39,7 @@ Primary outcomes:
 3. Solvability validator module.
 4. Quality scoring and rejection loop.
 5. Fixture outputs and deterministic test coverage.
+6. CLI export path for writing generated packs into `frontend/public/data/` and manifest registration.
 
 ---
 
@@ -111,7 +112,8 @@ Implement:
 
 File targets:
 1. `frontend/src/data/generation/export.ts` (new)
-2. `frontend/public/data/generated/` fixtures
+2. `frontend/scripts/export-generated-pack.ts` (new)
+3. `frontend/public/data/generated/` fixtures
 
 Exit criteria:
 1. generated pack loads via existing `loadBootContentFromPublic` path.
@@ -183,17 +185,40 @@ Exit criteria:
 
 Implemented foundation modules:
 1. `frontend/src/data/generation/contracts.ts`
-2. `frontend/src/data/generation/random.ts`
-3. `frontend/src/data/generation/generator.ts`
-4. `frontend/src/data/generation/solver.ts`
-5. `frontend/src/data/generation/quality.ts`
-6. `frontend/src/data/generation/index.ts`
-7. `frontend/src/data/generation/random.test.ts`
-8. `frontend/src/data/generation/solver.test.ts`
-9. `frontend/src/data/generation/index.test.ts`
+2. `frontend/src/data/generation/profile.ts`
+3. `frontend/src/data/generation/random.ts`
+4. `frontend/src/data/generation/generator.ts`
+5. `frontend/src/data/generation/solver.ts`
+6. `frontend/src/data/generation/quality.ts`
+7. `frontend/src/data/generation/index.ts`
+8. `frontend/src/data/generation/random.test.ts`
+9. `frontend/src/data/generation/solver.test.ts`
+10. `frontend/src/data/generation/index.test.ts`
+11. `frontend/src/data/generation/profile.test.ts`
+12. `frontend/src/data/content/default.generation-profile.json`
+13. `frontend/public/data/generation/default.profile.json`
+14. `frontend/src/data/generation/export.ts`
+15. `frontend/src/data/generation/export.test.ts`
+16. `frontend/scripts/export-generated-pack.ts`
+17. `frontend/public/data/generated/fixture-001.level.json`
+18. `frontend/public/data/generated/fixture-001.behavior.json`
+19. `frontend/public/data/generated/fixture-001.theme.json`
+20. `frontend/public/data/generated/fixture-001.rules.json`
 
 Current behavior:
 1. Seeded deterministic candidate generation is available.
-2. Candidates are schema-validated, solvability-checked, and quality-gated.
-3. Output is in-memory content-pack data; fixture export tooling remains next.
-4. Rift placement generation is not implemented yet in this foundation pass.
+2. Generation defaults are profile-driven (via validated generation profile).
+3. Candidates include baseline rift anchor pair generation (budget-driven).
+4. Rift target and conflict validation is enforced in content validation.
+5. Solver upgraded to bounded interaction search with move/wait/rift/push/pull support.
+6. Generation gating currently uses bounded reduced-action solver settings for performance.
+7. Candidates are schema-validated, solvability-checked, and quality-gated.
+8. Generated packs can be serialized to public-data-compatible files.
+9. Loader compatibility is verified by integration test using exported files.
+10. CLI workflow is available via `npm run gen:pack -- --seed <seed> --pack-id <id>`.
+11. Baseline generated fixture pack is present at `frontend/public/data/generated/fixture-001.*`.
+
+CLI usage:
+1. `cd frontend`
+2. `npm run gen:pack -- --seed my-seed --pack-id my-pack --difficulty normal --width 12 --height 12 --time-depth 16 --max-attempts 20`
+3. Generated files are written to `frontend/public/data/generated/` (default `--out-subdir generated`), and `frontend/public/data/index.json` is updated with a new pack entry.

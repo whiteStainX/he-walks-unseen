@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "policies": {
+    "enemy.policy.0": {
+      "kind": "Static"
+    },
+    "enemy.policy.1": {
+      "kind": "Static"
+    }
+  },
+  "assignments": {
+    "enemy.0": "enemy.policy.0",
+    "enemy.1": "enemy.policy.1"
+  },
+  "detectionProfiles": {
+    "default_watch": {
+      "enabled": true,
+      "delayTurns": 1,
+      "maxDistance": 2
+    }
+  },
+  "defaultDetectionProfile": "default_watch"
+}

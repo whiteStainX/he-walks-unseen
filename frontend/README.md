@@ -21,6 +21,16 @@ npm run build
 npm run preview
 ```
 
+## Generate Pack
+
+```bash
+npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --width 12 --height 12 --time-depth 16
+```
+
+Notes:
+- Writes files to `frontend/public/data/generated/` by default.
+- Updates `frontend/public/data/index.json` with the generated pack id.
+
 ## Test
 
 ```bash
@@ -45,7 +55,7 @@ npm run lint
 | `L` | Open/close full log overlay |
 | `M` | Open/close settings overlay |
 | `P` | Toggle danger preview overlay |
-| `V` | Cycle content pack (`default` / `variant`) |
+| `V` | Cycle content pack entries from `frontend/public/data/index.json` |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |
@@ -59,6 +69,10 @@ npm run lint
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.
 - Enemy motion projection during bootstrap/load lives in `frontend/src/game/levelObjects.ts`.
 - Map-generation foundation lives in `frontend/src/data/generation/`.
+- Default generation profile fixture lives in `frontend/public/data/generation/default.profile.json`.
+- Generated candidates now include baseline rift anchors and rift validation checks.
+- Generated export utilities live in `frontend/src/data/generation/export.ts`.
+- Generated pack CLI exporter lives in `frontend/scripts/export-generated-pack.ts`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.

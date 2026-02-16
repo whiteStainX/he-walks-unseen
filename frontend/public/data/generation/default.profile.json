@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "id": "default-v1",
+  "boardMin": {
+    "width": 6,
+    "height": 6,
+    "timeDepth": 4
+  },
+  "maxAttempts": 20,
+  "defaultDifficulty": "normal",
+  "startInset": 1,
+  "exitInset": 1,
+  "defaultFeatureFlags": {
+    "allowPull": true,
+    "allowPushChains": true,
+    "allowFutureRifts": false
+  },
+  "interaction": {
+    "maxPushChainWhenEnabled": 4,
+    "maxPushChainWhenDisabled": 1
+  },
+  "rift": {
+    "defaultDelta": 3,
+    "baseEnergyCost": 0
+  },
+  "detection": {
+    "enabled": false,
+    "delayTurns": 1
+  },
+  "difficultyProfiles": {
+    "easy": {
+      "budgets": {
+        "maxWalls": 8,
+        "maxDynamicObjects": 1,
+        "maxEnemies": 1,
+        "maxRifts": 0
+      },
+      "minWallRatio": 0.5,
+      "detectionRange": 1,
+      "qualityThreshold": 30
+    },
+    "normal": {
+      "budgets": {
+        "maxWalls": 14,
+        "maxDynamicObjects": 2,
+        "maxEnemies": 2,
+        "maxRifts": 2
+      },
+      "minWallRatio": 0.5,
+      "detectionRange": 2,
+      "qualityThreshold": 35
+    },
+    "hard": {
+      "budgets": {
+        "maxWalls": 20,
+        "maxDynamicObjects": 3,
+        "maxEnemies": 3,
+        "maxRifts": 4
+      },
+      "minWallRatio": 0.5,
+      "detectionRange": 3,
+      "qualityThreshold": 42
+    }
+  },
+  "theme": {
+    "id": "generated-mono",
+    "iconPackId": "default-mono",
+    "cssVars": {
+      "--ink": "#111111",
+      "--paper": "#ffffff",
+      "--panel": "#ffffff",
+      "--accent": "#111111",
+      "--grid": "#111111",
+      "--border": "#111111",
+      "--muted": "#666666"
+    }
+  }
+}

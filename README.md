@@ -30,6 +30,8 @@ Current playable baseline:
 - Data-driven enemy logic with validated movement policies and per-enemy detection profile overrides
 - Enemy patrol motion projected across time slices (loop/ping-pong)
 - Seeded map-generation foundation with validation/solver/quality gating pipeline
+- Profile-driven generation defaults with baseline generated rift anchors
+- Generated-pack export utilities, CLI writer, and manifest registration flow
 
 ## Requirements
 
@@ -44,6 +46,13 @@ npm install
 npm run dev
 ```
 
+Generate a content pack:
+
+```bash
+cd frontend
+npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --width 12 --height 12 --time-depth 16
+```
+
 ## Controls
 
 | Key | Action |
@@ -56,7 +65,7 @@ npm run dev
 | `L` | Open/close full log overlay |
 | `M` | Open/close settings overlay |
 | `P` | Toggle danger preview overlay |
-| `V` | Cycle content pack (`default` / `variant`) |
+| `V` | Cycle content pack entries from `frontend/public/data/index.json` |
 | `[` / `]` | Rift delta - / + |
 | `-` / `=` | Max push chain - / + |
 | `R` | Restart |

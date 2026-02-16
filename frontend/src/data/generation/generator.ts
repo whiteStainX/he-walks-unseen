@@ -9,6 +9,8 @@ import type {
   ThemeConfig,
 } from '../contracts'
 import type {
+  GenerationDifficultyProfile,
+  GenerationProfile,
   MapGenBudgets,
   MapGenDifficulty,
   MapGenFeatureFlags,
@@ -16,18 +18,6 @@ import type {
 } from './contracts'
 import type { SeededRng } from './random'
 import { createSeededRng } from './random'
-
-const DEFAULT_BUDGETS: Record<MapGenDifficulty, MapGenBudgets> = {
-  easy: { maxWalls: 8, maxDynamicObjects: 1, maxEnemies: 1, maxRifts: 0 },
-  normal: { maxWalls: 14, maxDynamicObjects: 2, maxEnemies: 2, maxRifts: 0 },
-  hard: { maxWalls: 20, maxDynamicObjects: 3, maxEnemies: 3, maxRifts: 0 },
-}
-
-const DEFAULT_FEATURE_FLAGS: MapGenFeatureFlags = {
-  allowPull: true,
-  allowPushChains: true,
-  allowFutureRifts: false,
-}
 
 function key(position: Position2D): string {
   return `${position.x},${position.y}`
@@ -41,17 +31,80 @@ function inBounds(position: Position2D, width: number, height: number): boolean 
   return position.x >= 0 && position.y >= 0 && position.x < width && position.y < height
 }
 
-function mergeBudgets(request: MapGenRequest): MapGenBudgets {
-  const difficulty = request.difficulty ?? 'normal'
+function clamp01(value: number): number {
+  if (value < 0) {
+    return 0
+  }
+
+  if (value > 1) {
+    return 1
+  }
+
+  return value
+}
+
+function manhattan2D(a: Position2D, b: Position2D): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
+
+function fitExitToTimeBudget(input: {
+  start: Position2D
+  preferredExit: Position2D
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  maxSteps: number
+}): Position2D {
+  const exit = { ...input.preferredExit }
+
+  while (manhattan2D(input.start, exit) > input.maxSteps) {
+    const dx = exit.x - input.start.x
+    const dy = exit.y - input.start.y
+
+    if (Math.abs(dx) >= Math.abs(dy) && exit.x > input.minX) {
+      exit.x -= Math.sign(dx)
+      continue
+    }
+
+    if (exit.y > input.minY) {
+      exit.y -= Math.sign(dy)
+      continue
+    }
+
+    if (exit.x < input.maxX) {
+      exit.x += 1
+      continue
+    }
+
+    if (exit.y < input.maxY) {
+      exit.y += 1
+      continue
+    }
+
+    break
+  }
+
+  return exit
+}
+
+function resolveDifficulty(request: MapGenRequest, profile: GenerationProfile): MapGenDifficulty {
+  return request.difficulty ?? profile.defaultDifficulty
+}
+
+function mergeBudgets(
+  request: MapGenRequest,
+  difficultyProfile: GenerationDifficultyProfile,
+): MapGenBudgets {
   return {
-    ...DEFAULT_BUDGETS[difficulty],
+    ...difficultyProfile.budgets,
     ...request.budgets,
   }
 }
 
-function mergeFeatureFlags(request: MapGenRequest): MapGenFeatureFlags {
+function mergeFeatureFlags(request: MapGenRequest, profile: GenerationProfile): MapGenFeatureFlags {
   return {
-    ...DEFAULT_FEATURE_FLAGS,
+    ...profile.defaultFeatureFlags,
     ...request.featureFlags,
   }
 }
@@ -103,42 +156,36 @@ function createArchetypes(): Record<string, ContentArchetype> {
   }
 }
 
-function createTheme(request: MapGenRequest): ThemeConfig {
+function createTheme(request: MapGenRequest, profile: GenerationProfile): ThemeConfig {
   return {
     schemaVersion: 1,
-    id: request.themeId ?? 'generated-mono',
-    iconPackId: request.iconPackId ?? 'default-mono',
-    cssVars: {
-      '--ink': '#111111',
-      '--paper': '#ffffff',
-      '--panel': '#ffffff',
-      '--accent': '#111111',
-      '--grid': '#111111',
-      '--border': '#111111',
-      '--muted': '#666666',
-    },
+    id: request.themeId ?? profile.theme.id,
+    iconPackId: request.iconPackId ?? profile.theme.iconPackId,
+    cssVars: profile.theme.cssVars,
   }
 }
 
-function createRules(request: MapGenRequest): GameRulesConfig {
-  const difficulty = request.difficulty ?? 'normal'
-  const features = mergeFeatureFlags(request)
-  const detectionRange = difficulty === 'easy' ? 1 : difficulty === 'normal' ? 2 : 3
-
+function createRules(
+  profile: GenerationProfile,
+  difficultyProfile: GenerationDifficultyProfile,
+  featureFlags: MapGenFeatureFlags,
+): GameRulesConfig {
   return {
     schemaVersion: 1,
     rift: {
-      defaultDelta: 3,
-      baseEnergyCost: 0,
+      defaultDelta: profile.rift.defaultDelta,
+      baseEnergyCost: profile.rift.baseEnergyCost,
     },
     interaction: {
-      maxPushChain: features.allowPushChains ? 4 : 1,
-      allowPull: features.allowPull,
+      maxPushChain: featureFlags.allowPushChains
+        ? profile.interaction.maxPushChainWhenEnabled
+        : profile.interaction.maxPushChainWhenDisabled,
+      allowPull: featureFlags.allowPull,
     },
     detection: {
-      enabled: false,
-      delayTurns: 1,
-      maxDistance: detectionRange,
+      enabled: profile.detection.enabled,
+      delayTurns: profile.detection.delayTurns,
+      maxDistance: difficultyProfile.detectionRange,
     },
   }
 }
@@ -209,18 +256,33 @@ function tryBuildPatrolPath(input: {
   return null
 }
 
-export function generateCandidateContent(
-  request: MapGenRequest,
-  attempt: number,
-): ContentPack {
-  const difficulty = request.difficulty ?? 'normal'
-  const budgets = mergeBudgets(request)
+export function generateCandidateContent(input: {
+  request: MapGenRequest
+  profile: GenerationProfile
+  attempt: number
+}): ContentPack {
+  const { request, profile, attempt } = input
+  const difficulty = resolveDifficulty(request, profile)
+  const difficultyProfile = profile.difficultyProfiles[difficulty]
+  const budgets = mergeBudgets(request, difficultyProfile)
+  const featureFlags = mergeFeatureFlags(request, profile)
   const rng = createSeededRng(`${request.seed}:${attempt}`)
   const width = request.board.width
   const height = request.board.height
   const timeDepth = request.board.timeDepth
-  const start = { x: 1, y: 1, t: 0 }
-  const exit = { x: width - 2, y: height - 2, t: 0 }
+  const startCell = { x: profile.startInset, y: profile.startInset }
+  const preferredExit = { x: width - 1 - profile.exitInset, y: height - 1 - profile.exitInset }
+  const adjustedExit = fitExitToTimeBudget({
+    start: startCell,
+    preferredExit,
+    minX: profile.startInset,
+    minY: profile.startInset,
+    maxX: width - 1 - profile.exitInset,
+    maxY: height - 1 - profile.exitInset,
+    maxSteps: Math.max(1, timeDepth - 2),
+  })
+  const start = { x: startCell.x, y: startCell.y, t: 0 }
+  const exit = { x: adjustedExit.x, y: adjustedExit.y, t: 0 }
   const reservedPath = buildGuaranteedPath(start, exit)
   const occupied = new Set<string>([key(start), key(exit)])
   const borderWalls: Position2D[] = []
@@ -254,8 +316,9 @@ export function generateCandidateContent(
     }
   }
 
-  const wallTarget =
-    budgets.maxWalls > 0 ? rng.nextInt(Math.floor(budgets.maxWalls / 2), budgets.maxWalls) : 0
+  const minWallRatio = clamp01(difficultyProfile.minWallRatio)
+  const minWallTarget = Math.min(budgets.maxWalls, Math.floor(budgets.maxWalls * minWallRatio))
+  const wallTarget = budgets.maxWalls > 0 ? rng.nextInt(minWallTarget, budgets.maxWalls) : 0
   const interiorWalls = takeRandomCells(interiorCells, wallTarget, rng)
 
   for (const wall of interiorWalls) {
@@ -271,6 +334,15 @@ export function generateCandidateContent(
 
   const postBoxCells = postWallCells.filter((cell) => !occupied.has(key(cell)))
   const enemies = takeRandomCells(postBoxCells, budgets.maxEnemies, rng)
+
+  for (const enemy of enemies) {
+    occupied.add(key(enemy))
+  }
+
+  const postEnemyCells = postBoxCells.filter((cell) => !occupied.has(key(cell)))
+  const requestedRifts = Math.max(0, budgets.maxRifts)
+  const riftAnchorCount = requestedRifts >= 2 ? requestedRifts - (requestedRifts % 2) : 0
+  const riftCells = takeRandomCells(postEnemyCells, riftAnchorCount, rng)
 
   const archetypes = createArchetypes()
   const instances: ContentInstance[] = []
@@ -343,12 +415,55 @@ export function generateCandidateContent(
     enemyIndex += 1
   }
 
+  for (let index = 0; index + 1 < riftCells.length; index += 2) {
+    const sourceA = riftCells[index]
+    const sourceB = riftCells[index + 1]
+    const archetypeA = `rift.gen.${index / 2}.a`
+    const archetypeB = `rift.gen.${index / 2}.b`
+
+    archetypes[archetypeA] = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        {
+          kind: 'Rift',
+          target: { x: sourceB.x, y: sourceB.y, t: 0 },
+          bidirectional: true,
+        },
+      ],
+      render: { fill: '#ffffff', stroke: '#111111', symbol: 'rift' },
+    }
+    archetypes[archetypeB] = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        {
+          kind: 'Rift',
+          target: { x: sourceA.x, y: sourceA.y, t: 0 },
+          bidirectional: true,
+        },
+      ],
+      render: { fill: '#ffffff', stroke: '#111111', symbol: 'rift' },
+    }
+
+    instances.push({
+      id: `rift.${index / 2}.a`,
+      archetype: archetypeA,
+      position: { x: sourceA.x, y: sourceA.y, t: 0 },
+    })
+    instances.push({
+      id: `rift.${index / 2}.b`,
+      archetype: archetypeB,
+      position: { x: sourceB.x, y: sourceB.y, t: 0 },
+    })
+  }
+
   if (enemyIndex > 0) {
     behavior.detectionProfiles = {
       default_watch: {
         enabled: true,
-        delayTurns: 1,
-        maxDistance: difficulty === 'hard' ? 3 : 2,
+        delayTurns: profile.detection.delayTurns,
+        maxDistance: difficultyProfile.detectionRange,
       },
     }
     behavior.defaultDetectionProfile = 'default_watch'
@@ -373,7 +488,7 @@ export function generateCandidateContent(
   return {
     level,
     behavior,
-    theme: createTheme(request),
-    rules: createRules(request),
+    theme: createTheme(request, profile),
+    rules: createRules(profile, difficultyProfile, featureFlags),
   }
 }
