@@ -238,6 +238,26 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ---
 
+## Phase 11: Enemy Motion Execution (V1)
+
+**Goal:** Execute behavior policies into TimeCube occupancy so enemies actually move across slices.
+**Implementation Detail:** `docs/web-implementation/PHASE_11_ENEMY_MOTION_EXECUTION.md`
+**Design Detail:** `docs/web-design/ENEMY_MOTION_EXECUTION_V1.md`
+
+### Deliverables
+- [ ] Deterministic enemy motion projector by absolute time `t`
+- [ ] Bootstrap/load/restart integration for projected enemy occupancy
+- [ ] Detection integration verified against moved enemy positions
+- [ ] Tests for loop/ping-pong trajectory execution and reproducibility
+
+### Exit Criteria
+- [ ] Enemy position is slice-dependent and policy-driven
+- [ ] Existing paradox/win/detection ordering is unchanged
+- [ ] Existing content packs remain compatible
+- [ ] `npm run lint`, `npm run test`, and `npm run build` pass
+
+---
+
 ## Future Phases (Optional)
 
 - Full light cone model (distance-based)

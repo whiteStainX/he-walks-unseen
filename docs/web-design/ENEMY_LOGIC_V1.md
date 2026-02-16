@@ -2,7 +2,7 @@
 
 > **Purpose:** Define deterministic enemy movement + detection behavior that can be used by gameplay, validation, and future map generation.
 > **Scope:** Enemy trajectory model, sensing contract, update ordering, and content contracts.
-> **Related:** `docs/web-design/MATH_MODEL.md`, `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/GAME_STATE.md`
+> **Related:** `docs/web-design/MATH_MODEL.md`, `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/GAME_STATE.md`, `docs/web-design/ENEMY_MOTION_EXECUTION_V1.md`
 
 ---
 
