@@ -20,7 +20,7 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Completed (2026-02-16)
 
 ---
 
@@ -196,10 +196,33 @@ Exit criteria:
 
 ---
 
+## Implementation Notes
+
+Implemented in:
+1. `frontend/src/data/contracts.ts`
+2. `frontend/src/data/validate.ts`
+3. `frontend/src/data/validate.test.ts`
+4. `frontend/src/data/behaviorResolver.ts`
+5. `frontend/src/data/behaviorResolver.test.ts`
+6. `frontend/src/data/loader.ts`
+7. `frontend/src/data/loader.test.ts`
+8. `frontend/src/core/detection.ts`
+9. `frontend/src/core/detection.test.ts`
+10. `frontend/src/game/interactions/types.ts`
+11. `frontend/src/game/interactions/pipeline.ts`
+12. `frontend/src/game/gameSlice.ts`
+13. `frontend/src/game/gameSlice.test.ts`
+14. `frontend/public/data/variant.behavior.json`
+
+Key runtime detail:
+1. `enemyDetectionConfigById` stores resolved behavior-level overrides only.
+2. Enemies without explicit behavior-level detection overrides still use runtime `detectionConfig` as fallback.
+
+---
+
 ## Out of Scope
 
 1. Alert/chase FSM.
 2. LOS cone occlusion.
 3. Enemy communication/group tactics.
 4. Procedural map generator implementation.
-

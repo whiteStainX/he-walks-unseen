@@ -217,10 +217,29 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ---
 
+## Phase 10: Enemy Logic Data-Driven Extension
+
+**Goal:** Make enemy movement/detection tuning content-driven with deterministic precedence and validation.
+**Implementation Detail:** `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
+**Design Detail:** `docs/web-design/ENEMY_LOGIC_V1.md`
+
+### Deliverables
+- [x] `BehaviorConfig` detection profile extension (`detectionProfiles`, `detectionAssignments`, `defaultDetectionProfile`)
+- [x] Loader/runtime wiring for per-enemy detection overrides
+- [x] Validation for invalid profile shapes and unknown references
+- [x] Detection evaluator support for per-enemy config overrides with fallback
+- [x] Public content example updated (`variant.behavior.json`)
+
+### Exit Criteria
+- [x] Enemy logic tuning can be done via data files without reducer branching
+- [x] Invalid config fails fast at load time with structured errors
+- [x] Existing packs still load without mandatory migration
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass
+
+---
+
 ## Future Phases (Optional)
 
-- Phase 10 enemy logic data-driven extension:
-  - `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
 - Full light cone model (distance-based)
 - Alert/chase variants
 - Level editor

@@ -212,6 +212,24 @@ describe('gameSlice', () => {
     expect(detected.status).toContain('detected by enemy.alpha')
   })
 
+  it('uses per-enemy detection overrides when provided by content', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const seeded = {
+      ...initial,
+      detectionConfig: { enabled: false, delayTurns: 1, maxDistance: 0 },
+      enemyDetectionConfigById: {
+        'enemy.alpha': { enabled: true, delayTurns: 1, maxDistance: 8 },
+      },
+    }
+
+    const detected = gameReducer(seeded, waitTurn())
+
+    expect(detected.turn).toBe(1)
+    expect(detected.phase).toBe('Detected')
+    expect(detected.lastDetection?.detected).toBe(true)
+    expect(detected.lastDetection?.events[0]?.enemyId).toBe('enemy.alpha')
+  })
+
   it('blocks gameplay actions after detection until restart', () => {
     const initial = gameReducer(undefined, { type: 'init' })
     const configured = gameReducer(
@@ -379,6 +397,7 @@ describe('gameSlice', () => {
     expect(applied.worldLine.path.at(-1)).toEqual(loaded.value.startPosition)
     expect(applied.phase).toBe('Playing')
     expect(applied.contentPackId).toBe('default')
+    expect(applied.enemyDetectionConfigById).toEqual({})
     expect(applied.status).toBe('Loaded content pack: default')
   })
 })

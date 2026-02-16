@@ -122,6 +122,7 @@ export function runInteractionPipeline(
     worldLine: state.worldLine,
     currentTime: player.t,
     config: state.detectionConfig,
+    configByEnemyId: state.enemyDetectionConfigById,
   })
 
   if (detection.detected) {

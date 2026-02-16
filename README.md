@@ -27,6 +27,7 @@ Current playable baseline:
 - Intent-first input state machine with layer-aware directional gating
 - Settings overlay with persisted UI toggles
 - Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
+- Data-driven enemy logic with validated movement policies and per-enemy detection profile overrides
 
 ## Requirements
 
@@ -62,12 +63,14 @@ npm run dev
 
 - [Web Design Docs](docs/web-design/OVERALL.md)
 - [Phase 6 Content System](docs/web-design/PHASE_06_CONTENT_SYSTEM.md)
+- [Enemy Logic V1 Design](docs/web-design/ENEMY_LOGIC_V1.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
 - [Web Implementation Plan](docs/web-implementation/PLAN.md)
 - [Phase 7 Paradox Plan](docs/web-implementation/PHASE_07_PARADOX.md)
 - [Phase 8 Polish Plan](docs/web-implementation/PHASE_08_POLISH.md)
+- [Phase 10 Enemy Logic Plan](docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md)
 - [Agent Guide](AGENTS.md)
 
 ## License

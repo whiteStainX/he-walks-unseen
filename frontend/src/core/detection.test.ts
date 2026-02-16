@@ -5,9 +5,9 @@ import { createTimeCube, placeObjects } from './timeCube'
 import { evaluateDetectionV1 } from './detection'
 import type { ResolvedObjectInstance } from './objects'
 
-function enemyObject(x: number, y: number): ResolvedObjectInstance {
+function enemyObject(id: string, x: number, y: number): ResolvedObjectInstance {
   return {
-    id: 'enemy.alpha',
+    id,
     archetypeKey: 'enemy',
     position: { x, y, t: 0 },
     archetype: {
@@ -25,7 +25,7 @@ function enemyObject(x: number, y: number): ResolvedObjectInstance {
 describe('evaluateDetectionV1', () => {
   it('returns no detection when disabled', () => {
     const cube = createTimeCube(8, 8, 6)
-    const placed = placeObjects(cube, [enemyObject(2, 2)])
+    const placed = placeObjects(cube, [enemyObject('enemy.alpha', 2, 2)])
 
     expect(placed.ok).toBe(true)
     if (!placed.ok) {
@@ -47,7 +47,7 @@ describe('evaluateDetectionV1', () => {
 
   it('detects when delay and range conditions match', () => {
     const cube = createTimeCube(8, 8, 6)
-    const placed = placeObjects(cube, [enemyObject(2, 2)])
+    const placed = placeObjects(cube, [enemyObject('enemy.alpha', 2, 2)])
 
     expect(placed.ok).toBe(true)
     if (!placed.ok) {
@@ -75,7 +75,7 @@ describe('evaluateDetectionV1', () => {
 
   it('does not detect when observed player is out of range', () => {
     const cube = createTimeCube(8, 8, 6)
-    const placed = placeObjects(cube, [enemyObject(0, 0)])
+    const placed = placeObjects(cube, [enemyObject('enemy.alpha', 0, 0)])
 
     expect(placed.ok).toBe(true)
     if (!placed.ok) {
@@ -97,7 +97,7 @@ describe('evaluateDetectionV1', () => {
 
   it('does not detect when delay targets a time slice not visited by player', () => {
     const cube = createTimeCube(8, 8, 6)
-    const placed = placeObjects(cube, [enemyObject(2, 2)])
+    const placed = placeObjects(cube, [enemyObject('enemy.alpha', 2, 2)])
 
     expect(placed.ok).toBe(true)
     if (!placed.ok) {
@@ -121,5 +121,35 @@ describe('evaluateDetectionV1', () => {
 
     expect(report.detected).toBe(false)
     expect(report.events).toHaveLength(0)
+  })
+
+  it('supports per-enemy detection overrides with global fallback', () => {
+    const cube = createTimeCube(8, 8, 6)
+    const placed = placeObjects(cube, [
+      enemyObject('enemy.alpha', 0, 0),
+      enemyObject('enemy.beta', 2, 4),
+    ])
+
+    expect(placed.ok).toBe(true)
+    if (!placed.ok) {
+      return
+    }
+
+    const worldLine = createWorldLine({ x: 2, y: 2, t: 0 })
+
+    const report = evaluateDetectionV1({
+      cube: placed.value,
+      worldLine,
+      currentTime: 1,
+      config: { enabled: false, delayTurns: 1, maxDistance: 0 },
+      configByEnemyId: {
+        'enemy.alpha': { enabled: true, delayTurns: 1, maxDistance: 1 },
+        'enemy.beta': { enabled: true, delayTurns: 1, maxDistance: 3 },
+      },
+    })
+
+    expect(report.detected).toBe(true)
+    expect(report.events).toHaveLength(1)
+    expect(report.events[0]?.enemyId).toBe('enemy.beta')
   })
 })

@@ -46,8 +46,11 @@ const DEFAULT_DETECTION_CONFIG: DetectionConfig = bootContent.ok
   : {
       enabled: true,
       delayTurns: 1,
-    maxDistance: 2,
-  }
+      maxDistance: 2,
+    }
+const DEFAULT_ENEMY_DETECTION_CONFIG_BY_ID: Record<string, DetectionConfig> = bootContent.ok
+  ? bootContent.value.enemyDetectionConfigById
+  : {}
 const DEFAULT_PARADOX_CONFIG: ParadoxConfig = {
   enabled: true,
 }
@@ -67,6 +70,7 @@ export interface GameState extends InteractionState {
   defaultRiftSettings: RiftSettings
   defaultInteractionConfig: InteractionConfig
   defaultDetectionConfig: DetectionConfig
+  defaultEnemyDetectionConfigById: Record<string, DetectionConfig>
   defaultParadoxConfig: ParadoxConfig
   themeCssVars: Record<string, string>
   iconPackId: string
@@ -151,7 +155,9 @@ function createInitialState(): GameState {
     defaultRiftSettings: { ...DEFAULT_RIFT_SETTINGS },
     defaultInteractionConfig: { ...DEFAULT_INTERACTION_CONFIG },
     detectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    enemyDetectionConfigById: { ...DEFAULT_ENEMY_DETECTION_CONFIG_BY_ID },
     defaultDetectionConfig: { ...DEFAULT_DETECTION_CONFIG },
+    defaultEnemyDetectionConfigById: { ...DEFAULT_ENEMY_DETECTION_CONFIG_BY_ID },
     paradoxConfig: { ...DEFAULT_PARADOX_CONFIG },
     defaultParadoxConfig: { ...DEFAULT_PARADOX_CONFIG },
     contentPackId: DEFAULT_CONTENT_PACK_ID,
@@ -245,6 +251,8 @@ const gameSlice = createSlice({
       state.interactionConfig = { ...action.payload.content.interactionConfig }
       state.defaultDetectionConfig = { ...action.payload.content.detectionConfig }
       state.detectionConfig = { ...action.payload.content.detectionConfig }
+      state.defaultEnemyDetectionConfigById = { ...action.payload.content.enemyDetectionConfigById }
+      state.enemyDetectionConfigById = { ...action.payload.content.enemyDetectionConfigById }
       state.paradoxConfig = { ...state.defaultParadoxConfig }
       state.themeCssVars = { ...action.payload.content.themeCssVars }
       state.iconPackId = action.payload.content.iconPackId
@@ -274,6 +282,7 @@ const gameSlice = createSlice({
       state.riftResources = { ...DEFAULT_RIFT_RESOURCES }
       state.interactionConfig = { ...state.defaultInteractionConfig }
       state.detectionConfig = { ...state.defaultDetectionConfig }
+      state.enemyDetectionConfigById = { ...state.defaultEnemyDetectionConfigById }
       state.lastDetection = null
       state.paradoxConfig = { ...state.defaultParadoxConfig }
       state.lastParadox = null

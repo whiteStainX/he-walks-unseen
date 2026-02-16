@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { behaviorToPatrolComponent, resolveBehaviorPosition } from './behaviorResolver'
+import {
+  behaviorToPatrolComponent,
+  resolveBehaviorPolicy,
+  resolveBehaviorPosition,
+  resolveEnemyDetectionConfig,
+} from './behaviorResolver'
 
 describe('behaviorResolver', () => {
   it('resolves static policy to origin', () => {
@@ -65,5 +70,58 @@ describe('behaviorResolver', () => {
     expect(
       behaviorToPatrolComponent({ kind: 'PatrolPingPong', path: [{ x: 1, y: 1 }] }),
     ).toEqual({ kind: 'Patrol', path: [{ x: 1, y: 1 }], loops: false })
+  })
+
+  it('resolves behavior policy by assignment', () => {
+    const policy = resolveBehaviorPolicy(
+      {
+        policies: {
+          static_default: { kind: 'Static' },
+        },
+        assignments: {
+          'enemy.alpha': 'static_default',
+        },
+      },
+      'enemy.alpha',
+    )
+
+    expect(policy).toEqual({ kind: 'Static' })
+    expect(resolveBehaviorPolicy({ policies: {}, assignments: {} }, 'enemy.alpha')).toBeNull()
+  })
+
+  it('resolves enemy detection config with precedence', () => {
+    const rulesDefault = { enabled: true, delayTurns: 1, maxDistance: 2 }
+    const behavior = {
+      detectionProfiles: {
+        short: { enabled: true, delayTurns: 1, maxDistance: 2 },
+        long: { enabled: true, delayTurns: 1, maxDistance: 5 },
+      },
+      defaultDetectionProfile: 'short',
+      detectionAssignments: { 'enemy.beta': 'long' },
+    }
+
+    expect(
+      resolveEnemyDetectionConfig({
+        behavior,
+        enemyId: 'enemy.beta',
+        rulesDefault,
+      }),
+    ).toEqual({ enabled: true, delayTurns: 1, maxDistance: 5 })
+
+    expect(
+      resolveEnemyDetectionConfig({
+        behavior,
+        enemyId: 'enemy.alpha',
+        rulesDefault,
+      }),
+    ).toEqual({ enabled: true, delayTurns: 1, maxDistance: 2 })
+
+    expect(
+      resolveEnemyDetectionConfig({
+        behavior: {},
+        enemyId: 'enemy.alpha',
+        rulesDefault,
+      }),
+    ).toEqual(rulesDefault)
   })
 })

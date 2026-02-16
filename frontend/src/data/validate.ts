@@ -1,4 +1,4 @@
-import { isInBounds, type Position3D } from '../core/position'
+import { isInBounds, type Position2D, type Position3D } from '../core/position'
 import type { Result } from '../core/result'
 import type {
   BehaviorConfig,
@@ -162,6 +162,156 @@ function isPositionInLevel(level: LevelConfig, position: Position3D): boolean {
   )
 }
 
+function isPosition2DInLevel(level: LevelConfig, position: Position2D): boolean {
+  return (
+    position.x >= 0 &&
+    position.y >= 0 &&
+    position.x < level.map.width &&
+    position.y < level.map.height
+  )
+}
+
+function validateBehaviorPolicyPoints(
+  level: LevelConfig,
+  behavior: BehaviorConfig,
+): Result<null, ContentLoadError> {
+  for (const [key, policy] of Object.entries(behavior.policies)) {
+    switch (policy.kind) {
+      case 'Static':
+        break
+      case 'PatrolLoop':
+      case 'PatrolPingPong': {
+        for (const point of policy.path) {
+          if (!isPosition2DInLevel(level, point)) {
+            return {
+              ok: false,
+              error: {
+                kind: 'InvalidBehaviorPathPoint',
+                key,
+                point,
+              },
+            }
+          }
+        }
+        break
+      }
+      case 'ScriptedTimeline': {
+        for (const point of policy.points) {
+          if (!isPositionInLevel(level, point)) {
+            return {
+              ok: false,
+              error: {
+                kind: 'InvalidBehaviorPathPoint',
+                key,
+                point,
+              },
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { ok: true, value: null }
+}
+
+function validateDetectionProfiles(
+  behavior: BehaviorConfig,
+  instanceIds: Set<string>,
+): Result<null, ContentLoadError> {
+  const profiles = behavior.detectionProfiles
+  const assignments = behavior.detectionAssignments
+
+  if (!profiles) {
+    if (assignments && Object.keys(assignments).length > 0) {
+      const [instanceId, profile] = Object.entries(assignments)[0]
+      return {
+        ok: false,
+        error: {
+          kind: 'UnknownDetectionProfileReference',
+          instanceId,
+          profile,
+        },
+      }
+    }
+
+    if (behavior.defaultDetectionProfile) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidDetectionProfile',
+          key: behavior.defaultDetectionProfile,
+          message: 'defaultDetectionProfile requires detectionProfiles',
+        },
+      }
+    }
+
+    return { ok: true, value: null }
+  }
+
+  for (const [key, profile] of Object.entries(profiles)) {
+    if (
+      typeof profile.enabled !== 'boolean' ||
+      !Number.isInteger(profile.delayTurns) ||
+      profile.delayTurns < 1 ||
+      typeof profile.maxDistance !== 'number' ||
+      profile.maxDistance < 0
+    ) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidDetectionProfile',
+          key,
+          message: 'expected { enabled:boolean, delayTurns:int>=1, maxDistance:number>=0 }',
+        },
+      }
+    }
+  }
+
+  if (
+    behavior.defaultDetectionProfile &&
+    profiles[behavior.defaultDetectionProfile] === undefined
+  ) {
+    return {
+      ok: false,
+      error: {
+        kind: 'UnknownDetectionProfileReference',
+        instanceId: 'default',
+        profile: behavior.defaultDetectionProfile,
+      },
+    }
+  }
+
+  if (!assignments) {
+    return { ok: true, value: null }
+  }
+
+  for (const [instanceId, profileKey] of Object.entries(assignments)) {
+    if (!instanceIds.has(instanceId)) {
+      return {
+        ok: false,
+        error: {
+          kind: 'UnknownBehaviorAssignmentInstance',
+          instanceId,
+        },
+      }
+    }
+
+    if (!profiles[profileKey]) {
+      return {
+        ok: false,
+        error: {
+          kind: 'UnknownDetectionProfileReference',
+          instanceId,
+          profile: profileKey,
+        },
+      }
+    }
+  }
+
+  return { ok: true, value: null }
+}
+
 function validateArchetypeAndInstanceRefs(
   level: LevelConfig,
   behavior: BehaviorConfig,
@@ -226,6 +376,18 @@ function validateArchetypeAndInstanceRefs(
         },
       }
     }
+  }
+
+  const pathValidation = validateBehaviorPolicyPoints(level, behavior)
+
+  if (!pathValidation.ok) {
+    return pathValidation
+  }
+
+  const detectionValidation = validateDetectionProfiles(behavior, instanceIds)
+
+  if (!detectionValidation.ok) {
+    return detectionValidation
   }
 
   return { ok: true, value: null }

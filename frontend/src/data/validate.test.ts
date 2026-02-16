@@ -53,6 +53,25 @@ describe('validateContentPack', () => {
     expect(result.ok).toBe(true)
   })
 
+  it('rejects out-of-bounds behavior path points', () => {
+    const input = minimalValidInputs()
+    const behavior = input.behavior as {
+      policies: Record<string, unknown>
+      assignments: Record<string, string>
+    }
+    behavior.policies = {
+      patrol_bad: { kind: 'PatrolLoop', path: [{ x: 99, y: 0 }] },
+    }
+    behavior.assignments = { 'wall.1': 'patrol_bad' }
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('InvalidBehaviorPathPoint')
+    }
+  })
+
   it('rejects unknown archetype references', () => {
     const input = minimalValidInputs()
     const level = input.level as {
@@ -97,6 +116,61 @@ describe('validateContentPack', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.error.kind).toBe('UnsupportedBehaviorPolicy')
+    }
+  })
+
+  it('rejects unknown detection profile assignment references', () => {
+    const input = minimalValidInputs()
+    const behavior = input.behavior as {
+      detectionProfiles?: Record<string, unknown>
+      detectionAssignments?: Record<string, string>
+    }
+    behavior.detectionProfiles = {
+      close: { enabled: true, delayTurns: 1, maxDistance: 2 },
+    }
+    behavior.detectionAssignments = {
+      'wall.1': 'missing_profile',
+    }
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('UnknownDetectionProfileReference')
+    }
+  })
+
+  it('rejects unknown default detection profile references', () => {
+    const input = minimalValidInputs()
+    const behavior = input.behavior as {
+      detectionProfiles?: Record<string, unknown>
+      defaultDetectionProfile?: string
+    }
+    behavior.detectionProfiles = {
+      close: { enabled: true, delayTurns: 1, maxDistance: 2 },
+    }
+    behavior.defaultDetectionProfile = 'missing_default'
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('UnknownDetectionProfileReference')
+    }
+  })
+
+  it('rejects invalid detection profile shape', () => {
+    const input = minimalValidInputs()
+    const behavior = input.behavior as { detectionProfiles?: Record<string, unknown> }
+    behavior.detectionProfiles = {
+      invalid: { enabled: true, delayTurns: 0, maxDistance: -1 },
+    }
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('InvalidDetectionProfile')
     }
   })
 

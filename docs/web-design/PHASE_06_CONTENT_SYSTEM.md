@@ -159,7 +159,7 @@ Perception block (for detection):
 Concrete v1 config pattern:
 1. `policies`: reusable movement profiles
 2. `assignments`: `enemy instance id -> policy key`
-3. optional extension:
+3. supported detection extension:
 - `detectionProfiles`
 - `detectionAssignments`
 - `defaultDetectionProfile`

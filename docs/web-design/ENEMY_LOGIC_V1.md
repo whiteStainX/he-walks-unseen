@@ -80,7 +80,7 @@ V1 keeps existing discrete-delay contract:
 
 Configuration:
 1. Global level defaults from `GameRulesConfig.detection`.
-2. Optional per-enemy override (future extension point, not mandatory in first pass).
+2. Per-enemy override from `BehaviorConfig` (`detectionProfiles`, `detectionAssignments`, `defaultDetectionProfile`).
 
 ---
 
@@ -131,7 +131,7 @@ Where:
 2. assignment key is object instance id
 3. assignment value is policy key
 
-Optional v1-compatible extension (recommended now, non-breaking):
+V1 detection profile extension (implemented, non-breaking):
 1. `detectionProfiles?: Record<string, DetectionConfig>`
 2. `detectionAssignments?: Record<string, string>`
 3. `defaultDetectionProfile?: string`
@@ -149,6 +149,10 @@ Detection config resolution for enemy `enemyId` (when extension enabled):
 3. else use level default from `GameRulesConfig.detection`
 
 This precedence must be identical in runtime, tests, and generator tooling.
+
+Runtime representation note:
+1. Loader materializes `enemyDetectionConfigById` as behavior-level override map.
+2. Runtime detection still falls back to `GameRulesConfig.detection` when an enemy has no behavior override.
 
 ### 8.3 Reference JSON Example
 

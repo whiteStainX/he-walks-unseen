@@ -5,7 +5,11 @@ import type { DetectionConfig } from '../core/detection'
 import type { RiftSettings } from '../core/rift'
 import type { ContentComponent, ContentLoadError, ContentPack, IconPackConfig } from './contracts'
 import { validateContentPack, validateIconPackConfig, validateLevelSymbolSlots } from './validate'
-import { behaviorToPatrolComponent } from './behaviorResolver'
+import {
+  behaviorToPatrolComponent,
+  resolveBehaviorPolicy,
+  resolveEnemyDetectionConfig,
+} from './behaviorResolver'
 
 import defaultLevel from './content/default.level.json'
 import defaultBehavior from './content/default.behavior.json'
@@ -56,8 +60,7 @@ function toLevelObjectsConfig(content: ContentPack): LevelObjectsConfig {
   }
 
   const instances: ObjectInstance[] = content.level.instances.map((instance) => {
-    const behaviorKey = content.behavior.assignments[instance.id]
-    const behaviorPolicy = behaviorKey ? content.behavior.policies[behaviorKey] : undefined
+    const behaviorPolicy = resolveBehaviorPolicy(content.behavior, instance.id) ?? undefined
     const baseArchetype = archetypes[instance.archetype]
 
     if (!baseArchetype || !behaviorPolicy) {
@@ -86,6 +89,50 @@ function toLevelObjectsConfig(content: ContentPack): LevelObjectsConfig {
   }
 }
 
+function toDetectionConfigFromRules(content: ContentPack): DetectionConfig {
+  return {
+    enabled: content.rules.detection.enabled,
+    delayTurns: content.rules.detection.delayTurns,
+    maxDistance: content.rules.detection.maxDistance,
+  }
+}
+
+function toEnemyDetectionConfigById(content: ContentPack): Record<string, DetectionConfig> {
+  const rulesDefault = toDetectionConfigFromRules(content)
+  const enemyDetectionConfigById: Record<string, DetectionConfig> = {}
+  const profiles = content.behavior.detectionProfiles
+
+  if (!profiles) {
+    return enemyDetectionConfigById
+  }
+
+  const defaultProfileKey = content.behavior.defaultDetectionProfile
+  const hasDefaultProfile = Boolean(defaultProfileKey && profiles[defaultProfileKey])
+
+  for (const instance of content.level.instances) {
+    const archetype = content.level.archetypes[instance.archetype]
+
+    if (!archetype || archetype.kind !== 'enemy') {
+      continue
+    }
+
+    const assignedProfileKey = content.behavior.detectionAssignments?.[instance.id]
+    const hasAssignedProfile = Boolean(assignedProfileKey && profiles[assignedProfileKey])
+
+    if (!hasAssignedProfile && !hasDefaultProfile) {
+      continue
+    }
+
+    enemyDetectionConfigById[instance.id] = resolveEnemyDetectionConfig({
+      behavior: content.behavior,
+      enemyId: instance.id,
+      rulesDefault,
+    })
+  }
+
+  return enemyDetectionConfigById
+}
+
 export interface LoadedBootContent {
   levelObjectsConfig: LevelObjectsConfig
   boardSize: number
@@ -98,6 +145,7 @@ export interface LoadedBootContent {
     allowPull: boolean
   }
   detectionConfig: DetectionConfig
+  enemyDetectionConfigById: Record<string, DetectionConfig>
   themeCssVars: Record<string, string>
 }
 
@@ -107,6 +155,8 @@ export type PublicContentLoadError =
   | { kind: 'InvalidManifest'; message: string }
 
 function toLoadedBootContent(content: ContentPack): LoadedBootContent {
+  const detectionConfig = toDetectionConfigFromRules(content)
+
   return {
     levelObjectsConfig: toLevelObjectsConfig(content),
     boardSize: content.level.map.width,
@@ -121,11 +171,8 @@ function toLoadedBootContent(content: ContentPack): LoadedBootContent {
       maxPushChain: content.rules.interaction.maxPushChain,
       allowPull: content.rules.interaction.allowPull,
     },
-    detectionConfig: {
-      enabled: content.rules.detection.enabled,
-      delayTurns: content.rules.detection.delayTurns,
-      maxDistance: content.rules.detection.maxDistance,
-    },
+    detectionConfig,
+    enemyDetectionConfigById: toEnemyDetectionConfigById(content),
     themeCssVars: content.theme.cssVars,
   }
 }

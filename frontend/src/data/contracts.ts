@@ -54,10 +54,19 @@ export type BehaviorPolicy =
   | { kind: 'PatrolPingPong'; path: Position2D[] }
   | { kind: 'ScriptedTimeline'; points: Position3D[] }
 
+export interface BehaviorDetectionProfile {
+  enabled: boolean
+  delayTurns: number
+  maxDistance: number
+}
+
 export interface BehaviorConfig {
   schemaVersion: 1
   policies: Record<string, BehaviorPolicy>
   assignments: Record<string, string>
+  detectionProfiles?: Record<string, BehaviorDetectionProfile>
+  detectionAssignments?: Record<string, string>
+  defaultDetectionProfile?: string
 }
 
 export interface ThemeConfig {
@@ -116,8 +125,11 @@ export type ContentLoadError =
   | { kind: 'InvalidSchemaVersion'; file: string; expected: number; actual: unknown }
   | { kind: 'MissingIconPackId'; themeId: string }
   | { kind: 'UnknownArchetypeReference'; instanceId: string; archetype: string }
+  | { kind: 'InvalidBehaviorPathPoint'; key: string; point: Position3D | Position2D }
   | { kind: 'UnknownBehaviorReference'; instanceId: string; behavior: string }
   | { kind: 'UnknownBehaviorAssignmentInstance'; instanceId: string }
+  | { kind: 'UnknownDetectionProfileReference'; instanceId: string; profile: string }
+  | { kind: 'InvalidDetectionProfile'; key: string; message: string }
   | { kind: 'InvalidIconSlotReference'; archetype: string; symbol: string }
   | { kind: 'InvalidMapBounds'; width: number; height: number; timeDepth: number }
   | { kind: 'InvalidStartPosition'; start: Position3D }
