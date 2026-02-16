@@ -19,7 +19,7 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: In Progress (foundation implemented on 2026-02-16)
 
 ---
 
@@ -176,3 +176,24 @@ Exit criteria:
 1. Story prompt to level compiler.
 2. Multi-level campaign generation.
 3. Online generation API/service.
+
+---
+
+## Foundation Notes
+
+Implemented foundation modules:
+1. `frontend/src/data/generation/contracts.ts`
+2. `frontend/src/data/generation/random.ts`
+3. `frontend/src/data/generation/generator.ts`
+4. `frontend/src/data/generation/solver.ts`
+5. `frontend/src/data/generation/quality.ts`
+6. `frontend/src/data/generation/index.ts`
+7. `frontend/src/data/generation/random.test.ts`
+8. `frontend/src/data/generation/solver.test.ts`
+9. `frontend/src/data/generation/index.test.ts`
+
+Current behavior:
+1. Seeded deterministic candidate generation is available.
+2. Candidates are schema-validated, solvability-checked, and quality-gated.
+3. Output is in-memory content-pack data; fixture export tooling remains next.
+4. Rift placement generation is not implemented yet in this foundation pass.

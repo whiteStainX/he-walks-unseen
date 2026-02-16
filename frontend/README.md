@@ -58,6 +58,7 @@ npm run lint
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.
 - Enemy motion projection during bootstrap/load lives in `frontend/src/game/levelObjects.ts`.
+- Map-generation foundation lives in `frontend/src/data/generation/`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
@@ -67,9 +68,11 @@ npm run lint
 - `docs/web-design/OVERALL.md`
 - `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`
 - `docs/web-design/ENEMY_LOGIC_V1.md`
+- `docs/web-design/MAP_GENERATION_V1.md`
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-design/UI_WINDOW_SYSTEM.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
 - `docs/web-implementation/PHASE_07_PARADOX.md`
 - `docs/web-implementation/PHASE_08_POLISH.md`
 - `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
+- `docs/web-implementation/PHASE_12_MAP_GENERATION.md`

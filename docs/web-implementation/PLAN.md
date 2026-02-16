@@ -265,17 +265,17 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/MAP_GENERATION_V1.md`
 
 ### Deliverables
-- [ ] Generator request/result contracts and seeded RNG foundation
+- [x] Generator request/result contracts and seeded RNG foundation
 - [ ] Candidate constructor (layout + objects + enemies + rifts)
-- [ ] Deterministic solvability validator
-- [ ] Quality scoring + bounded retry loop
+- [x] Deterministic solvability validator
+- [x] Quality scoring + bounded retry loop
 - [ ] Fixture output + loader-path compatibility checks
 
 ### Exit Criteria
-- [ ] Accepted generated packs are schema-valid and solvable
-- [ ] Same seed + params produce identical output
-- [ ] No gameplay reducer special-casing for generated content
-- [ ] `npm run lint`, `npm run test`, and `npm run build` pass
+- [x] Accepted generated packs are schema-valid and solvable
+- [x] Same seed + params produce identical output
+- [x] No gameplay reducer special-casing for generated content
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass
 
 ---
 

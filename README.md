@@ -29,6 +29,7 @@ Current playable baseline:
 - Data-driven content packs loaded from `frontend/public/data/` with runtime pack switching
 - Data-driven enemy logic with validated movement policies and per-enemy detection profile overrides
 - Enemy patrol motion projected across time slices (loop/ping-pong)
+- Seeded map-generation foundation with validation/solver/quality gating pipeline
 
 ## Requirements
 
@@ -65,6 +66,7 @@ npm run dev
 - [Web Design Docs](docs/web-design/OVERALL.md)
 - [Phase 6 Content System](docs/web-design/PHASE_06_CONTENT_SYSTEM.md)
 - [Enemy Logic V1 Design](docs/web-design/ENEMY_LOGIC_V1.md)
+- [Map Generation V1 Design](docs/web-design/MAP_GENERATION_V1.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
@@ -72,6 +74,7 @@ npm run dev
 - [Phase 7 Paradox Plan](docs/web-implementation/PHASE_07_PARADOX.md)
 - [Phase 8 Polish Plan](docs/web-implementation/PHASE_08_POLISH.md)
 - [Phase 10 Enemy Logic Plan](docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md)
+- [Phase 12 Map Generation Plan](docs/web-implementation/PHASE_12_MAP_GENERATION.md)
 - [Agent Guide](AGENTS.md)
 
 ## License
