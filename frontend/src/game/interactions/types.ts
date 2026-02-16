@@ -67,6 +67,7 @@ export interface InteractionState {
   interactionConfig: InteractionConfig
   history: InteractionHistoryEntry[]
   detectionConfig: DetectionConfig
+  enemyDetectionConfigById: Record<string, DetectionConfig>
   lastDetection: DetectionReport | null
   paradoxConfig: ParadoxConfig
   lastParadox: ParadoxReport | null

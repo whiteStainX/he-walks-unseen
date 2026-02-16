@@ -227,12 +227,16 @@ Object temporal rendering:
 - render as a thin vertical pillar spanning visible window time range
 
 2. Moving object:
-- render object trajectory as a thin curve with anchor ticks per sampled time
+- render object trajectory as a thin tube-like path (not flat square-per-slice repetition)
 - keep anchor ticks visible even when curve smoothing is enabled
 
 3. Object/player contrast:
 - player trajectory is visually dominant
 - object trajectories are lighter and thinner
+
+Object body rendering rule:
+- object body meshes are focus-slice-first
+- temporal continuity is communicated primarily by pillar/tube trajectories
 
 Optional event connectors (if interaction anchor data is available):
 - draw a short connector from player anchor to object anchor at interaction time

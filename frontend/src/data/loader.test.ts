@@ -21,6 +21,7 @@ describe('loadDefaultBootContent', () => {
     expect(result.value.startPosition).toEqual({ x: 5, y: 5, t: 0 })
     expect(result.value.iconPackId).toBe('default-mono')
     expect(result.value.detectionConfig.enabled).toBe(true)
+    expect(result.value.enemyDetectionConfigById).toEqual({})
     expect(result.value.interactionConfig.maxPushChain).toBe(4)
     expect(result.value.levelObjectsConfig.instances.length).toBeGreaterThan(0)
   })
@@ -67,6 +68,12 @@ describe('loadBootContentFromPublic', () => {
         schemaVersion: 1,
         policies: { p: { kind: 'Static' } },
         assignments: { 'enemy.v': 'p' },
+        detectionProfiles: {
+          close: { enabled: true, delayTurns: 1, maxDistance: 1 },
+          long: { enabled: true, delayTurns: 2, maxDistance: 6 },
+        },
+        detectionAssignments: { 'enemy.v': 'long' },
+        defaultDetectionProfile: 'close',
       },
       '/data/variant.theme.json': {
         schemaVersion: 1,
@@ -111,6 +118,11 @@ describe('loadBootContentFromPublic', () => {
     expect(loaded.value.timeDepth).toBe(8)
     expect(loaded.value.startPosition).toEqual({ x: 1, y: 1, t: 0 })
     expect(loaded.value.iconPackId).toBe('default-mono')
+    expect(loaded.value.enemyDetectionConfigById['enemy.v']).toEqual({
+      enabled: true,
+      delayTurns: 2,
+      maxDistance: 6,
+    })
   })
 })
 

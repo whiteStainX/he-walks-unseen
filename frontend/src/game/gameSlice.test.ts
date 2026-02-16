@@ -49,6 +49,20 @@ describe('gameSlice', () => {
     expect(next.worldLine.path.at(-1)).toEqual({ x: 4, y: 5, t: 1 })
   })
 
+  it('advances enemy occupancy by patrol policy as time advances', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+
+    expect(objectsAt(initial.cube, { x: 2, y: 8, t: 0 }).map((obj) => obj.id)).toContain('enemy.alpha')
+
+    const waited = gameReducer(initial, waitTurn())
+
+    expect(waited.phase).toBe('Playing')
+    expect(objectsAt(waited.cube, { x: 3, y: 8, t: 1 }).map((obj) => obj.id)).toContain('enemy.alpha')
+    expect(objectsAt(waited.cube, { x: 2, y: 8, t: 1 }).map((obj) => obj.id)).not.toContain(
+      'enemy.alpha',
+    )
+  })
+
   it('rifts to past time and increments turn', () => {
     const initial = gameReducer(undefined, { type: 'init' })
     const moved = gameReducer(initial, movePlayer2D('east'))
@@ -210,6 +224,24 @@ describe('gameSlice', () => {
     expect(detected.lastDetection?.detected).toBe(true)
     expect(detected.lastDetection?.events[0]?.enemyId).toBe('enemy.alpha')
     expect(detected.status).toContain('detected by enemy.alpha')
+  })
+
+  it('uses per-enemy detection overrides when provided by content', () => {
+    const initial = gameReducer(undefined, { type: 'init' })
+    const seeded = {
+      ...initial,
+      detectionConfig: { enabled: false, delayTurns: 1, maxDistance: 0 },
+      enemyDetectionConfigById: {
+        'enemy.alpha': { enabled: true, delayTurns: 1, maxDistance: 8 },
+      },
+    }
+
+    const detected = gameReducer(seeded, waitTurn())
+
+    expect(detected.turn).toBe(1)
+    expect(detected.phase).toBe('Detected')
+    expect(detected.lastDetection?.detected).toBe(true)
+    expect(detected.lastDetection?.events[0]?.enemyId).toBe('enemy.alpha')
   })
 
   it('blocks gameplay actions after detection until restart', () => {
@@ -379,6 +411,7 @@ describe('gameSlice', () => {
     expect(applied.worldLine.path.at(-1)).toEqual(loaded.value.startPosition)
     expect(applied.phase).toBe('Playing')
     expect(applied.contentPackId).toBe('default')
+    expect(applied.enemyDetectionConfigById).toEqual({})
     expect(applied.status).toBe('Loaded content pack: default')
   })
 })

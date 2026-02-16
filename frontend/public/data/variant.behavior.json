@@ -13,5 +13,22 @@
   },
   "assignments": {
     "enemy.beta": "enemy_patrol_beta"
+  },
+  "detectionProfiles": {
+    "close_watch": {
+      "enabled": true,
+      "delayTurns": 1,
+      "maxDistance": 2
+    },
+    "long_watch": {
+      "enabled": true,
+      "delayTurns": 2,
+      "maxDistance": 5
+    }
+  },
+  "detectionAssignments": {
+    "enemy.beta": "long_watch"
+  },
+  "defaultDetectionProfile": "close_watch"
   }
 }
