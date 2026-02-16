@@ -263,6 +263,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Goal:** Generate schema-valid, solvable maps with deterministic seeded output.
 **Implementation Detail:** `docs/web-implementation/PHASE_12_MAP_GENERATION.md`
 **Design Detail:** `docs/web-design/MAP_GENERATION_V1.md`
+**Roadmap:** `docs/web-implementation/PHASE_12_LEVEL_GENERATION_ROADMAP.md`
 
 ### Deliverables
 - [x] Generator request/result contracts and seeded RNG foundation
