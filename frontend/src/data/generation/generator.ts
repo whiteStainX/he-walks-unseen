@@ -43,6 +43,51 @@ function clamp01(value: number): number {
   return value
 }
 
+function manhattan2D(a: Position2D, b: Position2D): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
+
+function fitExitToTimeBudget(input: {
+  start: Position2D
+  preferredExit: Position2D
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  maxSteps: number
+}): Position2D {
+  const exit = { ...input.preferredExit }
+
+  while (manhattan2D(input.start, exit) > input.maxSteps) {
+    const dx = exit.x - input.start.x
+    const dy = exit.y - input.start.y
+
+    if (Math.abs(dx) >= Math.abs(dy) && exit.x > input.minX) {
+      exit.x -= Math.sign(dx)
+      continue
+    }
+
+    if (exit.y > input.minY) {
+      exit.y -= Math.sign(dy)
+      continue
+    }
+
+    if (exit.x < input.maxX) {
+      exit.x += 1
+      continue
+    }
+
+    if (exit.y < input.maxY) {
+      exit.y += 1
+      continue
+    }
+
+    break
+  }
+
+  return exit
+}
+
 function resolveDifficulty(request: MapGenRequest, profile: GenerationProfile): MapGenDifficulty {
   return request.difficulty ?? profile.defaultDifficulty
 }
@@ -225,8 +270,19 @@ export function generateCandidateContent(input: {
   const width = request.board.width
   const height = request.board.height
   const timeDepth = request.board.timeDepth
-  const start = { x: profile.startInset, y: profile.startInset, t: 0 }
-  const exit = { x: width - 1 - profile.exitInset, y: height - 1 - profile.exitInset, t: 0 }
+  const startCell = { x: profile.startInset, y: profile.startInset }
+  const preferredExit = { x: width - 1 - profile.exitInset, y: height - 1 - profile.exitInset }
+  const adjustedExit = fitExitToTimeBudget({
+    start: startCell,
+    preferredExit,
+    minX: profile.startInset,
+    minY: profile.startInset,
+    maxX: width - 1 - profile.exitInset,
+    maxY: height - 1 - profile.exitInset,
+    maxSteps: Math.max(1, timeDepth - 2),
+  })
+  const start = { x: startCell.x, y: startCell.y, t: 0 }
+  const exit = { x: adjustedExit.x, y: adjustedExit.y, t: 0 }
   const reservedPath = buildGuaranteedPath(start, exit)
   const occupied = new Set<string>([key(start), key(exit)])
   const borderWalls: Position2D[] = []

@@ -76,4 +76,61 @@ describe('evaluateSolvabilityV1', () => {
     expect(report.solved).toBe(false)
     expect(report.shortestPathLength).toBeNull()
   })
+
+  it('uses tunnel rift transitions during search', () => {
+    const pack = basePack()
+    pack.level.instances = [
+      { id: 'exit.main', archetype: 'exit', position: { x: 4, y: 4, t: 0 } },
+      { id: 'wall.0', archetype: 'wall', position: { x: 2, y: 1, t: 0 } },
+      { id: 'wall.1', archetype: 'wall', position: { x: 1, y: 2, t: 0 } },
+      { id: 'wall.2', archetype: 'wall', position: { x: 0, y: 1, t: 0 } },
+      { id: 'wall.3', archetype: 'wall', position: { x: 1, y: 0, t: 0 } },
+      { id: 'rift.entry', archetype: 'rift_entry', position: { x: 1, y: 1, t: 0 } },
+      { id: 'rift.exit', archetype: 'rift_exit', position: { x: 4, y: 3, t: 0 } },
+    ]
+    pack.level.archetypes.rift_entry = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        { kind: 'Rift', target: { x: 4, y: 3, t: 2 }, bidirectional: true },
+      ],
+      render: {},
+    }
+    pack.level.archetypes.rift_exit = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        { kind: 'Rift', target: { x: 1, y: 1, t: 0 }, bidirectional: true },
+      ],
+      render: {},
+    }
+
+    const report = evaluateSolvabilityV1(pack, { maxDepth: 10, includeRift: true })
+
+    expect(report.solved).toBe(true)
+    expect(report.shortestPathLength).not.toBeNull()
+  })
+
+  it('supports push interaction in solvability search', () => {
+    const pack = basePack()
+    pack.level.instances = [
+      { id: 'exit.main', archetype: 'exit', position: { x: 2, y: 1, t: 0 } },
+      { id: 'box.0', archetype: 'box', position: { x: 2, y: 1, t: 0 } },
+    ]
+    pack.level.archetypes.box = {
+      kind: 'box',
+      components: [
+        { kind: 'BlocksMovement' },
+        { kind: 'Pushable' },
+        { kind: 'Pullable' },
+        { kind: 'TimePersistent' },
+      ],
+      render: {},
+    }
+
+    const report = evaluateSolvabilityV1(pack, { maxDepth: 6, includePushPull: true })
+
+    expect(report.solved).toBe(true)
+    expect(report.shortestPathLength).toBe(1)
+  })
 })

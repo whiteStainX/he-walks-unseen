@@ -76,7 +76,12 @@ export function generateMapPack(request: MapGenRequest): MapGenGenerationResult 
       continue
     }
 
-    const solver = evaluateSolvabilityV1(validated.value)
+    const solver = evaluateSolvabilityV1(validated.value, {
+      maxDepth: Math.min(16, validated.value.level.map.timeDepth),
+      maxNodes: 1500,
+      includePushPull: false,
+      includeRift: false,
+    })
 
     if (!solver.solved) {
       lastReason = `Unsolvable candidate on attempt ${attempt}`

@@ -201,5 +201,7 @@ Current behavior:
 2. Generation defaults are profile-driven (via validated generation profile).
 3. Candidates include baseline rift anchor pair generation (budget-driven).
 4. Rift target and conflict validation is enforced in content validation.
-5. Candidates are schema-validated, solvability-checked, and quality-gated.
-6. Output is in-memory content-pack data; fixture export tooling remains next.
+5. Solver upgraded to bounded interaction search with move/wait/rift/push/pull support.
+6. Generation gating currently uses bounded reduced-action solver settings for performance.
+7. Candidates are schema-validated, solvability-checked, and quality-gated.
+8. Output is in-memory content-pack data; fixture export tooling remains next.
