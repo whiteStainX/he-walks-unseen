@@ -30,6 +30,7 @@ Current playable baseline:
 - Data-driven enemy logic with validated movement policies and per-enemy detection profile overrides
 - Enemy patrol motion projected across time slices (loop/ping-pong)
 - Seeded map-generation foundation with validation/solver/quality gating pipeline
+- Profile-driven generation defaults with baseline generated rift anchors
 
 ## Requirements
 

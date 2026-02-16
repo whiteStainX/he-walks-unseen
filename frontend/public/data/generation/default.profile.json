@@ -44,7 +44,7 @@
         "maxWalls": 14,
         "maxDynamicObjects": 2,
         "maxEnemies": 2,
-        "maxRifts": 0
+        "maxRifts": 2
       },
       "minWallRatio": 0.5,
       "detectionRange": 2,
@@ -55,7 +55,7 @@
         "maxWalls": 20,
         "maxDynamicObjects": 3,
         "maxEnemies": 3,
-        "maxRifts": 0
+        "maxRifts": 4
       },
       "minWallRatio": 0.5,
       "detectionRange": 3,

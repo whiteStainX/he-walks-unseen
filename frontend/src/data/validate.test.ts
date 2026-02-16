@@ -186,6 +186,66 @@ describe('validateContentPack', () => {
       expect(result.error.kind).toBe('MissingIconPackId')
     }
   })
+
+  it('rejects out-of-bounds rift targets', () => {
+    const input = minimalValidInputs()
+    const level = input.level as {
+      archetypes: Record<string, unknown>
+      instances: Array<{ id: string; archetype: string; position: { x: number; y: number; t: number } }>
+    }
+    level.archetypes.rift = {
+      kind: 'rift',
+      components: [{ kind: 'Rift', target: { x: 99, y: 0, t: 0 }, bidirectional: true }],
+      render: {},
+    }
+    level.instances.push({
+      id: 'rift.1',
+      archetype: 'rift',
+      position: { x: 2, y: 2, t: 0 },
+    })
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('InvalidRiftTarget')
+    }
+  })
+
+  it('rejects conflicting rift definitions from the same source', () => {
+    const input = minimalValidInputs()
+    const level = input.level as {
+      archetypes: Record<string, unknown>
+      instances: Array<{ id: string; archetype: string; position: { x: number; y: number; t: number } }>
+    }
+    level.archetypes.riftA = {
+      kind: 'rift',
+      components: [{ kind: 'Rift', target: { x: 2, y: 2, t: 0 }, bidirectional: true }],
+      render: {},
+    }
+    level.archetypes.riftB = {
+      kind: 'rift',
+      components: [{ kind: 'Rift', target: { x: 3, y: 3, t: 0 }, bidirectional: true }],
+      render: {},
+    }
+    level.instances.push({
+      id: 'rift.a',
+      archetype: 'riftA',
+      position: { x: 1, y: 1, t: 0 },
+    })
+    level.instances.push({
+      id: 'rift.b',
+      archetype: 'riftB',
+      position: { x: 1, y: 1, t: 0 },
+    })
+
+    const result = validateContentPack(input)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.kind).toBe('ConflictingRiftSource')
+    }
+  })
 })
 
 describe('validateIconPackConfig', () => {

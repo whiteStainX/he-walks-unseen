@@ -317,6 +317,7 @@ function validateArchetypeAndInstanceRefs(
   behavior: BehaviorConfig,
 ): Result<null, ContentLoadError> {
   const instanceIds = new Set(level.instances.map((instance) => instance.id))
+  const riftBySource = new Map<string, string>()
 
   for (const instance of level.instances) {
     if (!level.archetypes[instance.archetype]) {
@@ -339,6 +340,49 @@ function validateArchetypeAndInstanceRefs(
           message: `Instance ${instance.id} position out of bounds`,
         },
       }
+    }
+
+    const archetype = level.archetypes[instance.archetype]
+    const riftComponents = archetype.components.filter(
+      (
+        component,
+      ): component is { kind: 'Rift'; target: Position3D; bidirectional: boolean } =>
+        component.kind === 'Rift',
+    )
+
+    if (riftComponents.length === 0) {
+      continue
+    }
+
+    const sourceKey = `${instance.position.x},${instance.position.y},${instance.position.t}`
+
+    for (const component of riftComponents) {
+      if (!isPositionInLevel(level, component.target)) {
+        return {
+          ok: false,
+          error: {
+            kind: 'InvalidRiftTarget',
+            archetype: instance.archetype,
+            target: component.target,
+          },
+        }
+      }
+
+      const targetSignature = `${component.target.x},${component.target.y},${component.target.t},${component.bidirectional ? 'b' : 'u'}`
+      const existing = riftBySource.get(sourceKey)
+
+      if (existing && existing !== targetSignature) {
+        return {
+          ok: false,
+          error: {
+            kind: 'ConflictingRiftSource',
+            source: instance.position,
+            archetype: instance.archetype,
+          },
+        }
+      }
+
+      riftBySource.set(sourceKey, targetSignature)
     }
   }
 

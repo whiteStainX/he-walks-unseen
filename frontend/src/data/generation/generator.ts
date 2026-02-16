@@ -279,6 +279,15 @@ export function generateCandidateContent(input: {
   const postBoxCells = postWallCells.filter((cell) => !occupied.has(key(cell)))
   const enemies = takeRandomCells(postBoxCells, budgets.maxEnemies, rng)
 
+  for (const enemy of enemies) {
+    occupied.add(key(enemy))
+  }
+
+  const postEnemyCells = postBoxCells.filter((cell) => !occupied.has(key(cell)))
+  const requestedRifts = Math.max(0, budgets.maxRifts)
+  const riftAnchorCount = requestedRifts >= 2 ? requestedRifts - (requestedRifts % 2) : 0
+  const riftCells = takeRandomCells(postEnemyCells, riftAnchorCount, rng)
+
   const archetypes = createArchetypes()
   const instances: ContentInstance[] = []
   let wallIndex = 0
@@ -348,6 +357,49 @@ export function generateCandidateContent(input: {
 
     behavior.assignments[enemyId] = policyId
     enemyIndex += 1
+  }
+
+  for (let index = 0; index + 1 < riftCells.length; index += 2) {
+    const sourceA = riftCells[index]
+    const sourceB = riftCells[index + 1]
+    const archetypeA = `rift.gen.${index / 2}.a`
+    const archetypeB = `rift.gen.${index / 2}.b`
+
+    archetypes[archetypeA] = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        {
+          kind: 'Rift',
+          target: { x: sourceB.x, y: sourceB.y, t: 0 },
+          bidirectional: true,
+        },
+      ],
+      render: { fill: '#ffffff', stroke: '#111111', symbol: 'rift' },
+    }
+    archetypes[archetypeB] = {
+      kind: 'rift',
+      components: [
+        { kind: 'TimePersistent' },
+        {
+          kind: 'Rift',
+          target: { x: sourceA.x, y: sourceA.y, t: 0 },
+          bidirectional: true,
+        },
+      ],
+      render: { fill: '#ffffff', stroke: '#111111', symbol: 'rift' },
+    }
+
+    instances.push({
+      id: `rift.${index / 2}.a`,
+      archetype: archetypeA,
+      position: { x: sourceA.x, y: sourceA.y, t: 0 },
+    })
+    instances.push({
+      id: `rift.${index / 2}.b`,
+      archetype: archetypeB,
+      position: { x: sourceB.x, y: sourceB.y, t: 0 },
+    })
   }
 
   if (enemyIndex > 0) {

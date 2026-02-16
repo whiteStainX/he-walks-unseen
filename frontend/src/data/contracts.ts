@@ -125,6 +125,8 @@ export type ContentLoadError =
   | { kind: 'InvalidSchemaVersion'; file: string; expected: number; actual: unknown }
   | { kind: 'MissingIconPackId'; themeId: string }
   | { kind: 'UnknownArchetypeReference'; instanceId: string; archetype: string }
+  | { kind: 'InvalidRiftTarget'; archetype: string; target: Position3D }
+  | { kind: 'ConflictingRiftSource'; source: Position3D; archetype: string }
   | { kind: 'InvalidBehaviorPathPoint'; key: string; point: Position3D | Position2D }
   | { kind: 'UnknownBehaviorReference'; instanceId: string; behavior: string }
   | { kind: 'UnknownBehaviorAssignmentInstance'; instanceId: string }

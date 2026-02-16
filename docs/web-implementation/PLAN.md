@@ -267,7 +267,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ### Deliverables
 - [x] Generator request/result contracts and seeded RNG foundation
-- [ ] Candidate constructor (layout + objects + enemies + rifts)
+- [x] Candidate constructor (layout + objects + enemies + rifts)
 - [x] Deterministic solvability validator
 - [x] Quality scoring + bounded retry loop
 - [ ] Fixture output + loader-path compatibility checks

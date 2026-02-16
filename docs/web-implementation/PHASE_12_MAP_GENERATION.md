@@ -199,6 +199,7 @@ Implemented foundation modules:
 Current behavior:
 1. Seeded deterministic candidate generation is available.
 2. Generation defaults are profile-driven (via validated generation profile).
-3. Candidates are schema-validated, solvability-checked, and quality-gated.
-4. Output is in-memory content-pack data; fixture export tooling remains next.
-5. Rift placement generation is not implemented yet in this foundation pass.
+3. Candidates include baseline rift anchor pair generation (budget-driven).
+4. Rift target and conflict validation is enforced in content validation.
+5. Candidates are schema-validated, solvability-checked, and quality-gated.
+6. Output is in-memory content-pack data; fixture export tooling remains next.
