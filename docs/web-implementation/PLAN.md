@@ -270,7 +270,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Candidate constructor (layout + objects + enemies + rifts)
 - [x] Deterministic solvability validator
 - [x] Quality scoring + bounded retry loop
-- [ ] Fixture output + loader-path compatibility checks
+- [x] Fixture output + loader-path compatibility checks
 
 ### Exit Criteria
 - [x] Accepted generated packs are schema-valid and solvable

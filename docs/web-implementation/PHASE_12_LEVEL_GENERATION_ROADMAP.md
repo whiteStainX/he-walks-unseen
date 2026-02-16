@@ -25,7 +25,7 @@ Current gaps:
 1. Core defaults are profile-driven, but topology/placement strategies are still code-fixed.
 2. Rift generation is baseline-only; strategy tuning is still code-fixed.
 3. Solver is interaction-aware but still bounded/approximate for generation throughput tuning.
-4. No generated-pack export + manifest integration.
+4. Export utilities exist, but no dedicated CLI/UI workflow yet for writing files to disk.
 
 ---
 

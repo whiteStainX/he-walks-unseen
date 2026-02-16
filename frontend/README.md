@@ -61,6 +61,7 @@ npm run lint
 - Map-generation foundation lives in `frontend/src/data/generation/`.
 - Default generation profile fixture lives in `frontend/public/data/generation/default.profile.json`.
 - Generated candidates now include baseline rift anchors and rift validation checks.
+- Generated export utilities live in `frontend/src/data/generation/export.ts`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.

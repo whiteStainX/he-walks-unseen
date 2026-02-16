@@ -195,6 +195,8 @@ Implemented foundation modules:
 11. `frontend/src/data/generation/profile.test.ts`
 12. `frontend/src/data/content/default.generation-profile.json`
 13. `frontend/public/data/generation/default.profile.json`
+14. `frontend/src/data/generation/export.ts`
+15. `frontend/src/data/generation/export.test.ts`
 
 Current behavior:
 1. Seeded deterministic candidate generation is available.
@@ -204,4 +206,5 @@ Current behavior:
 5. Solver upgraded to bounded interaction search with move/wait/rift/push/pull support.
 6. Generation gating currently uses bounded reduced-action solver settings for performance.
 7. Candidates are schema-validated, solvability-checked, and quality-gated.
-8. Output is in-memory content-pack data; fixture export tooling remains next.
+8. Generated packs can be serialized to public-data-compatible files.
+9. Loader compatibility is verified by integration test using exported files.

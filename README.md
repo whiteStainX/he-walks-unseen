@@ -31,6 +31,7 @@ Current playable baseline:
 - Enemy patrol motion projected across time slices (loop/ping-pong)
 - Seeded map-generation foundation with validation/solver/quality gating pipeline
 - Profile-driven generation defaults with baseline generated rift anchors
+- Generated-pack export utilities with loader-path compatibility tests
 
 ## Requirements
 
