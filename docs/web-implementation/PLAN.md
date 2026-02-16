@@ -258,6 +258,27 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ---
 
+## Phase 12: Map Generation (V1)
+
+**Goal:** Generate schema-valid, solvable maps with deterministic seeded output.
+**Implementation Detail:** `docs/web-implementation/PHASE_12_MAP_GENERATION.md`
+**Design Detail:** `docs/web-design/MAP_GENERATION_V1.md`
+
+### Deliverables
+- [x] Generator request/result contracts and seeded RNG foundation
+- [ ] Candidate constructor (layout + objects + enemies + rifts)
+- [x] Deterministic solvability validator
+- [x] Quality scoring + bounded retry loop
+- [ ] Fixture output + loader-path compatibility checks
+
+### Exit Criteria
+- [x] Accepted generated packs are schema-valid and solvable
+- [x] Same seed + params produce identical output
+- [x] No gameplay reducer special-casing for generated content
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass
+
+---
+
 ## Future Phases (Optional)
 
 - Full light cone model (distance-based)

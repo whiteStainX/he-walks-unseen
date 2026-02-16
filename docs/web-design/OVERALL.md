@@ -193,4 +193,5 @@ This is out of MVP scope but should inform data formats and tooling.
 - `RENDERING.md` (canvas/UI layout)
 - `PHASE_06_CONTENT_SYSTEM.md` (data-driven content loading design)
 - `ENEMY_LOGIC_V1.md` (deterministic enemy behavior contract for runtime and generation)
+- `MAP_GENERATION_V1.md` (seeded generation + solvability + quality gating contract)
 - `PHASE_03_5_ISOMETRIC_TIMECUBE.md` (isometric TimeCube panel)
