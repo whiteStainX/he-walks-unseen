@@ -84,6 +84,7 @@ npm run lint
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - App shell hooks/components live under `frontend/src/app/shell/` (HUD, overlays, keyboard/content loading hooks).
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
+- Board canvas rendering is container-measured and DPR-aware (`frontend/src/render/board/GameBoardCanvas.tsx`).
 
 ## References
 

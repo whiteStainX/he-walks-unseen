@@ -182,6 +182,23 @@ Validation:
 Remaining items:
 1. C8+ refactors remain pending.
 
+### 2026-02-17: C8 implemented
+
+Implemented:
+1. Replaced fixed board canvas backing size with container-measured sizing.
+2. Added responsive canvas viewport handling using `ResizeObserver` with `window.resize` fallback.
+3. Updated board renderer to scale by device pixel ratio while drawing in CSS-pixel coordinates.
+4. Removed hardcoded `560x560` canvas attribute dependency from `GameBoardCanvas`.
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C9 refactor remains pending.
+
 ---
 
 ## Docs Findings
@@ -442,6 +459,9 @@ Recommendation:
 Execution order: 7 (code)
 
 ### C8 (Low): Board rendering has fixed pixel canvas size
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: C8 implemented).
 
 Evidence:
 1. `frontend/src/render/board/GameBoardCanvas.tsx:28`

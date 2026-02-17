@@ -25,6 +25,7 @@ Phase 8 focuses on:
 Implemented in this pass:
 - input state machine with layer-aware directional gating (no cross-layer auto-dispatch)
 - board preview pipeline integrated (ready for intent-driven extensions)
+- board canvas upgraded to container-measured responsive backing size (DPR-aware)
 - lazy-loaded isometric panel to reduce initial bundle weight
 - accessibility baseline improvements (`role=\"status\"`, live updates, focusable overlays, keyboard layer closing)
 - optional settings panel with local-storage persistence for UI toggles
