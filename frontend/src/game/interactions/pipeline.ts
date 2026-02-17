@@ -6,6 +6,10 @@ import { executeRegisteredInteraction } from './registry'
 import type { InteractionAction, InteractionState, SuccessfulOutcome } from './types'
 
 function guardActivePhase(state: InteractionState): boolean {
+  if (state.phase === 'BootError') {
+    return false
+  }
+
   if (state.phase !== 'Playing') {
     state.status = 'Game already ended. Press R to restart.'
     return false

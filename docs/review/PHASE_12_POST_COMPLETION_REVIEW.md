@@ -137,6 +137,27 @@ Validation:
 Remaining items:
 1. C6+ refactors remain pending.
 
+### 2026-02-17: C6 implemented
+
+Implemented:
+1. Runtime fallback map is now opt-in and dev-only via `VITE_ENABLE_DEV_FALLBACK_LEVEL=true`.
+2. Default behavior is fail-fast on boot-content failure:
+- game starts in `BootError` phase
+- status clearly reports boot failure
+- gameplay actions are blocked until valid content is loaded
+3. Restart flow no longer implicitly falls back to embedded objects when no level config is loaded.
+4. Added policy unit tests:
+- `frontend/src/game/bootstrapPolicy.test.ts`
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C7+ refactors remain pending.
+
 ---
 
 ## Docs Findings
@@ -354,6 +375,9 @@ Recommendation:
 Execution order: 5 (code)
 
 ### C6 (Medium): Runtime fallback map is hardcoded and can mask content issues
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: C6 implemented).
 
 Evidence:
 1. `frontend/src/game/levelObjects.ts:7`

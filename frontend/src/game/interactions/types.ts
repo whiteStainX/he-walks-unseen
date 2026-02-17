@@ -10,7 +10,7 @@ import type {
   ParadoxReport,
 } from '../../core/paradox'
 
-export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox'
+export type GamePhase = 'Playing' | 'Won' | 'Detected' | 'Paradox' | 'BootError'
 
 export type InteractionAction =
   | { kind: 'Move'; direction: Direction2D }

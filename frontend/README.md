@@ -14,6 +14,10 @@ npm install
 npm run dev
 ```
 
+Optional dev fallback:
+- Set `VITE_ENABLE_DEV_FALLBACK_LEVEL=true` to allow booting with the built-in fallback level only when default content boot fails.
+- Without this flag, boot failure is fail-fast (`BootError`) until a valid content pack loads.
+
 ## Build
 
 ```bash
