@@ -96,6 +96,7 @@ npm run lint
 - `docs/web-design/UI_WINDOW_SYSTEM.md`
 - `docs/web-design/LEVEL_AUTHORING_WORKFLOW.md`
 - `docs/web-design/ICON_PACK_AUTHORING.md`
+- `docs/web-design/LEVEL_SYSTEM_FULL.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
 - `docs/web-implementation/PHASE_07_PARADOX.md`
 - `docs/web-implementation/PHASE_08_POLISH.md`

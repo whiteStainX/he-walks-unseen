@@ -289,3 +289,25 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - Level editor
 - Shareable levels
 - Mobile/touch support
+
+---
+
+## Phase 13: Full Level System
+
+**Goal:** Build full level-system infrastructure (curated + generated + hybrid lifecycle, pack metadata, validation tooling).
+**Implementation Detail:** `docs/web-implementation/PHASE_13_FULL_LEVEL_SYSTEM.md`
+**Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
+
+### Deliverables
+- [ ] Manifest metadata extension with backward compatibility
+- [ ] Pack validation CLI for single/all packs
+- [ ] Pack-class quality policy (`curated/generated/hybrid/experimental`)
+- [ ] Generation export metadata support for hybrid workflow
+- [ ] Minimal runtime UI surfacing of pack class/difficulty
+
+### Exit Criteria
+- [ ] Existing packs load unchanged
+- [ ] Extended manifest entries parse/validate correctly
+- [ ] `npm run validate:pack -- --all` gates manifest packs deterministically
+- [ ] Generated/hybrid packs enforce configured solver/quality policy
+- [ ] `npm run lint`, `npm run test`, and `npm run build` pass
