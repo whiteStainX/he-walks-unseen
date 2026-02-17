@@ -31,7 +31,8 @@ export interface ResolveRiftInput {
   instruction?: RiftInstruction
   settings: RiftSettings
   resources: RiftResources
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   timeDepth: number
 }
 
@@ -67,7 +68,7 @@ export function resolveRift(input: ResolveRiftInput): Result<RiftResolution, Rif
     return { ok: false, error: { kind: 'InvalidTargetTime', t: target.t } }
   }
 
-  if (!isInBounds(target, input.boardSize)) {
+  if (!isInBounds(target, input.boardWidth, input.boardHeight)) {
     return { ok: false, error: { kind: 'InvalidTargetSpace', x: target.x, y: target.y } }
   }
 

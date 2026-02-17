@@ -18,6 +18,33 @@ Verified on current branch:
 
 ---
 
+## Progress Update
+
+### 2026-02-17: C1 implemented
+
+Implemented:
+1. Runtime model now uses `boardWidth` + `boardHeight` (removed single `boardSize` field).
+2. Bounds checks now accept rectangular dimensions (`isInBounds(position, width, height)`).
+3. Interaction pipeline and rift resolution now use width/height.
+4. Loader exposes width/height separately.
+5. Board and iso renders now frame/draw rectangular boards.
+6. Solver no longer rejects non-square maps.
+
+Validation:
+1. Added rectangular-map regression checks in:
+- `frontend/src/data/loader.test.ts`
+- `frontend/src/data/generation/solver.test.ts`
+2. Re-ran quality gates:
+- `npm run -s lint`
+- `npm run -s test -- --run`
+- `npm run -s build`
+- `npx tsc --noEmit`
+
+Remaining items:
+1. C2+ refactors (large file split, hardcoded strategy extraction) remain pending.
+
+---
+
 ## Docs Findings
 
 ### D1 (High): Phase 6 design doc is stale and contradicts current implementation

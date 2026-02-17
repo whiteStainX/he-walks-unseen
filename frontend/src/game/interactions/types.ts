@@ -55,7 +55,8 @@ export interface InteractionConfig {
 }
 
 export interface InteractionState {
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   timeDepth: number
   cube: TimeCube
   worldLine: WorldLineState

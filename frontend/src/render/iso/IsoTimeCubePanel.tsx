@@ -9,7 +9,8 @@ import { buildTrackRenderModel, type IsoPathMode, type IsoTrackPoint } from './t
 import { minimalMonoTheme } from '../theme'
 
 interface IsoTimeCubePanelProps {
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   currentTurn: number
   viewModel: IsoCubeViewModel
 }
@@ -51,30 +52,38 @@ function cellToWorld(
   y: number,
   t: number,
   startT: number,
-  boardSize: number,
+  boardWidth: number,
+  boardHeight: number,
 ): [number, number, number] {
-  const half = (boardSize - 1) / 2
-  return [(x - half) * CELL_SPACING, (t - startT) * SLICE_SPACING, (y - half) * CELL_SPACING]
+  const halfX = (boardWidth - 1) / 2
+  const halfZ = (boardHeight - 1) / 2
+  return [(x - halfX) * CELL_SPACING, (t - startT) * SLICE_SPACING, (y - halfZ) * CELL_SPACING]
 }
 
 function trackPointToWorld(
   point: IsoTrackPoint,
   startT: number,
-  boardSize: number,
+  boardWidth: number,
+  boardHeight: number,
   yOffset: number,
 ): [number, number, number] {
-  const world = cellToWorld(point.x, point.y, point.t, startT, boardSize)
+  const world = cellToWorld(point.x, point.y, point.t, startT, boardWidth, boardHeight)
   return [world[0], world[1] + yOffset, world[2]]
 }
 
-function sliceFramePoints(boardSize: number, levelY: number): Array<[number, number, number]> {
-  const half = (boardSize * CELL_SPACING) / 2
+function sliceFramePoints(
+  boardWidth: number,
+  boardHeight: number,
+  levelY: number,
+): Array<[number, number, number]> {
+  const halfX = (boardWidth * CELL_SPACING) / 2
+  const halfZ = (boardHeight * CELL_SPACING) / 2
   return [
-    [-half, levelY, -half],
-    [half, levelY, -half],
-    [half, levelY, half],
-    [-half, levelY, half],
-    [-half, levelY, -half],
+    [-halfX, levelY, -halfZ],
+    [halfX, levelY, -halfZ],
+    [halfX, levelY, halfZ],
+    [-halfX, levelY, halfZ],
+    [-halfX, levelY, -halfZ],
   ]
 }
 
@@ -219,16 +228,23 @@ function ObjectTrackTube({
   )
 }
 
-export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeCubePanelProps) {
+export function IsoTimeCubePanel({
+  boardWidth,
+  boardHeight,
+  currentTurn,
+  viewModel,
+}: IsoTimeCubePanelProps) {
   const cameraRef = useRef<OrthographicCamera | null>(null)
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
   const [pathMode, setPathMode] = useState<IsoPathMode>('organic')
   const theme = minimalMonoTheme.iso
   const levelCount = viewModel.slices.length
-  const boardSpan = boardSize * CELL_SPACING
+  const boardSpanX = boardWidth * CELL_SPACING
+  const boardSpanZ = boardHeight * CELL_SPACING
+  const boardSpanMax = Math.max(boardSpanX, boardSpanZ)
   const verticalSpan = Math.max(0, (levelCount - 1) * SLICE_SPACING)
   const verticalOffset = -verticalSpan / 2
-  const framingSpan = Math.max(boardSpan * 1.4, verticalSpan * 2 + boardSpan * 0.58)
+  const framingSpan = Math.max(boardSpanMax * 1.4, verticalSpan * 2 + boardSpanMax * 0.58)
   const fitZoom = Math.max(12, 110 / framingSpan)
   const baseZoom = fitZoom * ZOOM_STEP_FACTOR ** DEFAULT_ZOOM_IN_STEPS
   const minZoom = fitZoom * 0.7
@@ -356,7 +372,7 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             return (
               <group key={`slice-frame-${slice.t}`}>
                 <mesh position={[0, levelY, 0]}>
-                  <boxGeometry args={[boardSpan, SLICE_THICKNESS, boardSpan]} />
+                  <boxGeometry args={[boardSpanX, SLICE_THICKNESS, boardSpanZ]} />
                   <meshBasicMaterial
                     color={slabFill}
                     transparent
@@ -365,7 +381,7 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
                   />
                 </mesh>
                 <Line
-                  points={sliceFramePoints(boardSize, levelY + SLICE_THICKNESS / 2 + 0.01)}
+                  points={sliceFramePoints(boardWidth, boardHeight, levelY + SLICE_THICKNESS / 2 + 0.01)}
                   color={lineColor}
                   transparent
                   opacity={frameOpacity}
@@ -376,7 +392,14 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
           })}
 
           {viewModel.objectPillars.map((pillar) => {
-            const base = cellToWorld(pillar.x, pillar.y, pillar.startT, viewModel.startT, boardSize)
+            const base = cellToWorld(
+              pillar.x,
+              pillar.y,
+              pillar.startT,
+              viewModel.startT,
+              boardWidth,
+              boardHeight,
+            )
             const startY = (pillar.startT - viewModel.startT) * SLICE_SPACING + SLICE_THICKNESS / 2
             const endY = (pillar.endT - viewModel.startT) * SLICE_SPACING + SLICE_THICKNESS / 2
             const height = Math.max(SLICE_SPACING * 0.65, endY - startY + OBJECT_HEIGHT * 0.55)
@@ -402,7 +425,13 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
               <group key={`object-track-${track.id}`}>
                 {track.renderTrack.localPaths.map((path, index) => {
                   const worldPoints = path.map((point) =>
-                    trackPointToWorld(point, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
+                    trackPointToWorld(
+                      point,
+                      viewModel.startT,
+                      boardWidth,
+                      boardHeight,
+                      OBJECT_HEIGHT + 0.12,
+                    ),
                   )
                   const averageT = path.reduce((sum, point) => sum + point.t, 0) / path.length
 
@@ -420,8 +449,20 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
                   <Line
                     key={`object-track-rift-${track.id}-${index}`}
                     points={[
-                      trackPointToWorld(bridge.from, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
-                      trackPointToWorld(bridge.to, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12),
+                      trackPointToWorld(
+                        bridge.from,
+                        viewModel.startT,
+                        boardWidth,
+                        boardHeight,
+                        OBJECT_HEIGHT + 0.12,
+                      ),
+                      trackPointToWorld(
+                        bridge.to,
+                        viewModel.startT,
+                        boardWidth,
+                        boardHeight,
+                        OBJECT_HEIGHT + 0.12,
+                      ),
                     ]}
                     color={pathColor}
                     dashed
@@ -436,7 +477,13 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
                 {track.renderTrack.anchors.map((anchor, index) => (
                   <TrackAnchor
                     key={`object-track-anchor-${track.id}-${index}`}
-                    position={trackPointToWorld(anchor, viewModel.startT, boardSize, OBJECT_HEIGHT + 0.12)}
+                    position={trackPointToWorld(
+                      anchor,
+                      viewModel.startT,
+                      boardWidth,
+                      boardHeight,
+                      OBJECT_HEIGHT + 0.12,
+                    )}
                     size={0.055}
                     color={pathColor}
                     opacity={0.6}
@@ -454,7 +501,14 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
                 return null
               }
 
-              const position = cellToWorld(object.x, object.y, slice.t, viewModel.startT, boardSize)
+              const position = cellToWorld(
+                object.x,
+                object.y,
+                slice.t,
+                viewModel.startT,
+                boardWidth,
+                boardHeight,
+              )
               const palette =
                 object.kind === 'enemy'
                   ? {
@@ -489,7 +543,14 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
 
             return slice.playerSelves.map((self) => {
               const isCurrentTurnSelf = self.turn === currentTurn
-              const position = cellToWorld(self.x, self.y, slice.t, viewModel.startT, boardSize)
+              const position = cellToWorld(
+                self.x,
+                self.y,
+                slice.t,
+                viewModel.startT,
+                boardWidth,
+                boardHeight,
+              )
 
               return (
                 <PlayerBlock
@@ -505,7 +566,7 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
 
           {playerTrack.localPaths.map((path, index) => {
             const worldPoints = path.map((point) =>
-              trackPointToWorld(point, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
+              trackPointToWorld(point, viewModel.startT, boardWidth, boardHeight, PLAYER_HEIGHT + 0.16),
             )
             const averageT = path.reduce((sum, point) => sum + point.t, 0) / path.length
 
@@ -525,8 +586,20 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
             <Line
               key={`player-track-rift-${index}`}
               points={[
-                trackPointToWorld(bridge.from, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
-                trackPointToWorld(bridge.to, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16),
+                trackPointToWorld(
+                  bridge.from,
+                  viewModel.startT,
+                  boardWidth,
+                  boardHeight,
+                  PLAYER_HEIGHT + 0.16,
+                ),
+                trackPointToWorld(
+                  bridge.to,
+                  viewModel.startT,
+                  boardWidth,
+                  boardHeight,
+                  PLAYER_HEIGHT + 0.16,
+                ),
               ]}
               color={theme.worldLine}
               dashed
@@ -540,7 +613,13 @@ export function IsoTimeCubePanel({ boardSize, currentTurn, viewModel }: IsoTimeC
 
           {playerTrack.anchors.map((anchor) => {
             const isCurrentTurnAnchor = anchor.turn === currentTurn
-            const position = trackPointToWorld(anchor, viewModel.startT, boardSize, PLAYER_HEIGHT + 0.16)
+            const position = trackPointToWorld(
+              anchor,
+              viewModel.startT,
+              boardWidth,
+              boardHeight,
+              PLAYER_HEIGHT + 0.16,
+            )
 
             return (
               <TrackAnchor

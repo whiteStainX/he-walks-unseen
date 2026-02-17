@@ -9,7 +9,7 @@ function enemyPositionByTime(
   enemyId: string,
   t: number,
 ): { x: number; y: number; t: number } | null {
-  const bootstrapped = bootstrapLevelObjects(8, 6, config)
+  const bootstrapped = bootstrapLevelObjects(8, 8, 6, config)
 
   if (!bootstrapped.ok) {
     return null

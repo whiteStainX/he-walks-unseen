@@ -8,7 +8,8 @@ function baseInput(): ResolveRiftInput {
     instruction: undefined,
     settings: { defaultDelta: 3, baseEnergyCost: 0 },
     resources: { energy: null },
-    boardSize: 12,
+    boardWidth: 12,
+    boardHeight: 12,
     timeDepth: 24,
   }
 }

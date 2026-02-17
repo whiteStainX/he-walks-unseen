@@ -21,7 +21,8 @@ import type { TimeCube } from '../core/timeCube'
 const bootContent = loadDefaultBootContent()
 const DEFAULT_CONTENT_PACK_ID = 'default'
 
-const DEFAULT_BOARD_SIZE = bootContent.ok ? bootContent.value.boardSize : 12
+const DEFAULT_BOARD_WIDTH = bootContent.ok ? bootContent.value.boardWidth : 12
+const DEFAULT_BOARD_HEIGHT = bootContent.ok ? bootContent.value.boardHeight : 12
 const DEFAULT_TIME_DEPTH = bootContent.ok ? bootContent.value.timeDepth : 24
 const DEFAULT_START_POSITION: Position3D = bootContent.ok
   ? bootContent.value.startPosition
@@ -82,7 +83,8 @@ function bootstrapObjectState(): {
   status: string
 } {
   const bootstrap = bootstrapLevelObjects(
-    DEFAULT_BOARD_SIZE,
+    DEFAULT_BOARD_WIDTH,
+    DEFAULT_BOARD_HEIGHT,
     DEFAULT_TIME_DEPTH,
     bootContent.ok ? bootContent.value.levelObjectsConfig : undefined,
   )
@@ -98,8 +100,8 @@ function bootstrapObjectState(): {
   return {
     objectRegistry: { archetypes: {} },
     cube: {
-      width: DEFAULT_BOARD_SIZE,
-      height: DEFAULT_BOARD_SIZE,
+      width: DEFAULT_BOARD_WIDTH,
+      height: DEFAULT_BOARD_HEIGHT,
       timeDepth: DEFAULT_TIME_DEPTH,
       slices: Array.from({ length: DEFAULT_TIME_DEPTH }, (_, t) => ({
         t,
@@ -121,7 +123,8 @@ function bootstrapObjectStateForContent(content: LoadedBootContent): {
   message: string
 } {
   const bootstrap = bootstrapLevelObjects(
-    content.boardSize,
+    content.boardWidth,
+    content.boardHeight,
     content.timeDepth,
     content.levelObjectsConfig,
   )
@@ -141,7 +144,8 @@ function createInitialState(): GameState {
   const objectState = bootstrapObjectState()
 
   return {
-    boardSize: DEFAULT_BOARD_SIZE,
+    boardWidth: DEFAULT_BOARD_WIDTH,
+    boardHeight: DEFAULT_BOARD_HEIGHT,
     timeDepth: DEFAULT_TIME_DEPTH,
     objectRegistry: objectState.objectRegistry,
     cube: objectState.cube,
@@ -235,7 +239,8 @@ const gameSlice = createSlice({
 
       state.contentPackId = action.payload.packId
       state.levelObjectsConfig = action.payload.content.levelObjectsConfig
-      state.boardSize = action.payload.content.boardSize
+      state.boardWidth = action.payload.content.boardWidth
+      state.boardHeight = action.payload.content.boardHeight
       state.timeDepth = action.payload.content.timeDepth
       state.startPosition = action.payload.content.startPosition
       state.objectRegistry = bootstrapped.objectRegistry
@@ -264,8 +269,13 @@ const gameSlice = createSlice({
     },
     restart(state) {
       const objectState = state.levelObjectsConfig
-        ? bootstrapLevelObjects(state.boardSize, state.timeDepth, state.levelObjectsConfig)
-        : bootstrapLevelObjects(state.boardSize, state.timeDepth)
+        ? bootstrapLevelObjects(
+            state.boardWidth,
+            state.boardHeight,
+            state.timeDepth,
+            state.levelObjectsConfig,
+          )
+        : bootstrapLevelObjects(state.boardWidth, state.boardHeight, state.timeDepth)
 
       if (!objectState.ok) {
         state.status = 'Restart failed: object bootstrap error'

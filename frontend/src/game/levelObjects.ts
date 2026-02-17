@@ -180,7 +180,8 @@ function applyProjectedPatrolOccupancy(
 }
 
 export function bootstrapLevelObjects(
-  boardSize: number,
+  boardWidth: number,
+  boardHeight: number,
   timeDepth: number,
   config: LevelObjectsConfig = defaultLevelObjectsConfig,
 ): Result<BootstrapObjectsResult, ObjectBootstrapError> {
@@ -203,7 +204,7 @@ export function bootstrapLevelObjects(
     resolvedObjects.push(resolved.value)
   }
 
-  const emptyCube = createTimeCube(boardSize, boardSize, timeDepth)
+  const emptyCube = createTimeCube(boardWidth, boardHeight, timeDepth)
   const placed = placeObjects(emptyCube, resolvedObjects)
 
   if (!placed.ok) {

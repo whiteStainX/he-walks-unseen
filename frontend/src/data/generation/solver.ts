@@ -225,13 +225,10 @@ function tunnelActionsAtCurrent(state: InteractionState): InteractionAction[] {
 }
 
 function createInitialSolverState(pack: ContentPack): InteractionState | null {
-  if (pack.level.map.width !== pack.level.map.height) {
-    return null
-  }
-
   const objectsConfig = toLevelObjectsConfig(pack)
   const bootstrapped = bootstrapLevelObjects(
     pack.level.map.width,
+    pack.level.map.height,
     pack.level.map.timeDepth,
     objectsConfig,
   )
@@ -247,7 +244,8 @@ function createInitialSolverState(pack: ContentPack): InteractionState | null {
   }
 
   return {
-    boardSize: pack.level.map.width,
+    boardWidth: pack.level.map.width,
+    boardHeight: pack.level.map.height,
     timeDepth: pack.level.map.timeDepth,
     cube: bootstrapped.value.cube,
     worldLine: createWorldLine(pack.level.map.start),

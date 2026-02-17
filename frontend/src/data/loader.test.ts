@@ -16,7 +16,8 @@ describe('loadDefaultBootContent', () => {
       return
     }
 
-    expect(result.value.boardSize).toBe(12)
+    expect(result.value.boardWidth).toBe(12)
+    expect(result.value.boardHeight).toBe(12)
     expect(result.value.timeDepth).toBe(24)
     expect(result.value.startPosition).toEqual({ x: 5, y: 5, t: 0 })
     expect(result.value.iconPackId).toBe('default-mono')
@@ -54,7 +55,7 @@ describe('loadBootContentFromPublic', () => {
       '/data/variant.level.json': {
         schemaVersion: 1,
         meta: { id: 'v', name: 'v' },
-        map: { width: 6, height: 6, timeDepth: 8, start: { x: 1, y: 1, t: 0 } },
+        map: { width: 6, height: 4, timeDepth: 8, start: { x: 1, y: 1, t: 0 } },
         archetypes: {
           enemy: {
             kind: 'enemy',
@@ -114,7 +115,8 @@ describe('loadBootContentFromPublic', () => {
       return
     }
 
-    expect(loaded.value.boardSize).toBe(6)
+    expect(loaded.value.boardWidth).toBe(6)
+    expect(loaded.value.boardHeight).toBe(4)
     expect(loaded.value.timeDepth).toBe(8)
     expect(loaded.value.startPosition).toEqual({ x: 1, y: 1, t: 0 })
     expect(loaded.value.iconPackId).toBe('default-mono')

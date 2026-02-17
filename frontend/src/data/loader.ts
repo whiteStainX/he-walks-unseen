@@ -135,7 +135,8 @@ function toEnemyDetectionConfigById(content: ContentPack): Record<string, Detect
 
 export interface LoadedBootContent {
   levelObjectsConfig: LevelObjectsConfig
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   timeDepth: number
   startPosition: ContentPack['level']['map']['start']
   iconPackId: string
@@ -159,7 +160,8 @@ function toLoadedBootContent(content: ContentPack): LoadedBootContent {
 
   return {
     levelObjectsConfig: toLevelObjectsConfig(content),
-    boardSize: content.level.map.width,
+    boardWidth: content.level.map.width,
+    boardHeight: content.level.map.height,
     timeDepth: content.level.map.timeDepth,
     startPosition: content.level.map.start,
     iconPackId: content.theme.iconPackId,

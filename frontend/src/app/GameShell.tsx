@@ -133,7 +133,8 @@ export function GameShell() {
   const settingsOverlayRef = useRef<HTMLElement | null>(null)
   const stateOverlayRef = useRef<HTMLElement | null>(null)
 
-  const boardSize = useAppSelector((state) => state.game.boardSize)
+  const boardWidth = useAppSelector((state) => state.game.boardWidth)
+  const boardHeight = useAppSelector((state) => state.game.boardHeight)
   const cube = useAppSelector((state) => state.game.cube)
   const worldLine = useAppSelector((state) => state.game.worldLine)
   const currentTime = useAppSelector((state) => state.game.currentTime)
@@ -189,7 +190,8 @@ export function GameShell() {
       buildActionPreview({
         cube,
         worldLine,
-        boardSize,
+        boardWidth,
+        boardHeight,
         timeDepth,
         intent: queuedIntent,
         maxPushChain: interactionConfig.maxPushChain,
@@ -198,7 +200,8 @@ export function GameShell() {
     [
       cube,
       worldLine,
-      boardSize,
+      boardWidth,
+      boardHeight,
       timeDepth,
       queuedIntent,
       interactionConfig.maxPushChain,
@@ -519,7 +522,8 @@ export function GameShell() {
           <div className={['board-stage', uiSettings.showIsoPanel ? '' : 'board-stage--single'].filter(Boolean).join(' ')}>
             <div className="board-stage-item">
               <GameBoardCanvas
-                boardSize={boardSize}
+                boardWidth={boardWidth}
+                boardHeight={boardHeight}
                 iconPackId={iconPackId}
                 objectsAtCurrentTime={objectsAtCurrentTime}
                 selvesAtCurrentTime={selvesAtCurrentTime}
@@ -532,7 +536,12 @@ export function GameShell() {
             {uiSettings.showIsoPanel ? (
               <div className="board-stage-item iso-stage-item">
                 <Suspense fallback={<div className="iso-fallback">Loading isometric view...</div>}>
-                  <LazyIsoTimeCubePanel boardSize={boardSize} currentTurn={turn} viewModel={isoViewModel} />
+                  <LazyIsoTimeCubePanel
+                    boardWidth={boardWidth}
+                    boardHeight={boardHeight}
+                    currentTurn={turn}
+                    viewModel={isoViewModel}
+                  />
                 </Suspense>
                 <p className="iso-caption">
                   Iso window t={isoViewModel.startT}..{isoViewModel.endT}, focus={isoViewModel.focusT}
@@ -661,7 +670,7 @@ export function GameShell() {
                 <div className="metric-grid">
                   <div className="metric-item">
                     <span className="metric-label">Board</span>
-                    <span className="metric-value">{boardSize} x {boardSize}</span>
+                    <span className="metric-value">{boardWidth} x {boardHeight}</span>
                   </div>
                   <div className="metric-item">
                     <span className="metric-label">Depth</span>

@@ -45,7 +45,8 @@ describe('buildActionPreview', () => {
     const preview = buildActionPreview({
       cube: placed.value,
       worldLine: createWorldLine({ x: 2, y: 2, t: 0 }),
-      boardSize: 8,
+      boardWidth: 8,
+      boardHeight: 8,
       timeDepth: 6,
       intent: { mode: 'Move', direction: 'east' },
       maxPushChain: 4,
@@ -68,7 +69,8 @@ describe('buildActionPreview', () => {
     const preview = buildActionPreview({
       cube: placed.value,
       worldLine: createWorldLine({ x: 2, y: 2, t: 0 }),
-      boardSize: 8,
+      boardWidth: 8,
+      boardHeight: 8,
       timeDepth: 6,
       intent: { mode: 'Push', direction: 'east' },
       maxPushChain: 4,
@@ -85,7 +87,8 @@ describe('buildActionPreview', () => {
     const preview = buildActionPreview({
       cube,
       worldLine: createWorldLine({ x: 2, y: 2, t: 0 }),
-      boardSize: 8,
+      boardWidth: 8,
+      boardHeight: 8,
       timeDepth: 6,
       intent: { mode: 'Pull', direction: 'east' },
       maxPushChain: 4,
@@ -114,7 +117,8 @@ describe('buildActionPreview', () => {
     const preview = buildActionPreview({
       cube: createTimeCube(8, 8, 6),
       worldLine: r2.value,
-      boardSize: 8,
+      boardWidth: 8,
+      boardHeight: 8,
       timeDepth: 6,
       intent: { mode: 'Move', direction: 'east' },
       maxPushChain: 4,
@@ -129,7 +133,8 @@ describe('buildActionPreview', () => {
     const preview = buildActionPreview({
       cube: createTimeCube(8, 8, 6),
       worldLine: createWorldLine({ x: 2, y: 2, t: 0 }),
-      boardSize: 8,
+      boardWidth: 8,
+      boardHeight: 8,
       timeDepth: 6,
       intent: { mode: 'Pull', direction: 'east' },
       maxPushChain: 4,

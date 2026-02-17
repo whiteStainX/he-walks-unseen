@@ -59,7 +59,7 @@ function collectPushChain(
 
     const nextCursor = movePosition(cursor, direction)
 
-    if (!isInBounds(nextCursor, state.boardSize)) {
+    if (!isInBounds(nextCursor, state.boardWidth, state.boardHeight)) {
       return { ok: false, error: { kind: 'NoSpaceToPush' } }
     }
 
@@ -70,7 +70,13 @@ function collectPushChain(
 export const pushInteractionHandler: InteractionHandler<'Push'> = {
   kind: 'Push',
   execute(state, action) {
-    const step = nextNormalStep(state.worldLine, state.boardSize, state.timeDepth, action.direction)
+    const step = nextNormalStep(
+      state.worldLine,
+      state.boardWidth,
+      state.boardHeight,
+      state.timeDepth,
+      action.direction,
+    )
 
     if (!step.ok) {
       switch (step.error.kind) {

@@ -19,7 +19,8 @@ export function oppositeDirection(direction: Direction2D): Direction2D {
 
 export function nextNormalStep(
   worldLine: WorldLineState,
-  boardSize: number,
+  boardWidth: number,
+  boardHeight: number,
   timeDepth: number,
   direction: Direction2D,
 ): InteractionResult<{ current: Position3D; next: Position3D }> {
@@ -31,7 +32,7 @@ export function nextNormalStep(
 
   const spatial = movePosition(current, direction)
 
-  if (!isInBounds(spatial, boardSize)) {
+  if (!isInBounds(spatial, boardWidth, boardHeight)) {
     return { ok: false, error: { kind: 'OutOfBounds' } }
   }
 

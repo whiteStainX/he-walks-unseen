@@ -4,7 +4,13 @@ import type { InteractionHandler } from './types'
 export const moveInteractionHandler: InteractionHandler<'Move'> = {
   kind: 'Move',
   execute(state, action) {
-    const step = nextNormalStep(state.worldLine, state.boardSize, state.timeDepth, action.direction)
+    const step = nextNormalStep(
+      state.worldLine,
+      state.boardWidth,
+      state.boardHeight,
+      state.timeDepth,
+      action.direction,
+    )
 
     if (!step.ok) {
       switch (step.error.kind) {
@@ -47,4 +53,3 @@ export const moveInteractionHandler: InteractionHandler<'Move'> = {
     }
   },
 }
-
