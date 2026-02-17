@@ -215,11 +215,29 @@ Validation:
 Remaining items:
 1. No remaining C-series findings from this review.
 
+### 2026-02-17: D1-D4 implemented
+
+Implemented:
+1. D1: updated `docs/web-design/PHASE_06_CONTENT_SYSTEM.md` with post-Phase-12 current reality and removed stale readiness claims.
+2. D2: updated `docs/web-design/UI_WINDOW_SYSTEM.md` to treat `StateOverlay` + `Tab` as implemented contract (not proposed).
+3. D3: added `docs/web-design/LEVEL_AUTHORING_WORKFLOW.md` as the canonical manual+generated authoring guide.
+4. D4: added `docs/web-design/ICON_PACK_AUTHORING.md` for slot/schema/fallback authoring policy.
+5. Added doc cross-links in `frontend/README.md` for new authoring references.
+
+Validation:
+1. docs-only pass (consistency review against current runtime contracts and paths).
+
+Remaining items:
+1. No remaining D-series findings from this review.
+
 ---
 
 ## Docs Findings
 
 ### D1 (High): Phase 6 design doc is stale and contradicts current implementation
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: D1-D4 implemented).
 
 Evidence:
 1. `docs/web-design/PHASE_06_CONTENT_SYSTEM.md:282`
@@ -244,6 +262,9 @@ Execution order: 1
 
 ### D2 (Medium): UI window spec still labels implemented behavior as “proposed/open”
 
+Status:
+1. Resolved on 2026-02-17 (see progress update: D1-D4 implemented).
+
 Evidence:
 1. `docs/web-design/UI_WINDOW_SYSTEM.md:134`
 2. `docs/web-design/UI_WINDOW_SYSTEM.md:148`
@@ -264,6 +285,9 @@ Execution order: 2
 
 ### D3 (Medium): No dedicated authoring doc for level design workflow (manual + generated)
 
+Status:
+1. Resolved on 2026-02-17 (see progress update: D1-D4 implemented).
+
 Evidence:
 1. Existing details are split across `README.md`, `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, and generation docs.
 2. No single “how to design levels” guide exists.
@@ -282,6 +306,9 @@ Recommendation:
 Execution order: 3
 
 ### D4 (Medium): No dedicated icon-pack authoring guideline
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: D1-D4 implemented).
 
 Evidence:
 1. `docs/web-design/UI_WINDOW_SYSTEM.md` defines intent, but not an actionable authoring pipeline.
