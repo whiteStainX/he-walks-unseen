@@ -8,7 +8,12 @@
 
 ## Status
 
-- `Status`: Planned
+- `Status`: In Progress
+
+Progress:
+1. 13A manifest extension implemented (metadata + backward-compatible parsing).
+2. 13B validation CLI implemented (`npm run validate:pack`).
+3. Remaining: 13C/13D/13E.
 
 ---
 

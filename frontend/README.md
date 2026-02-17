@@ -35,6 +35,13 @@ Notes:
 - Writes files to `frontend/public/data/generated/` by default.
 - Updates `frontend/public/data/index.json` with the generated pack id.
 
+## Validate Packs
+
+```bash
+npm run validate:pack -- --all
+npm run validate:pack -- --pack-id default
+```
+
 ## Test
 
 ```bash

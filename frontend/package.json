@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "preview": "vite preview",
-    "gen:pack": "vite-node scripts/export-generated-pack.ts"
+    "gen:pack": "vite-node scripts/export-generated-pack.ts",
+    "validate:pack": "vite-node scripts/validate-pack.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

@@ -299,15 +299,15 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
 
 ### Deliverables
-- [ ] Manifest metadata extension with backward compatibility
-- [ ] Pack validation CLI for single/all packs
+- [x] Manifest metadata extension with backward compatibility
+- [x] Pack validation CLI for single/all packs
 - [ ] Pack-class quality policy (`curated/generated/hybrid/experimental`)
 - [ ] Generation export metadata support for hybrid workflow
 - [ ] Minimal runtime UI surfacing of pack class/difficulty
 
 ### Exit Criteria
 - [ ] Existing packs load unchanged
-- [ ] Extended manifest entries parse/validate correctly
-- [ ] `npm run validate:pack -- --all` gates manifest packs deterministically
+- [x] Extended manifest entries parse/validate correctly
+- [x] `npm run validate:pack -- --all` gates manifest packs deterministically
 - [ ] Generated/hybrid packs enforce configured solver/quality policy
 - [ ] `npm run lint`, `npm run test`, and `npm run build` pass

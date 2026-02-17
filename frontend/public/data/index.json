@@ -3,15 +3,37 @@
   "packs": [
     {
       "id": "default",
-      "name": "Default Lab"
+      "name": "Default Lab",
+      "class": "curated",
+      "difficulty": "normal",
+      "tags": ["baseline", "tutorial"],
+      "source": {
+        "kind": "manual",
+        "author": "project"
+      }
     },
     {
       "id": "variant",
-      "name": "Variant Hall"
+      "name": "Variant Hall",
+      "class": "curated",
+      "difficulty": "normal",
+      "tags": ["variant"],
+      "source": {
+        "kind": "manual",
+        "author": "project"
+      }
     },
     {
       "id": "generated/fixture-001",
-      "name": "Generated fixture-001"
+      "name": "Generated fixture-001",
+      "class": "generated",
+      "difficulty": "normal",
+      "tags": ["fixture", "generated"],
+      "source": {
+        "kind": "generator",
+        "seed": "fixture-001",
+        "profileId": "default-v1"
+      }
     }
   ]
 }
