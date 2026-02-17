@@ -209,6 +209,12 @@ Use this mapping when planning implementation tasks from this spec:
 
 4. Isometric helper visual style and depth readability
 - `frontend/src/render/iso/IsoTimeCubePanel.tsx`
+- `frontend/src/render/iso/IsoSlices.tsx`
+- `frontend/src/render/iso/IsoTracks.tsx`
+- `frontend/src/render/iso/IsoActors.tsx`
+- `frontend/src/render/iso/IsoCameraControls.tsx`
+- `frontend/src/render/iso/constants.ts`
+- `frontend/src/render/iso/camera.ts`
 - `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 5. Input layers and transitions

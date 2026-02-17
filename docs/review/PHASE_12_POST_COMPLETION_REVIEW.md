@@ -66,6 +66,28 @@ Validation:
 Remaining items:
 1. C3+ refactors remain pending.
 
+### 2026-02-17: C3 implemented
+
+Implemented:
+1. Split isometric rendering into focused modules:
+- `frontend/src/render/iso/IsoSlices.tsx`
+- `frontend/src/render/iso/IsoTracks.tsx`
+- `frontend/src/render/iso/IsoActors.tsx`
+- `frontend/src/render/iso/IsoCameraControls.tsx`
+- `frontend/src/render/iso/constants.ts`
+- `frontend/src/render/iso/camera.ts`
+2. Reduced `frontend/src/render/iso/IsoTimeCubePanel.tsx` to orchestration layer.
+3. Moved major geometry/opacity/camera tuning values into theme config (`frontend/src/render/theme.ts` → `iso.view`).
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C4+ refactors remain pending.
+
 ---
 
 ## Docs Findings

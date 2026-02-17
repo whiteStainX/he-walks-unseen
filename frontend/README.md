@@ -74,6 +74,7 @@ npm run lint
 - Generated export utilities live in `frontend/src/data/generation/export.ts`.
 - Generated pack CLI exporter lives in `frontend/scripts/export-generated-pack.ts`.
 - Render features are organized under `frontend/src/render/board/` and `frontend/src/render/iso/`.
+- Isometric rendering is split by responsibility (`IsoTimeCubePanel`, `IsoSlices`, `IsoTracks`, `IsoActors`, `IsoCameraControls`) under `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - App shell hooks/components live under `frontend/src/app/shell/` (HUD, overlays, keyboard/content loading hooks).
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
