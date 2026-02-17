@@ -158,6 +158,30 @@ Validation:
 Remaining items:
 1. C7+ refactors remain pending.
 
+### 2026-02-17: C7 implemented
+
+Implemented:
+1. Removed unused queued-input pathway from input state machine:
+- removed `queuedDirectional`
+- removed `flushDirectionalInput`
+2. Simplified directional input handling:
+- directional intent dispatches immediately only in `Gameplay` layer
+- non-gameplay layers now strictly gate directional actions
+3. Updated app wiring and tests:
+- `frontend/src/app/GameShell.tsx`
+- `frontend/src/app/shell/useKeyboardControls.ts`
+- `frontend/src/app/inputStateMachine.test.ts`
+4. Aligned phase docs wording from “input buffering” to “input gating”.
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C8+ refactors remain pending.
+
 ---
 
 ## Docs Findings
@@ -396,6 +420,9 @@ Recommendation:
 Execution order: 6 (code)
 
 ### C7 (Low): Input state machine contains unused queued-input pathway
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: C7 implemented).
 
 Evidence:
 1. `frontend/src/app/inputStateMachine.ts:15`

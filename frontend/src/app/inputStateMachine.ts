@@ -4,7 +4,7 @@ export type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 
 export type InputLayer = 'Gameplay' | 'ActionMenu' | 'StateOverlay' | 'LogOverlay' | 'SystemMenu'
 
-export interface BufferedDirectionalIntent {
+export interface DirectionalIntent {
   mode: DirectionalActionMode
   direction: Direction2D
 }
@@ -12,19 +12,16 @@ export interface BufferedDirectionalIntent {
 export interface InputStateMachine {
   layer: InputLayer
   mode: DirectionalActionMode
-  queuedDirectional: BufferedDirectionalIntent | null
 }
 
 export interface DirectionalInputResult {
-  next: InputStateMachine
-  immediate: BufferedDirectionalIntent | null
+  immediate: DirectionalIntent | null
 }
 
 export function createInputStateMachine(): InputStateMachine {
   return {
     layer: 'Gameplay',
     mode: 'Move',
-    queuedDirectional: null,
   }
 }
 
@@ -102,37 +99,18 @@ export function pushDirectionalInput(
   machine: InputStateMachine,
   direction: Direction2D,
 ): DirectionalInputResult {
-  const intent: BufferedDirectionalIntent = {
+  const intent: DirectionalIntent = {
     mode: machine.mode,
     direction,
   }
 
   if (machine.layer === 'Gameplay') {
     return {
-      next: machine,
       immediate: intent,
     }
   }
 
   return {
-    next: machine,
     immediate: null,
-  }
-}
-
-export function flushDirectionalInput(machine: InputStateMachine): DirectionalInputResult {
-  if (machine.layer !== 'Gameplay' || !machine.queuedDirectional) {
-    return {
-      next: machine,
-      immediate: null,
-    }
-  }
-
-  return {
-    next: {
-      ...machine,
-      queuedDirectional: null,
-    },
-    immediate: machine.queuedDirectional,
   }
 }

@@ -12,7 +12,6 @@ import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 import { applyCssVars } from '../render/theme'
 import {
   createInputStateMachine,
-  flushDirectionalInput,
   type DirectionalActionMode,
   type InputStateMachine,
 } from './inputStateMachine'
@@ -77,8 +76,6 @@ export function GameShell() {
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
   const objectsAtCurrentTime = objectsAtTime(cube, currentTime)
-  const queuedIntent = inputMachine.queuedDirectional
-
   const isoViewModel = useMemo(
     () =>
       buildIsoViewModel({
@@ -110,7 +107,7 @@ export function GameShell() {
         boardWidth,
         boardHeight,
         timeDepth,
-        intent: queuedIntent,
+        intent: null,
         maxPushChain: interactionConfig.maxPushChain,
         allowPull: interactionConfig.allowPull,
       }),
@@ -120,7 +117,6 @@ export function GameShell() {
       boardWidth,
       boardHeight,
       timeDepth,
-      queuedIntent,
       interactionConfig.maxPushChain,
       interactionConfig.allowPull,
     ],
@@ -145,14 +141,9 @@ export function GameShell() {
 
   const applyMachineTransition = useCallback(
     (nextMachine: InputStateMachine) => {
-      const flushed = flushDirectionalInput(nextMachine)
-      setInputMachine(flushed.next)
-
-      if (flushed.immediate) {
-        dispatchDirectionalIntent(flushed.immediate)
-      }
+      setInputMachine(nextMachine)
     },
-    [dispatchDirectionalIntent],
+    [],
   )
 
   useContentPackManifest(setAvailablePackIds)

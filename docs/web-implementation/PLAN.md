@@ -183,7 +183,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Implementation Detail:** `docs/web-implementation/PHASE_08_POLISH.md`
 
 ### Deliverables
-- [x] Input buffering + intent preview
+- [x] Layer-aware input gating + intent preview
 - [x] Render/runtime smoothing and chunking improvements
 - [x] Accessibility baseline improvements
 - [x] Settings panel (optional, non-destructive toggles)

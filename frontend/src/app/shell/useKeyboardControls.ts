@@ -158,8 +158,6 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
 
         if (result.immediate) {
           dispatchDirectionalIntent(result.immediate)
-        } else {
-          applyMachineTransition(result.next)
         }
 
         return
