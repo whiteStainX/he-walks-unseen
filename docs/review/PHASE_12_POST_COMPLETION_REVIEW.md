@@ -43,6 +43,29 @@ Validation:
 Remaining items:
 1. C2+ refactors (large file split, hardcoded strategy extraction) remain pending.
 
+### 2026-02-17: C2 implemented
+
+Implemented:
+1. Extracted UI settings persistence into `frontend/src/app/shell/useUiSettings.ts`.
+2. Extracted content-pack manifest/load effects into `frontend/src/app/shell/useContentPackLoading.ts`.
+3. Extracted keyboard/input orchestration into `frontend/src/app/shell/useKeyboardControls.ts`.
+4. Extracted HUD and overlays into dedicated components:
+- `frontend/src/app/shell/HudPanels.tsx`
+- `frontend/src/app/shell/BottomHintsBar.tsx`
+- `frontend/src/app/shell/LogOverlay.tsx`
+- `frontend/src/app/shell/StateOverlay.tsx`
+- `frontend/src/app/shell/SettingsOverlay.tsx`
+5. Simplified `frontend/src/app/GameShell.tsx` to shell composition + derived view state orchestration.
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C3+ refactors remain pending.
+
 ---
 
 ## Docs Findings

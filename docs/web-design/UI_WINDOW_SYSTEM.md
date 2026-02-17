@@ -194,6 +194,11 @@ Use this mapping when planning implementation tasks from this spec:
 
 1. HUD composition and overlays
 - `frontend/src/app/GameShell.tsx`
+- `frontend/src/app/shell/HudPanels.tsx`
+- `frontend/src/app/shell/LogOverlay.tsx`
+- `frontend/src/app/shell/StateOverlay.tsx`
+- `frontend/src/app/shell/SettingsOverlay.tsx`
+- `frontend/src/app/shell/BottomHintsBar.tsx`
 
 2. Layout and responsive behavior
 - `frontend/src/App.css`
@@ -208,6 +213,7 @@ Use this mapping when planning implementation tasks from this spec:
 
 5. Input layers and transitions
 - `frontend/src/app/inputStateMachine.ts`
+- `frontend/src/app/shell/useKeyboardControls.ts`
 
 6. Planned icon-pack rendering integration
 - `frontend/src/render/board/` (board draw pipeline)
