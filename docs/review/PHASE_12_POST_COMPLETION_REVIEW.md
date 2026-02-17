@@ -88,6 +88,55 @@ Validation:
 Remaining items:
 1. C4+ refactors remain pending.
 
+### 2026-02-17: C4 implemented
+
+Implemented:
+1. Extracted shared content conversion into `frontend/src/data/contentAdapter.ts`:
+- `buildLevelObjectsConfigFromContent`
+- `deriveRulesDetectionConfig`
+- `buildEnemyDetectionConfigByIdFromContent`
+2. Reused adapter in:
+- `frontend/src/data/loader.ts`
+- `frontend/src/data/generation/solver.ts`
+3. Removed duplicated conversion logic from both modules.
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C5+ refactors remain pending.
+
+### 2026-02-17: C5 implemented
+
+Implemented:
+1. Extended generation profile contract with data-driven tuning blocks:
+- `solverGate` (generation solver bounds/feature switches)
+- `qualityWeights` (quality scoring weights/caps)
+- `strategies` (wall target + patrol path/policy selectors)
+2. Updated profile validation and default fixtures:
+- `frontend/src/data/generation/profile.ts`
+- `frontend/src/data/content/default.generation-profile.json`
+- `frontend/public/data/generation/default.profile.json`
+3. Updated generation runtime to consume profile tuning:
+- `frontend/src/data/generation/index.ts` now uses `solverGate` and `qualityWeights`
+- `frontend/src/data/generation/generator.ts` now uses `strategies`
+- `frontend/src/data/generation/quality.ts` now uses profile-provided weights
+4. Expanded tests for strategy/quality/solver-gate behavior:
+- `frontend/src/data/generation/index.test.ts`
+- `frontend/src/data/generation/profile.test.ts`
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. C6+ refactors remain pending.
+
 ---
 
 ## Docs Findings

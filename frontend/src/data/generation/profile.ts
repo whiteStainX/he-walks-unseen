@@ -1,8 +1,14 @@
 import type { Result } from '../../core/result'
 import type {
+  GenerationQualityWeights,
+  GenerationSolverGateProfile,
+  GenerationStrategies,
   GenerationDifficultyProfile,
   GenerationProfile,
   MapGenDifficulty,
+  PatrolBehaviorStrategy,
+  PatrolPathOrderStrategy,
+  WallTargetStrategy,
 } from './contracts'
 import defaultGenerationProfile from '../content/default.generation-profile.json'
 
@@ -14,6 +20,143 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isIntegerAtLeast(value: unknown, min: number): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= min
+}
+
+function isBoolean(value: unknown): value is boolean {
+  return typeof value === 'boolean'
+}
+
+function isWallTargetStrategy(value: unknown): value is WallTargetStrategy {
+  return value === 'randomRange' || value === 'maxBudget'
+}
+
+function isPatrolPathOrderStrategy(value: unknown): value is PatrolPathOrderStrategy {
+  return value === 'clockwise' || value === 'shuffled'
+}
+
+function isPatrolBehaviorStrategy(value: unknown): value is PatrolBehaviorStrategy {
+  return value === 'mixed' || value === 'loop' || value === 'pingpong' || value === 'static'
+}
+
+function validateSolverGateProfile(
+  value: unknown,
+): Result<GenerationSolverGateProfile, GenerationProfileError> {
+  if (!isRecord(value)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'solverGate must be an object',
+      },
+    }
+  }
+
+  if (
+    !isIntegerAtLeast(value.maxDepthCap, 1) ||
+    !isIntegerAtLeast(value.maxNodes, 1) ||
+    !isBoolean(value.includePushPull) ||
+    !isBoolean(value.includeRift)
+  ) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'solverGate values are invalid',
+      },
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      maxDepthCap: value.maxDepthCap,
+      maxNodes: value.maxNodes,
+      includePushPull: value.includePushPull,
+      includeRift: value.includeRift,
+    },
+  }
+}
+
+function validateQualityWeights(
+  value: unknown,
+): Result<GenerationQualityWeights, GenerationProfileError> {
+  if (!isRecord(value)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'qualityWeights must be an object',
+      },
+    }
+  }
+
+  if (
+    !isIntegerAtLeast(value.baseScore, 0) ||
+    !isIntegerAtLeast(value.pathCap, 0) ||
+    !isIntegerAtLeast(value.enemyWeight, 0) ||
+    !isIntegerAtLeast(value.enemyCap, 0) ||
+    !isIntegerAtLeast(value.wallDivisor, 1) ||
+    !isIntegerAtLeast(value.wallCap, 0) ||
+    !isIntegerAtLeast(value.boxWeight, 0) ||
+    !isIntegerAtLeast(value.boxCap, 0)
+  ) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'qualityWeights values are invalid',
+      },
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      baseScore: value.baseScore,
+      pathCap: value.pathCap,
+      enemyWeight: value.enemyWeight,
+      enemyCap: value.enemyCap,
+      wallDivisor: value.wallDivisor,
+      wallCap: value.wallCap,
+      boxWeight: value.boxWeight,
+      boxCap: value.boxCap,
+    },
+  }
+}
+
+function validateStrategies(value: unknown): Result<GenerationStrategies, GenerationProfileError> {
+  if (!isRecord(value)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'strategies must be an object',
+      },
+    }
+  }
+
+  if (
+    !isWallTargetStrategy(value.wallTarget) ||
+    !isPatrolPathOrderStrategy(value.patrolPathOrder) ||
+    !isPatrolBehaviorStrategy(value.patrolBehavior)
+  ) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidGenerationProfile',
+        message: 'strategies values are invalid',
+      },
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      wallTarget: value.wallTarget,
+      patrolPathOrder: value.patrolPathOrder,
+      patrolBehavior: value.patrolBehavior,
+    },
+  }
 }
 
 function validateDifficultyProfile(
@@ -276,6 +419,24 @@ export function validateGenerationProfile(
     }
   }
 
+  const solverGate = validateSolverGateProfile(input.solverGate)
+
+  if (!solverGate.ok) {
+    return solverGate
+  }
+
+  const qualityWeights = validateQualityWeights(input.qualityWeights)
+
+  if (!qualityWeights.ok) {
+    return qualityWeights
+  }
+
+  const strategies = validateStrategies(input.strategies)
+
+  if (!strategies.ok) {
+    return strategies
+  }
+
   if (
     typeof input.theme.id !== 'string' ||
     input.theme.id.length === 0 ||
@@ -351,6 +512,9 @@ export function validateGenerationProfile(
         enabled: input.detection.enabled,
         delayTurns: input.detection.delayTurns,
       },
+      solverGate: solverGate.value,
+      qualityWeights: qualityWeights.value,
+      strategies: strategies.value,
       difficultyProfiles: {
         easy: easy.value,
         normal: normal.value,

@@ -2,6 +2,9 @@ import type { Result } from '../../core/result'
 import type { ContentLoadError, ContentPack } from '../contracts'
 
 export type MapGenDifficulty = 'easy' | 'normal' | 'hard'
+export type WallTargetStrategy = 'randomRange' | 'maxBudget'
+export type PatrolPathOrderStrategy = 'clockwise' | 'shuffled'
+export type PatrolBehaviorStrategy = 'mixed' | 'loop' | 'pingpong' | 'static'
 
 /** Board geometry for generated level output. */
 export interface MapGenBoard {
@@ -33,6 +36,33 @@ export interface GenerationDifficultyProfile {
   qualityThreshold: number
 }
 
+/** Solver gate tuning used during generation acceptance checks. */
+export interface GenerationSolverGateProfile {
+  maxDepthCap: number
+  maxNodes: number
+  includePushPull: boolean
+  includeRift: boolean
+}
+
+/** Weighted quality scoring knobs for generated candidates. */
+export interface GenerationQualityWeights {
+  baseScore: number
+  pathCap: number
+  enemyWeight: number
+  enemyCap: number
+  wallDivisor: number
+  wallCap: number
+  boxWeight: number
+  boxCap: number
+}
+
+/** Strategy selectors controlling topology and patrol policy generation. */
+export interface GenerationStrategies {
+  wallTarget: WallTargetStrategy
+  patrolPathOrder: PatrolPathOrderStrategy
+  patrolBehavior: PatrolBehaviorStrategy
+}
+
 /** External JSON contract that drives map-generation defaults. */
 export interface GenerationProfile {
   schemaVersion: 1
@@ -55,6 +85,9 @@ export interface GenerationProfile {
     enabled: boolean
     delayTurns: number
   }
+  solverGate: GenerationSolverGateProfile
+  qualityWeights: GenerationQualityWeights
+  strategies: GenerationStrategies
   difficultyProfiles: Record<MapGenDifficulty, GenerationDifficultyProfile>
   theme: {
     id: string

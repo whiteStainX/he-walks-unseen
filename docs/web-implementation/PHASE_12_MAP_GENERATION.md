@@ -208,15 +208,17 @@ Implemented foundation modules:
 Current behavior:
 1. Seeded deterministic candidate generation is available.
 2. Generation defaults are profile-driven (via validated generation profile).
-3. Candidates include baseline rift anchor pair generation (budget-driven).
-4. Rift target and conflict validation is enforced in content validation.
-5. Solver upgraded to bounded interaction search with move/wait/rift/push/pull support.
-6. Generation gating currently uses bounded reduced-action solver settings for performance.
-7. Candidates are schema-validated, solvability-checked, and quality-gated.
-8. Generated packs can be serialized to public-data-compatible files.
-9. Loader compatibility is verified by integration test using exported files.
-10. CLI workflow is available via `npm run gen:pack -- --seed <seed> --pack-id <id>`.
-11. Baseline generated fixture pack is present at `frontend/public/data/generated/fixture-001.*`.
+3. Solver gate presets are profile-driven (`solverGate`).
+4. Quality scoring weights are profile-driven (`qualityWeights`).
+5. Topology/patrol strategy selectors are profile-driven (`strategies`).
+6. Candidates include baseline rift anchor pair generation (budget-driven).
+7. Rift target and conflict validation is enforced in content validation.
+8. Solver upgraded to bounded interaction search with move/wait/rift/push/pull support.
+9. Candidates are schema-validated, solvability-checked, and quality-gated.
+10. Generated packs can be serialized to public-data-compatible files.
+11. Loader compatibility is verified by integration test using exported files.
+12. CLI workflow is available via `npm run gen:pack -- --seed <seed> --pack-id <id>`.
+13. Baseline generated fixture pack is present at `frontend/public/data/generated/fixture-001.*`.
 
 CLI usage:
 1. `cd frontend`

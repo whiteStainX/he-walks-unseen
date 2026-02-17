@@ -67,9 +67,11 @@ npm run lint
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.
+- Shared content-to-runtime adapter lives in `frontend/src/data/contentAdapter.ts` (reused by loader and generation solver).
 - Enemy motion projection during bootstrap/load lives in `frontend/src/game/levelObjects.ts`.
 - Map-generation foundation lives in `frontend/src/data/generation/`.
 - Default generation profile fixture lives in `frontend/public/data/generation/default.profile.json`.
+- Generation profile now includes solver gate presets, quality weights, and topology/patrol strategy selectors.
 - Generated candidates now include baseline rift anchors and rift validation checks.
 - Generated export utilities live in `frontend/src/data/generation/export.ts`.
 - Generated pack CLI exporter lives in `frontend/scripts/export-generated-pack.ts`.
