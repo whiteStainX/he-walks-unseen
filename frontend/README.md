@@ -42,6 +42,10 @@ npm run validate:pack -- --all
 npm run validate:pack -- --pack-id default
 ```
 
+Policy notes:
+- `generated` and `hybrid` packs enforce solver + quality gates.
+- `curated` packs enforce content/schema validity and emit solver warnings when not solver-confirmed.
+
 ## Test
 
 ```bash

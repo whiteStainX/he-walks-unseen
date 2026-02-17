@@ -13,7 +13,8 @@
 Progress:
 1. 13A manifest extension implemented (metadata + backward-compatible parsing).
 2. 13B validation CLI implemented (`npm run validate:pack`).
-3. Remaining: 13C/13D/13E.
+3. 13C pack-class quality policy implemented and enforced by validation CLI.
+4. Remaining: 13D/13E.
 
 ---
 

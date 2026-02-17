@@ -12,6 +12,7 @@ import {
   validateIconPackConfig,
   validateLevelSymbolSlots,
 } from '../src/data/validate'
+import { evaluatePackClassPolicy } from '../src/data/packPolicy'
 
 interface CliArgs {
   all: boolean
@@ -171,6 +172,22 @@ async function validatePackAtPath(
     return {
       ok: false,
       message: `symbol validation failed (${entry.id}): ${formatContentLoadError(symbolValidation.error)}`,
+    }
+  }
+
+  const policy = evaluatePackClassPolicy({
+    entry,
+    content: content.value,
+  })
+
+  for (const warning of policy.warnings) {
+    console.warn(`[validate:pack] warn (${entry.id}): ${warning}`)
+  }
+
+  if (!policy.ok) {
+    return {
+      ok: false,
+      message: `policy validation failed (${entry.id}): ${policy.failureReason ?? 'unknown policy failure'}`,
     }
   }
 

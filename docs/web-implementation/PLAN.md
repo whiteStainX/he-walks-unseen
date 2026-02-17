@@ -301,7 +301,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 ### Deliverables
 - [x] Manifest metadata extension with backward compatibility
 - [x] Pack validation CLI for single/all packs
-- [ ] Pack-class quality policy (`curated/generated/hybrid/experimental`)
+- [x] Pack-class quality policy (`curated/generated/hybrid/experimental`)
 - [ ] Generation export metadata support for hybrid workflow
 - [ ] Minimal runtime UI surfacing of pack class/difficulty
 
@@ -309,5 +309,5 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [ ] Existing packs load unchanged
 - [x] Extended manifest entries parse/validate correctly
 - [x] `npm run validate:pack -- --all` gates manifest packs deterministically
-- [ ] Generated/hybrid packs enforce configured solver/quality policy
+- [x] Generated/hybrid packs enforce configured solver/quality policy
 - [ ] `npm run lint`, `npm run test`, and `npm run build` pass
