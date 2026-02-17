@@ -111,7 +111,8 @@ describe('generation export loader compatibility', () => {
       return
     }
 
-    expect(loaded.value.boardSize).toBe(generated.value.content.level.map.width)
+    expect(loaded.value.boardWidth).toBe(generated.value.content.level.map.width)
+    expect(loaded.value.boardHeight).toBe(generated.value.content.level.map.height)
     expect(loaded.value.timeDepth).toBe(generated.value.content.level.map.timeDepth)
     expect(loaded.value.startPosition).toEqual(generated.value.content.level.map.start)
   })

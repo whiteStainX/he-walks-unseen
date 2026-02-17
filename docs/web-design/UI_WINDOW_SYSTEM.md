@@ -2,7 +2,7 @@
 
 > **Purpose:** Define the HUD/overlay model for a map-first, low-cognitive-load experience.
 > **Scope:** `frontend/src/app/`, `frontend/src/render/`, input layers, overlays.
-> **References:** `docs/web-design/OVERALL.md`, `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`, `docs/web-design/RENDERING.md`, `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
+> **References:** `docs/web-design/OVERALL.md`, `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`, `docs/web-design/RENDERING.md`, `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`, `docs/web-design/ICON_PACK_AUTHORING.md`
 
 ---
 
@@ -108,8 +108,8 @@ Triggered by `F`:
 - directional reminder
 - interaction key summary
 
-### STATE Details (proposed)
-Triggered by dedicated key (candidate: `Tab`):
+### STATE Details (implemented)
+Triggered by `Tab`:
 - depth, pack, board size
 - object count on current slice
 - player coordinate
@@ -128,11 +128,9 @@ Triggered by dedicated key (candidate: `Tab`):
 Current layers:
 1. `Gameplay`
 2. `ActionMenu`
-3. `LogOverlay`
-4. `SystemMenu` (settings)
-
-Planned extension:
-5. `StateOverlay` (detailed state)
+3. `StateOverlay`
+4. `LogOverlay`
+5. `SystemMenu` (settings)
 
 Ownership rule:
 - only active layer consumes its inputs
@@ -141,12 +139,10 @@ Ownership rule:
 
 Transition baseline:
 - `F`: `Gameplay <-> ActionMenu`
+- `Tab`: `Gameplay <-> StateOverlay`
 - `L`: `Gameplay <-> LogOverlay`
 - `M`: `Gameplay <-> SystemMenu`
 - `Esc`: close active non-gameplay layer
-
-Proposed transition:
-- `Tab`: `Gameplay <-> StateOverlay`
 
 ---
 
@@ -179,12 +175,10 @@ Rule:
 
 ## 8. Open Decisions For Next Iteration
 
-1. Confirm key for state detail overlay (`Tab` vs another key).
-2. Decide whether compact `STATE` includes `Depth` or keeps it detail-only.
-3. Decide whether `Danger` toggle remains always visible or moves to detail/settings.
-4. Define exact content of `StateOverlay` (player-focused only vs optional diagnostics section).
-5. Finalize icon-pack manifest schema (`SVG`-first with `PNG` fallback) and validation strategy.
-6. Decide whether icon pack is level-bound, theme-bound, or player setting.
+1. Decide whether compact `STATE` includes `Depth` or keeps it detail-only.
+2. Decide whether `Danger` toggle remains always visible or moves to detail/settings.
+3. Further narrow `StateOverlay` content for player-facing vs debug-focused metrics.
+4. Expand icon-pack authoring policy for curated/community packs.
 
 ---
 
@@ -194,6 +188,11 @@ Use this mapping when planning implementation tasks from this spec:
 
 1. HUD composition and overlays
 - `frontend/src/app/GameShell.tsx`
+- `frontend/src/app/shell/HudPanels.tsx`
+- `frontend/src/app/shell/LogOverlay.tsx`
+- `frontend/src/app/shell/StateOverlay.tsx`
+- `frontend/src/app/shell/SettingsOverlay.tsx`
+- `frontend/src/app/shell/BottomHintsBar.tsx`
 
 2. Layout and responsive behavior
 - `frontend/src/App.css`
@@ -204,10 +203,17 @@ Use this mapping when planning implementation tasks from this spec:
 
 4. Isometric helper visual style and depth readability
 - `frontend/src/render/iso/IsoTimeCubePanel.tsx`
+- `frontend/src/render/iso/IsoSlices.tsx`
+- `frontend/src/render/iso/IsoTracks.tsx`
+- `frontend/src/render/iso/IsoActors.tsx`
+- `frontend/src/render/iso/IsoCameraControls.tsx`
+- `frontend/src/render/iso/constants.ts`
+- `frontend/src/render/iso/camera.ts`
 - `docs/web-design/PHASE_03_5_ISOMETRIC_TIMECUBE.md`
 
 5. Input layers and transitions
 - `frontend/src/app/inputStateMachine.ts`
+- `frontend/src/app/shell/useKeyboardControls.ts`
 
 6. Planned icon-pack rendering integration
 - `frontend/src/render/board/` (board draw pipeline)

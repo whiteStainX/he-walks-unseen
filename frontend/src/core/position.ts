@@ -24,12 +24,12 @@ export function movePosition(position: Position2D, direction: Direction2D): Posi
   }
 }
 
-export function isInBounds(position: Position2D, boardSize: number): boolean {
+export function isInBounds(position: Position2D, width: number, height = width): boolean {
   return (
     position.x >= 0 &&
     position.y >= 0 &&
-    position.x < boardSize &&
-    position.y < boardSize
+    position.x < width &&
+    position.y < height
   )
 }
 

@@ -39,12 +39,13 @@ function blockingObjects(cube: TimeCube, position: Position3D) {
 
 function isPushPreviewBlocked(input: {
   cube: TimeCube
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   maxPushChain: number
   to: Position3D
   direction: Direction2D
 }): { blocked: boolean; reason?: string } {
-  const { cube, boardSize, maxPushChain, to, direction } = input
+  const { cube, boardWidth, boardHeight, maxPushChain, to, direction } = input
 
   const firstBlockers = blockingObjects(cube, to)
 
@@ -79,7 +80,7 @@ function isPushPreviewBlocked(input: {
 
     const next = movePosition(cursor, direction)
 
-    if (!isInBounds(next, boardSize)) {
+    if (!isInBounds(next, boardWidth, boardHeight)) {
       return { blocked: true, reason: 'No space to push' }
     }
 
@@ -89,12 +90,13 @@ function isPushPreviewBlocked(input: {
 
 function isPullPreviewBlocked(input: {
   cube: TimeCube
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   from: Position3D
   to: Position3D
   direction: Direction2D
 }): { blocked: boolean; reason?: string } {
-  const { cube, boardSize, from, to, direction } = input
+  const { cube, boardWidth, boardHeight, from, to, direction } = input
 
   if (blockingObjects(cube, to).length > 0) {
     return { blocked: true, reason: 'Blocked by object' }
@@ -102,7 +104,7 @@ function isPullPreviewBlocked(input: {
 
   const behind = movePosition(from, oppositeDirection(direction))
 
-  if (!isInBounds(behind, boardSize)) {
+  if (!isInBounds(behind, boardWidth, boardHeight)) {
     return { blocked: true, reason: 'Nothing to pull' }
   }
 
@@ -125,13 +127,15 @@ function isPullPreviewBlocked(input: {
 export function buildActionPreview(input: {
   cube: TimeCube
   worldLine: WorldLineState
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   timeDepth: number
   intent: PreviewIntent | null
   maxPushChain: number
   allowPull: boolean
 }): ActionPreview | null {
-  const { cube, worldLine, boardSize, timeDepth, intent, maxPushChain, allowPull } = input
+  const { cube, worldLine, boardWidth, boardHeight, timeDepth, intent, maxPushChain, allowPull } =
+    input
 
   if (!intent) {
     return null
@@ -146,7 +150,7 @@ export function buildActionPreview(input: {
   const nextSpatial = movePosition(from, intent.direction)
   const nextTime = from.t + 1
 
-  if (!isInBounds(nextSpatial, boardSize)) {
+  if (!isInBounds(nextSpatial, boardWidth, boardHeight)) {
     return {
       mode: intent.mode,
       from,
@@ -192,7 +196,8 @@ export function buildActionPreview(input: {
     case 'Push': {
       const pushResult = isPushPreviewBlocked({
         cube,
-        boardSize,
+        boardWidth,
+        boardHeight,
         maxPushChain,
         to,
         direction: intent.direction,
@@ -218,7 +223,8 @@ export function buildActionPreview(input: {
 
       const pullResult = isPullPreviewBlocked({
         cube,
-        boardSize,
+        boardWidth,
+        boardHeight,
         from,
         to,
         direction: intent.direction,

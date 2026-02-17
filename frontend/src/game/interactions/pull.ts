@@ -15,7 +15,13 @@ export const pullInteractionHandler: InteractionHandler<'Pull'> = {
       }
     }
 
-    const step = nextNormalStep(state.worldLine, state.boardSize, state.timeDepth, action.direction)
+    const step = nextNormalStep(
+      state.worldLine,
+      state.boardWidth,
+      state.boardHeight,
+      state.timeDepth,
+      action.direction,
+    )
 
     if (!step.ok) {
       switch (step.error.kind) {
@@ -38,7 +44,7 @@ export const pullInteractionHandler: InteractionHandler<'Pull'> = {
 
     const behind = movePosition(step.value.current, oppositeDirection(action.direction))
 
-    if (!isInBounds(behind, state.boardSize)) {
+    if (!isInBounds(behind, state.boardWidth, state.boardHeight)) {
       return {
         ok: false,
         error: { kind: 'NothingToPull' },

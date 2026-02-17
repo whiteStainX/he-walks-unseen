@@ -27,6 +27,27 @@
     "enabled": false,
     "delayTurns": 1
   },
+  "solverGate": {
+    "maxDepthCap": 16,
+    "maxNodes": 1500,
+    "includePushPull": false,
+    "includeRift": false
+  },
+  "qualityWeights": {
+    "baseScore": 20,
+    "pathCap": 30,
+    "enemyWeight": 8,
+    "enemyCap": 24,
+    "wallDivisor": 3,
+    "wallCap": 20,
+    "boxWeight": 6,
+    "boxCap": 18
+  },
+  "strategies": {
+    "wallTarget": "randomRange",
+    "patrolPathOrder": "clockwise",
+    "patrolBehavior": "mixed"
+  },
   "difficultyProfiles": {
     "easy": {
       "budgets": {

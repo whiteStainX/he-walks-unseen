@@ -7,8 +7,9 @@ import type { RiftInstruction, RiftResources, RiftSettings } from '../core/rift'
 import { createWorldLine } from '../core/worldLine'
 import type { LevelObjectsConfig, ObjectRegistry } from '../core/objects'
 import { loadDefaultBootContent, type LoadedBootContent } from '../data/loader'
-import { bootstrapLevelObjects } from './levelObjects'
+import { bootstrapLevelObjects, defaultLevelObjectsConfig } from './levelObjects'
 import { runInteractionPipeline } from './interactions/pipeline'
+import { resolveBootstrapPolicy } from './bootstrapPolicy'
 import type {
   GamePhase,
   InteractionAction,
@@ -19,13 +20,19 @@ import type {
 import type { TimeCube } from '../core/timeCube'
 
 const bootContent = loadDefaultBootContent()
+const BOOT_POLICY = resolveBootstrapPolicy(import.meta.env)
 const DEFAULT_CONTENT_PACK_ID = 'default'
+const FALLBACK_BOARD_WIDTH = 12
+const FALLBACK_BOARD_HEIGHT = 12
+const FALLBACK_TIME_DEPTH = 24
+const FALLBACK_START_POSITION: Position3D = { x: 5, y: 5, t: 0 }
 
-const DEFAULT_BOARD_SIZE = bootContent.ok ? bootContent.value.boardSize : 12
-const DEFAULT_TIME_DEPTH = bootContent.ok ? bootContent.value.timeDepth : 24
+const DEFAULT_BOARD_WIDTH = bootContent.ok ? bootContent.value.boardWidth : FALLBACK_BOARD_WIDTH
+const DEFAULT_BOARD_HEIGHT = bootContent.ok ? bootContent.value.boardHeight : FALLBACK_BOARD_HEIGHT
+const DEFAULT_TIME_DEPTH = bootContent.ok ? bootContent.value.timeDepth : FALLBACK_TIME_DEPTH
 const DEFAULT_START_POSITION: Position3D = bootContent.ok
   ? bootContent.value.startPosition
-  : { x: 5, y: 5, t: 0 }
+  : FALLBACK_START_POSITION
 const DEFAULT_RIFT_SETTINGS: RiftSettings = bootContent.ok
   ? bootContent.value.riftSettings
   : {
@@ -56,11 +63,19 @@ const DEFAULT_PARADOX_CONFIG: ParadoxConfig = {
 }
 const DEFAULT_LEVEL_OBJECTS_CONFIG: LevelObjectsConfig | null = bootContent.ok
   ? bootContent.value.levelObjectsConfig
-  : null
+  : BOOT_POLICY.allowDevFallbackLevel
+    ? defaultLevelObjectsConfig
+    : null
 const DEFAULT_THEME_CSS_VARS: Record<string, string> = bootContent.ok
   ? bootContent.value.themeCssVars
   : {}
 const DEFAULT_ICON_PACK_ID = bootContent.ok ? bootContent.value.iconPackId : 'default-mono'
+const BOOT_FAILURE_STATUS = bootContent.ok
+  ? null
+  : `Boot content failed (${bootContent.error.kind}); gameplay disabled until valid content is loaded`
+const BOOT_FALLBACK_STATUS = bootContent.ok
+  ? null
+  : `Boot content failed (${bootContent.error.kind}); using dev fallback level`
 
 export interface GameState extends InteractionState {
   objectRegistry: ObjectRegistry
@@ -80,26 +95,48 @@ function bootstrapObjectState(): {
   objectRegistry: ObjectRegistry
   cube: TimeCube
   status: string
+  phase: GamePhase
 } {
+  if (!bootContent.ok && !BOOT_POLICY.allowDevFallbackLevel) {
+    return {
+      objectRegistry: { archetypes: {} },
+      cube: {
+        width: DEFAULT_BOARD_WIDTH,
+        height: DEFAULT_BOARD_HEIGHT,
+        timeDepth: DEFAULT_TIME_DEPTH,
+        slices: Array.from({ length: DEFAULT_TIME_DEPTH }, (_, t) => ({
+          t,
+          objectIds: [],
+          spatialIndex: {},
+        })),
+        objectsById: {},
+      },
+      phase: 'BootError',
+      status: BOOT_FAILURE_STATUS ?? 'Boot content failed',
+    }
+  }
+
   const bootstrap = bootstrapLevelObjects(
-    DEFAULT_BOARD_SIZE,
+    DEFAULT_BOARD_WIDTH,
+    DEFAULT_BOARD_HEIGHT,
     DEFAULT_TIME_DEPTH,
-    bootContent.ok ? bootContent.value.levelObjectsConfig : undefined,
+    DEFAULT_LEVEL_OBJECTS_CONFIG ?? undefined,
   )
 
   if (bootstrap.ok) {
     return {
       objectRegistry: bootstrap.value.objectRegistry,
       cube: bootstrap.value.cube,
-      status: '-_-',
+      phase: 'Playing',
+      status: bootContent.ok ? '-_-' : BOOT_FALLBACK_STATUS ?? '-_-',
     }
   }
 
   return {
     objectRegistry: { archetypes: {} },
     cube: {
-      width: DEFAULT_BOARD_SIZE,
-      height: DEFAULT_BOARD_SIZE,
+      width: DEFAULT_BOARD_WIDTH,
+      height: DEFAULT_BOARD_HEIGHT,
       timeDepth: DEFAULT_TIME_DEPTH,
       slices: Array.from({ length: DEFAULT_TIME_DEPTH }, (_, t) => ({
         t,
@@ -108,7 +145,8 @@ function bootstrapObjectState(): {
       })),
       objectsById: {},
     },
-    status: 'Object bootstrap failed; running without objects',
+    phase: 'BootError',
+    status: 'Object bootstrap failed; gameplay disabled until valid content is loaded',
   }
 }
 
@@ -121,7 +159,8 @@ function bootstrapObjectStateForContent(content: LoadedBootContent): {
   message: string
 } {
   const bootstrap = bootstrapLevelObjects(
-    content.boardSize,
+    content.boardWidth,
+    content.boardHeight,
     content.timeDepth,
     content.levelObjectsConfig,
   )
@@ -141,14 +180,15 @@ function createInitialState(): GameState {
   const objectState = bootstrapObjectState()
 
   return {
-    boardSize: DEFAULT_BOARD_SIZE,
+    boardWidth: DEFAULT_BOARD_WIDTH,
+    boardHeight: DEFAULT_BOARD_HEIGHT,
     timeDepth: DEFAULT_TIME_DEPTH,
     objectRegistry: objectState.objectRegistry,
     cube: objectState.cube,
     worldLine: createWorldLine(DEFAULT_START_POSITION),
     currentTime: DEFAULT_START_POSITION.t,
     turn: 0,
-    phase: 'Playing',
+    phase: objectState.phase,
     riftSettings: { ...DEFAULT_RIFT_SETTINGS },
     riftResources: { ...DEFAULT_RIFT_RESOURCES },
     interactionConfig: { ...DEFAULT_INTERACTION_CONFIG },
@@ -235,7 +275,8 @@ const gameSlice = createSlice({
 
       state.contentPackId = action.payload.packId
       state.levelObjectsConfig = action.payload.content.levelObjectsConfig
-      state.boardSize = action.payload.content.boardSize
+      state.boardWidth = action.payload.content.boardWidth
+      state.boardHeight = action.payload.content.boardHeight
       state.timeDepth = action.payload.content.timeDepth
       state.startPosition = action.payload.content.startPosition
       state.objectRegistry = bootstrapped.objectRegistry
@@ -263,11 +304,25 @@ const gameSlice = createSlice({
       state.status = `Loaded content pack: ${action.payload.packId}`
     },
     restart(state) {
-      const objectState = state.levelObjectsConfig
-        ? bootstrapLevelObjects(state.boardSize, state.timeDepth, state.levelObjectsConfig)
-        : bootstrapLevelObjects(state.boardSize, state.timeDepth)
+      const restartConfig =
+        state.levelObjectsConfig ??
+        (BOOT_POLICY.allowDevFallbackLevel ? defaultLevelObjectsConfig : null)
+
+      if (!restartConfig) {
+        state.phase = 'BootError'
+        state.status = 'Restart blocked: no level loaded. Load a valid content pack.'
+        return
+      }
+
+      const objectState = bootstrapLevelObjects(
+        state.boardWidth,
+        state.boardHeight,
+        state.timeDepth,
+        restartConfig,
+      )
 
       if (!objectState.ok) {
+        state.phase = 'BootError'
         state.status = 'Restart failed: object bootstrap error'
         return
       }
@@ -288,6 +343,7 @@ const gameSlice = createSlice({
       state.lastParadox = null
       state.causalAnchors = []
       state.history = []
+      state.phase = 'Playing'
       state.status = 'Restarted'
     },
     setStatus(state, action: PayloadAction<string>) {

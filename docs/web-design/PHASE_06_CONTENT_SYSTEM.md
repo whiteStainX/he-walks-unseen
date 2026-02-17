@@ -6,6 +6,37 @@
 
 ---
 
+## 0. Current Reality (Post-Phase-12)
+
+This design has been implemented as a working baseline.
+
+Implemented now:
+1. Content contracts and validation:
+- `frontend/src/data/contracts.ts`
+- `frontend/src/data/validate.ts`
+2. Loader/boot flow from `frontend/public/data/` packs:
+- `frontend/src/data/loader.ts`
+- `frontend/public/data/index.json`
+3. Behavior/data resolution:
+- behavior policy assignment
+- detection profile assignment and default fallback
+4. Runtime boot from loaded content:
+- `LevelConfig`, `BehaviorConfig`, `ThemeConfig`, `GameRulesConfig`
+5. Generation and solvability pipeline:
+- deterministic generator
+- bounded gameplay-aware solver gate
+- quality gate
+- export CLI (`npm run gen:pack`)
+
+Reference implementation docs:
+1. `docs/web-implementation/PHASE_06_DATA_LOADING.md`
+2. `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
+3. `docs/web-implementation/PHASE_11_ENEMY_MOTION_EXECUTION.md`
+4. `docs/web-implementation/PHASE_12_MAP_GENERATION.md`
+5. `docs/web-implementation/PHASE_12_LEVEL_GENERATION_ROADMAP.md`
+
+---
+
 ## 1. Strategic Goal
 
 Phase 6 should not be "just file loading".
@@ -196,25 +227,16 @@ Generation/load validation requirements:
 
 ## 7. Generative Levels and Solvability
 
-Ambitious target is valid, but should be staged.
+Implemented baseline:
+1. Deterministic constructive generation is in place.
+2. Generated candidates are schema-validated before acceptance.
+3. Candidates pass a bounded gameplay-rule solver gate before acceptance.
+4. Candidates pass a quality threshold gate before acceptance.
+5. Accepted packs can be exported and loaded through the same public pack pipeline.
 
-Phase 6 baseline for generation:
-
-1. Generator is optional module, not required for first loader ship.
-2. Any generated level must pass a **solvability validator**:
-- at least one path from start to win under configured rules
-
-Recommended approach:
-
-1. Constructive generation
-- place start/exit/rifts/obstacles with constraints
-
-2. Solver verification
-- run deterministic state-space search
-- accept level only if solution exists
-
-3. Keep a bounded complexity budget
-- cap map size, time depth, and branching factor for generation runtime
+Current design limit:
+1. Solver and generation remain intentionally bounded/approximate for throughput.
+2. Story-driven generation and richer strategy families remain future work.
 
 ---
 
@@ -232,16 +254,15 @@ Important boundary:
 
 ---
 
-## 9. Recommended Phase 6 Execution Order
+## 9. Historical Execution Record (Implemented)
 
-Exact next step:
-
-1. Define canonical schemas (TypeScript interfaces + JSON schema).
-2. Build parser/validator layer with precise errors.
-3. Replace hardcoded bootstrap with loader-backed bootstrap.
-4. Add fixture content packs and integration tests.
-5. Add behavior config resolver for enemy policies.
-6. Add optional generator + solvability validator (if time allows in Phase 6).
+Implemented sequence:
+1. Canonical schemas in `frontend/src/data/contracts.ts`.
+2. Parser/validator layer with structured errors in `frontend/src/data/validate.ts`.
+3. Loader-backed bootstrap in `frontend/src/data/loader.ts` + `frontend/src/game/gameSlice.ts`.
+4. Fixture content packs under `frontend/public/data/`.
+5. Behavior resolver and detection-profile precedence in data layer/runtime.
+6. Generation + solvability + quality + export in `frontend/src/data/generation/`.
 
 ---
 
@@ -259,8 +280,8 @@ Exact next step:
 ## 11. Open Decisions
 
 1. Format choice for shipped content: JSON only vs JSON + authoring DSL.
-2. Whether generator ships in Phase 6 baseline or Phase 6.5.
-3. Whether detection config is global per level or per enemy override by default.
+2. Future authoring surface: file/CLI only vs in-app authoring UI.
+3. Detection tuning UX: how much should remain global rule default vs per-enemy overrides by convention.
 
 Current baseline decision implemented:
 - JSON content packs under `frontend/public/data/`
@@ -271,38 +292,32 @@ Current baseline decision implemented:
 
 ## 12. Infrastructure Readiness Check
 
-Current foundation is strong for Phase 6 baseline, but not for full content ambition in one step.
+Current foundation is now ready for design-layer iteration and content authoring.
 
 Ready now:
-1. Deterministic core logic modules (`WorldLineState`, `TimeCube`, interactions, detection).
-2. Clear truth model boundaries (player world line vs object occupancy).
-3. Modular reducer pipeline that can consume loaded config.
-4. Stable test/lint/build loop for regression safety.
+1. Dedicated data layer (contracts + validation + loader) is implemented.
+2. Loader-backed bootstrap is implemented.
+3. Behavior assignments and detection profile overrides are implemented.
+4. Generation/solver/export pipeline is implemented and tested.
+5. Deterministic test/lint/build loop is stable.
 
-Not ready yet:
-1. No dedicated `data` layer implementation for parsing/validation.
-2. Bootstrap still relies on hardcoded object config.
-3. No versioned schema contracts and migration strategy in code.
-4. Enemy behavior policies are not yet loaded via reusable behavior presets.
-5. No solvability validator/generator runtime yet.
-
-Implication:
-- Phase 6 must be split into **baseline loader infrastructure first**, then advanced generation/authoring tooling.
+Remaining gaps (intentional):
+1. No automated schema migration tooling beyond `schemaVersion` checks.
+2. No in-app pack authoring UI (authoring is file/CLI workflow).
+3. Story-to-config translation is not runtime-integrated.
 
 ---
 
-## 13. Scope Lock for Phase 6
+## 13. Scope Lock (Updated)
 
-### Phase 6 Baseline (must ship)
-
+Shipped baseline:
 1. Canonical schemas and parser/validator.
-2. Loader-backed bootstrap replacing hardcoded level initialization.
-3. Behavior config loading for enemy movement policy selection.
+2. Loader-backed bootstrap.
+3. Behavior config loading and resolution.
 4. Theme/rules config loading.
-5. Fixture content packs + integration tests.
+5. Fixture packs and integration tests.
+6. Procedural generation with bounded solver and quality gates.
 
-### Post-Phase 6 (defer intentionally)
-
-1. Procedural generator with guaranteed solvability.
-2. Story-to-config translator pipeline.
-3. Schema migration tooling beyond minimal `schemaVersion` checks.
+Still deferred intentionally:
+1. Story-to-config translator pipeline.
+2. Rich migration tooling beyond minimal version checks.

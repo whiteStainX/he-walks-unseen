@@ -135,8 +135,7 @@ function validateMap(level: LevelConfig): Result<LevelConfig, ContentLoadError> 
   const isStartValid =
     start.t >= 0 &&
     start.t < timeDepth &&
-    isInBounds({ x: start.x, y: start.y }, width) &&
-    start.y < height
+    isInBounds({ x: start.x, y: start.y }, width, height)
 
   if (!isStartValid) {
     return {

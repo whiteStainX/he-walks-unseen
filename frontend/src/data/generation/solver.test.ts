@@ -51,6 +51,18 @@ describe('evaluateSolvabilityV1', () => {
     expect(report.shortestPathLength).toBeGreaterThan(0)
   })
 
+  it('supports rectangular maps (non-square width/height)', () => {
+    const pack = basePack()
+    pack.level.map.width = 8
+    pack.level.map.height = 5
+    pack.level.instances = [{ id: 'exit.main', archetype: 'exit', position: { x: 6, y: 3, t: 0 } }]
+
+    const report = evaluateSolvabilityV1(pack)
+
+    expect(report.solved).toBe(true)
+    expect(report.shortestPathLength).toBeGreaterThan(0)
+  })
+
   it('rejects unreachable exit layouts', () => {
     const pack = basePack()
     const walls = [

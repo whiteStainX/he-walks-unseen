@@ -21,7 +21,8 @@ export const riftInteractionHandler: InteractionHandler<'ApplyRift'> = {
       instruction: action.instruction,
       settings: state.riftSettings,
       resources: state.riftResources,
-      boardSize: state.boardSize,
+      boardWidth: state.boardWidth,
+      boardHeight: state.boardHeight,
       timeDepth: state.timeDepth,
     })
 
@@ -85,4 +86,3 @@ export const riftInteractionHandler: InteractionHandler<'ApplyRift'> = {
     }
   },
 }
-

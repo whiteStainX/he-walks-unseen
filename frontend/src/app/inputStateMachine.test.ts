@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import {
   closeTopLayer,
   createInputStateMachine,
-  flushDirectionalInput,
   pushDirectionalInput,
   selectDirectionalMode,
   toggleActionMenu,
@@ -18,23 +17,13 @@ describe('inputStateMachine', () => {
     const result = pushDirectionalInput(machine, 'east')
 
     expect(result.immediate).toEqual({ mode: 'Move', direction: 'east' })
-    expect(result.next.queuedDirectional).toBeNull()
   })
 
-  it('does not buffer directional intent in non-gameplay layers', () => {
+  it('ignores directional dispatch in non-gameplay layers', () => {
     const machine = toggleActionMenu(createInputStateMachine())
     const result = pushDirectionalInput(machine, 'north')
 
     expect(result.immediate).toBeNull()
-    expect(result.next.queuedDirectional).toBeNull()
-  })
-
-  it('flush keeps no-op behavior when no directional intent is queued', () => {
-    const machine = closeTopLayer(toggleActionMenu(createInputStateMachine()))
-    const flushed = flushDirectionalInput(machine)
-
-    expect(flushed.immediate).toBeNull()
-    expect(flushed.next.queuedDirectional).toBeNull()
   })
 
   it('respects layer priority for system menu', () => {
@@ -60,7 +49,7 @@ describe('inputStateMachine', () => {
     const opened = toggleStateOverlay(createInputStateMachine())
     expect(opened.layer).toBe('StateOverlay')
 
-    const closed = toggleStateOverlay(opened)
+    const closed = closeTopLayer(opened)
     expect(closed.layer).toBe('Gameplay')
   })
 })

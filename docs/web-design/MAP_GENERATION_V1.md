@@ -61,6 +61,16 @@ Not included:
 - allowFutureRifts
 6. `styleProfile` (optional):
 - corridor-heavy / room-heavy / mixed
+7. `solverGate`:
+- max depth cap
+- max node cap
+- enable/disable push/pull or rift branches in generation gating
+8. `qualityWeights`:
+- base/path/enemy/wall/box score weights and caps
+9. `strategies`:
+- wall target strategy
+- patrol path ordering
+- patrol behavior strategy
 
 ---
 

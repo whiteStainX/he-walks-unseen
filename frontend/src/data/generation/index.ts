@@ -57,6 +57,7 @@ export function generateMapPack(request: MapGenRequest): MapGenGenerationResult 
 
   const difficulty = request.difficulty ?? profile.value.defaultDifficulty
   const difficultyProfile = profile.value.difficultyProfiles[difficulty]
+  const solverGate = profile.value.solverGate
   const maxAttempts = Math.max(1, request.maxAttempts ?? profile.value.maxAttempts)
   const qualityThreshold = request.qualityThreshold ?? difficultyProfile.qualityThreshold
   let lastInvalid: { attempt: number; error: ContentLoadError } | null = null
@@ -77,10 +78,10 @@ export function generateMapPack(request: MapGenRequest): MapGenGenerationResult 
     }
 
     const solver = evaluateSolvabilityV1(validated.value, {
-      maxDepth: Math.min(16, validated.value.level.map.timeDepth),
-      maxNodes: 1500,
-      includePushPull: false,
-      includeRift: false,
+      maxDepth: Math.min(solverGate.maxDepthCap, validated.value.level.map.timeDepth),
+      maxNodes: solverGate.maxNodes,
+      includePushPull: solverGate.includePushPull,
+      includeRift: solverGate.includeRift,
     })
 
     if (!solver.solved) {
@@ -91,6 +92,7 @@ export function generateMapPack(request: MapGenRequest): MapGenGenerationResult 
     const qualityScore = scoreGeneratedContent({
       content: validated.value,
       solver,
+      weights: profile.value.qualityWeights,
     })
 
     if (qualityScore < qualityThreshold) {

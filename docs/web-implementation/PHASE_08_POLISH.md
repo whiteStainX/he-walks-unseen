@@ -11,7 +11,7 @@
 Improve responsiveness, readability, and accessibility without changing core game mechanics.
 
 Phase 8 focuses on:
-- input buffering + intent preview
+- layer-aware input gating + intent preview
 - smoother render updates and better bundle/runtime performance
 - accessibility improvements for keyboard and screen-reader usage
 - optional system/settings panel for runtime toggles
@@ -25,6 +25,7 @@ Phase 8 focuses on:
 Implemented in this pass:
 - input state machine with layer-aware directional gating (no cross-layer auto-dispatch)
 - board preview pipeline integrated (ready for intent-driven extensions)
+- board canvas upgraded to container-measured responsive backing size (DPR-aware)
 - lazy-loaded isometric panel to reduce initial bundle weight
 - accessibility baseline improvements (`role=\"status\"`, live updates, focusable overlays, keyboard layer closing)
 - optional settings panel with local-storage persistence for UI toggles
@@ -48,7 +49,7 @@ Implemented in this pass:
 
 ### In Scope
 
-- Intent-first input buffering at UI/input-layer boundary
+- Intent-first input gating at UI/input-layer boundary
 - Board action preview (non-committed visual hint)
 - Render update smoothing and avoid unnecessary redraw work
 - Basic accessibility pass (labels, keyboard navigation, overlay focus behavior)
@@ -66,16 +67,16 @@ Implemented in this pass:
 
 ## Workstreams
 
-## 8A. Input Buffering + Preview
+## 8A. Input Gating + Preview
 
 Deliverables:
-1. Add a pure input state module (layer-aware, intent-first) with queue length 1.
-2. Buffer one directional action while current input layer blocks immediate dispatch.
+1. Add a pure input state module with deterministic layer ownership.
+2. Directional actions dispatch only in `Gameplay` layer; no hidden queued input.
 3. Add board preview for next intended action target (move/push/pull) without mutating state.
 4. Keep existing keymap stable.
 
 Exit criteria:
-- buffered action is consumed deterministically on next available dispatch cycle
+- blocked layers never dispatch gameplay actions
 - no duplicate action dispatch from key repeat
 - preview is visually clear and disappears when intent is invalid/cleared
 
@@ -154,9 +155,8 @@ Docs:
 ## Test Requirements
 
 1. Input tests:
-- queue length behavior (0/1 only)
 - layer priority prevents invalid dispatch
-- deterministic consumption order
+- deterministic directional dispatch behavior
 
 2. Preview tests:
 - intended target cell computation by mode/direction
@@ -185,8 +185,8 @@ Docs:
 
 ## Risks and Mitigations
 
-1. Input buffering may introduce accidental repeated actions.
-- Mitigation: cap queue to one action and ignore repeat while queue occupied.
+1. Cross-layer inputs may leak gameplay actions.
+- Mitigation: strict gameplay-layer gate for directional dispatch.
 
 2. Preview rendering may diverge from actual validation rules.
 - Mitigation: derive preview from shared movement helper contracts, not duplicated ad hoc logic.

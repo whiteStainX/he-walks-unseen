@@ -15,6 +15,9 @@ import type {
   MapGenDifficulty,
   MapGenFeatureFlags,
   MapGenRequest,
+  PatrolBehaviorStrategy,
+  PatrolPathOrderStrategy,
+  WallTargetStrategy,
 } from './contracts'
 import type { SeededRng } from './random'
 import { createSeededRng } from './random'
@@ -126,6 +129,54 @@ function takeRandomCells(cells: Position2D[], count: number, rng: SeededRng): Po
   return selected
 }
 
+function shuffleList<T>(items: T[], rng: SeededRng): T[] {
+  const output = [...items]
+
+  for (let index = output.length - 1; index > 0; index -= 1) {
+    const swapIndex = rng.nextInt(0, index)
+    const current = output[index]
+    output[index] = output[swapIndex]
+    output[swapIndex] = current
+  }
+
+  return output
+}
+
+function resolveWallTarget(input: {
+  maxWalls: number
+  minWallRatio: number
+  rng: SeededRng
+  strategy: WallTargetStrategy
+}): number {
+  const minWallTarget = Math.min(input.maxWalls, Math.floor(input.maxWalls * clamp01(input.minWallRatio)))
+
+  if (input.maxWalls <= 0) {
+    return 0
+  }
+
+  if (input.strategy === 'maxBudget') {
+    return input.maxWalls
+  }
+
+  return input.rng.nextInt(minWallTarget, input.maxWalls)
+}
+
+function resolvePatrolLoops(strategy: PatrolBehaviorStrategy, rng: SeededRng): boolean | null {
+  if (strategy === 'loop') {
+    return true
+  }
+
+  if (strategy === 'pingpong') {
+    return false
+  }
+
+  if (strategy === 'mixed') {
+    return rng.nextFloat() < 0.5
+  }
+
+  return null
+}
+
 function createArchetypes(): Record<string, ContentArchetype> {
   return {
     wall: {
@@ -210,8 +261,10 @@ function tryBuildPatrolPath(input: {
   height: number
   blocked: Set<string>
   reservedPath: Set<string>
+  rng: SeededRng
+  patrolPathOrder: PatrolPathOrderStrategy
 }): Position2D[] | null {
-  const patterns: Position2D[][] = [
+  const basePatterns: Position2D[][] = [
     [
       input.spawn,
       makeCell(input.spawn.x + 1, input.spawn.y),
@@ -237,6 +290,11 @@ function tryBuildPatrolPath(input: {
       makeCell(input.spawn.x + 1, input.spawn.y),
     ],
   ]
+
+  const patterns =
+    input.patrolPathOrder === 'shuffled'
+      ? shuffleList(basePatterns, input.rng)
+      : basePatterns
 
   for (const pattern of patterns) {
     const valid = pattern.every((cell) => {
@@ -316,9 +374,12 @@ export function generateCandidateContent(input: {
     }
   }
 
-  const minWallRatio = clamp01(difficultyProfile.minWallRatio)
-  const minWallTarget = Math.min(budgets.maxWalls, Math.floor(budgets.maxWalls * minWallRatio))
-  const wallTarget = budgets.maxWalls > 0 ? rng.nextInt(minWallTarget, budgets.maxWalls) : 0
+  const wallTarget = resolveWallTarget({
+    maxWalls: budgets.maxWalls,
+    minWallRatio: difficultyProfile.minWallRatio,
+    rng,
+    strategy: profile.strategies.wallTarget,
+  })
   const interiorWalls = takeRandomCells(interiorCells, wallTarget, rng)
 
   for (const wall of interiorWalls) {
@@ -399,12 +460,14 @@ export function generateCandidateContent(input: {
       height,
       blocked: occupied,
       reservedPath,
+      rng,
+      patrolPathOrder: profile.strategies.patrolPathOrder,
     })
     const policyId = `enemy.policy.${enemyIndex}`
+    const patrolLoops = resolvePatrolLoops(profile.strategies.patrolBehavior, rng)
 
-    if (patrol && patrol.length >= 2) {
-      const loops = rng.nextFloat() < 0.5
-      behavior.policies[policyId] = loops
+    if (patrol && patrol.length >= 2 && patrolLoops !== null) {
+      behavior.policies[policyId] = patrolLoops
         ? { kind: 'PatrolLoop', path: patrol }
         : { kind: 'PatrolPingPong', path: patrol }
     } else {

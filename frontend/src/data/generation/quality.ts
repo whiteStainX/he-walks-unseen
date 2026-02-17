@@ -1,5 +1,5 @@
 import type { ContentPack } from '../contracts'
-import type { SolvabilityReport } from './contracts'
+import type { GenerationQualityWeights, SolvabilityReport } from './contracts'
 
 function countInstancesByArchetype(pack: ContentPack, archetypeKind: string): number {
   return pack.level.instances.filter((instance) => {
@@ -11,18 +11,19 @@ function countInstancesByArchetype(pack: ContentPack, archetypeKind: string): nu
 export function scoreGeneratedContent(input: {
   content: ContentPack
   solver: SolvabilityReport
+  weights: GenerationQualityWeights
 }): number {
   if (!input.solver.solved || input.solver.shortestPathLength === null) {
     return 0
   }
 
-  const pathScore = Math.min(input.solver.shortestPathLength, 30)
+  const pathScore = Math.min(input.solver.shortestPathLength, input.weights.pathCap)
   const enemyCount = countInstancesByArchetype(input.content, 'enemy')
   const wallCount = countInstancesByArchetype(input.content, 'wall')
   const boxCount = countInstancesByArchetype(input.content, 'box')
-  const pressureScore = Math.min(enemyCount * 8, 24)
-  const structureScore = Math.min(Math.floor(wallCount / 3), 20)
-  const interactionScore = Math.min(boxCount * 6, 18)
+  const pressureScore = Math.min(enemyCount * input.weights.enemyWeight, input.weights.enemyCap)
+  const structureScore = Math.min(Math.floor(wallCount / input.weights.wallDivisor), input.weights.wallCap)
+  const interactionScore = Math.min(boxCount * input.weights.boxWeight, input.weights.boxCap)
 
-  return 20 + pathScore + pressureScore + structureScore + interactionScore
+  return input.weights.baseScore + pathScore + pressureScore + structureScore + interactionScore
 }

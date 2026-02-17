@@ -15,7 +15,8 @@ import {
 import { loadIconPackCached, warmIconPackSlots } from './iconCache'
 
 interface GameBoardCanvasProps {
-  boardSize: number
+  boardWidth: number
+  boardHeight: number
   iconPackId: string
   objectsAtCurrentTime: ResolvedObjectInstance[]
   selvesAtCurrentTime: PositionAtTime[]
@@ -25,7 +26,22 @@ interface GameBoardCanvasProps {
   actionPreview: ActionPreview | null
 }
 
-const CANVAS_SIZE = 560
+const DEFAULT_CANVAS_WIDTH = 560
+const DEFAULT_CANVAS_HEIGHT = 560
+
+interface CanvasViewport {
+  cssWidth: number
+  cssHeight: number
+  dpr: number
+}
+
+function normalizeViewport(next: CanvasViewport): CanvasViewport {
+  return {
+    cssWidth: Math.max(1, Math.floor(next.cssWidth)),
+    cssHeight: Math.max(1, Math.floor(next.cssHeight)),
+    dpr: Math.max(1, next.dpr),
+  }
+}
 
 function drawFallbackIcon(
   context: CanvasRenderingContext2D,
@@ -90,7 +106,8 @@ function drawFallbackIcon(
 }
 
 export function GameBoardCanvas({
-  boardSize,
+  boardWidth,
+  boardHeight,
   iconPackId,
   objectsAtCurrentTime,
   selvesAtCurrentTime,
@@ -100,10 +117,64 @@ export function GameBoardCanvas({
   actionPreview,
 }: GameBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [viewport, setViewport] = useState<CanvasViewport>({
+    cssWidth: DEFAULT_CANVAS_WIDTH,
+    cssHeight: DEFAULT_CANVAS_HEIGHT,
+    dpr: 1,
+  })
   const [loadedIconsState, setLoadedIconsState] = useState<{
     packId: string
     slots: Record<string, HTMLImageElement>
   } | null>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+
+    if (!canvas) {
+      return
+    }
+
+    const updateViewport = () => {
+      const bounds = canvas.getBoundingClientRect()
+      const dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1
+      const next = normalizeViewport({
+        cssWidth: bounds.width || DEFAULT_CANVAS_WIDTH,
+        cssHeight: bounds.height || DEFAULT_CANVAS_HEIGHT,
+        dpr,
+      })
+
+      setViewport((current) => {
+        if (
+          current.cssWidth === next.cssWidth &&
+          current.cssHeight === next.cssHeight &&
+          current.dpr === next.dpr
+        ) {
+          return current
+        }
+
+        return next
+      })
+    }
+
+    updateViewport()
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => {
+        updateViewport()
+      })
+      observer.observe(canvas)
+
+      return () => {
+        observer.disconnect()
+      }
+    }
+
+    window.addEventListener('resize', updateViewport)
+
+    return () => {
+      window.removeEventListener('resize', updateViewport)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -145,18 +216,34 @@ export function GameBoardCanvas({
       return
     }
 
-    const cellSize = CANVAS_SIZE / boardSize
+    const pixelWidth = Math.max(1, Math.floor(viewport.cssWidth * viewport.dpr))
+    const pixelHeight = Math.max(1, Math.floor(viewport.cssHeight * viewport.dpr))
+
+    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+      canvas.width = pixelWidth
+      canvas.height = pixelHeight
+    }
+
+    context.setTransform(viewport.dpr, 0, 0, viewport.dpr, 0, 0)
+
+    const canvasWidth = viewport.cssWidth
+    const canvasHeight = viewport.cssHeight
+    const cellSize = Math.min(canvasWidth / boardWidth, canvasHeight / boardHeight)
+    const boardPixelWidth = cellSize * boardWidth
+    const boardPixelHeight = cellSize * boardHeight
+    const originX = (canvasWidth - boardPixelWidth) / 2
+    const originY = (canvasHeight - boardPixelHeight) / 2
     const theme = minimalMonoTheme.canvas
     const loadedSlotIcons = loadedIconsState?.packId === iconPackId ? loadedIconsState.slots : {}
 
-    context.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    context.clearRect(0, 0, canvasWidth, canvasHeight)
 
     context.fillStyle = theme.boardBackground
-    context.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    context.fillRect(0, 0, canvasWidth, canvasHeight)
 
     const drawRect = (position: Position3D, fill: string, stroke: string, inset: number) => {
-      const x = position.x * cellSize + cellSize * inset
-      const y = position.y * cellSize + cellSize * inset
+      const x = originX + position.x * cellSize + cellSize * inset
+      const y = originY + position.y * cellSize + cellSize * inset
       const size = cellSize * (1 - inset * 2)
 
       context.fillStyle = fill
@@ -168,8 +255,8 @@ export function GameBoardCanvas({
     }
 
     const drawIconAt = (position: Position3D, slot: string, inset = 0.2) => {
-      const x = position.x * cellSize + cellSize * inset
-      const y = position.y * cellSize + cellSize * inset
+      const x = originX + position.x * cellSize + cellSize * inset
+      const y = originY + position.y * cellSize + cellSize * inset
       const size = cellSize * (1 - inset * 2)
       const loaded = loadedSlotIcons[slot]
 
@@ -222,8 +309,8 @@ export function GameBoardCanvas({
     }
 
     if (actionPreview) {
-      const x = actionPreview.to.x * cellSize
-      const y = actionPreview.to.y * cellSize
+      const x = originX + actionPreview.to.x * cellSize
+      const y = originY + actionPreview.to.y * cellSize
       const inset = cellSize * 0.12
       const size = cellSize - inset * 2
 
@@ -245,7 +332,8 @@ export function GameBoardCanvas({
       }
     }
   }, [
-    boardSize,
+    boardWidth,
+    boardHeight,
     iconPackId,
     loadedIconsState,
     objectsAtCurrentTime,
@@ -254,13 +342,12 @@ export function GameBoardCanvas({
     showDangerPreview,
     detectionEvents,
     actionPreview,
+    viewport,
   ])
 
   return (
     <canvas
       ref={canvasRef}
-      width={CANVAS_SIZE}
-      height={CANVAS_SIZE}
       className="board-canvas"
       aria-label="Game board"
     />

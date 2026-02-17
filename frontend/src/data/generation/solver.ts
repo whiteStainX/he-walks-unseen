@@ -1,18 +1,16 @@
-import { hasComponent, type Component } from '../../core/components'
-import type { DetectionConfig } from '../../core/detection'
+import { hasComponent } from '../../core/components'
 import { evaluateDetectionV1 } from '../../core/detection'
-import type { LevelObjectsConfig } from '../../core/objects'
 import { hasExit, objectsAt } from '../../core/timeCube'
 import { createWorldLine, currentPosition } from '../../core/worldLine'
 import { bootstrapLevelObjects } from '../../game/levelObjects'
 import { executeRegisteredInteraction } from '../../game/interactions/registry'
 import type { InteractionAction, InteractionState } from '../../game/interactions/types'
-import type { ContentComponent, ContentPack } from '../contracts'
 import {
-  behaviorToPatrolComponent,
-  resolveBehaviorPolicy,
-  resolveEnemyDetectionConfig,
-} from '../behaviorResolver'
+  buildEnemyDetectionConfigByIdFromContent,
+  buildLevelObjectsConfigFromContent,
+  deriveRulesDetectionConfig,
+} from '../contentAdapter'
+import type { ContentPack } from '../contracts'
 import type { SolvabilityReport } from './contracts'
 
 export interface SolvabilitySearchOptions {
@@ -20,115 +18,6 @@ export interface SolvabilitySearchOptions {
   maxNodes?: number
   includePushPull?: boolean
   includeRift?: boolean
-}
-
-function toCoreComponent(component: ContentComponent): Component {
-  switch (component.kind) {
-    case 'BlocksMovement':
-    case 'BlocksVision':
-    case 'TimePersistent':
-    case 'Exit':
-    case 'Pushable':
-    case 'Pullable':
-      return { kind: component.kind }
-    case 'Patrol':
-      return { kind: 'Patrol', path: component.path, loops: component.loops }
-    case 'Rift':
-      return { kind: 'Rift', target: component.target, bidirectional: component.bidirectional }
-  }
-}
-
-function toLevelObjectsConfig(pack: ContentPack): LevelObjectsConfig {
-  const archetypes: LevelObjectsConfig['archetypes'] = {}
-
-  for (const [key, archetype] of Object.entries(pack.level.archetypes)) {
-    archetypes[key] = {
-      kind: archetype.kind,
-      components: archetype.components.map(toCoreComponent),
-      render: archetype.render,
-    }
-  }
-
-  const instances = pack.level.instances.map((instance) => {
-    const behaviorPolicy = resolveBehaviorPolicy(pack.behavior, instance.id)
-    const baseArchetype = archetypes[instance.archetype]
-
-    if (!behaviorPolicy || !baseArchetype) {
-      return {
-        id: instance.id,
-        archetype: instance.archetype,
-        position: instance.position,
-      }
-    }
-
-    const nonPatrol = baseArchetype.components.filter((component) => component.kind !== 'Patrol')
-
-    const patrol = behaviorToPatrolComponent(behaviorPolicy)
-
-    if (patrol) {
-      return {
-        id: instance.id,
-        archetype: instance.archetype,
-        position: instance.position,
-        overrides: {
-          components: [...nonPatrol, patrol],
-        },
-      }
-    }
-
-    return {
-      id: instance.id,
-      archetype: instance.archetype,
-      position: instance.position,
-      overrides: {
-        components: nonPatrol,
-      },
-    }
-  })
-
-  return { archetypes, instances }
-}
-
-function buildEnemyDetectionConfigById(pack: ContentPack): Record<string, DetectionConfig> {
-  const profiles = pack.behavior.detectionProfiles
-
-  if (!profiles) {
-    return {}
-  }
-
-  const base: DetectionConfig = {
-    enabled: pack.rules.detection.enabled,
-    delayTurns: pack.rules.detection.delayTurns,
-    maxDistance: pack.rules.detection.maxDistance,
-  }
-  const result: Record<string, DetectionConfig> = {}
-  const hasDefault = Boolean(
-    pack.behavior.defaultDetectionProfile &&
-      profiles[pack.behavior.defaultDetectionProfile],
-  )
-
-  for (const instance of pack.level.instances) {
-    const archetype = pack.level.archetypes[instance.archetype]
-
-    if (!archetype || archetype.kind !== 'enemy') {
-      continue
-    }
-
-    const assignedKey = pack.behavior.detectionAssignments?.[instance.id]
-    const hasAssigned = Boolean(assignedKey && profiles[assignedKey])
-
-    if (!hasAssigned && !hasDefault) {
-      continue
-    }
-
-    result[instance.id] = resolveEnemyDetectionConfig({
-      behavior: pack.behavior,
-      enemyId: instance.id,
-      rulesDefault: base,
-    })
-  }
-
-  return result
 }
 
 function cloneState(state: InteractionState): InteractionState {
@@ -225,13 +114,10 @@ function tunnelActionsAtCurrent(state: InteractionState): InteractionAction[] {
 }
 
 function createInitialSolverState(pack: ContentPack): InteractionState | null {
-  if (pack.level.map.width !== pack.level.map.height) {
-    return null
-  }
-
-  const objectsConfig = toLevelObjectsConfig(pack)
+  const objectsConfig = buildLevelObjectsConfigFromContent(pack)
   const bootstrapped = bootstrapLevelObjects(
     pack.level.map.width,
+    pack.level.map.height,
     pack.level.map.timeDepth,
     objectsConfig,
   )
@@ -240,14 +126,11 @@ function createInitialSolverState(pack: ContentPack): InteractionState | null {
     return null
   }
 
-  const detectionConfig: DetectionConfig = {
-    enabled: pack.rules.detection.enabled,
-    delayTurns: pack.rules.detection.delayTurns,
-    maxDistance: pack.rules.detection.maxDistance,
-  }
+  const detectionConfig = deriveRulesDetectionConfig(pack)
 
   return {
-    boardSize: pack.level.map.width,
+    boardWidth: pack.level.map.width,
+    boardHeight: pack.level.map.height,
     timeDepth: pack.level.map.timeDepth,
     cube: bootstrapped.value.cube,
     worldLine: createWorldLine(pack.level.map.start),
@@ -265,7 +148,7 @@ function createInitialSolverState(pack: ContentPack): InteractionState | null {
     },
     history: [],
     detectionConfig,
-    enemyDetectionConfigById: buildEnemyDetectionConfigById(pack),
+    enemyDetectionConfigById: buildEnemyDetectionConfigByIdFromContent(pack),
     lastDetection: null,
     paradoxConfig: { enabled: false },
     lastParadox: null,

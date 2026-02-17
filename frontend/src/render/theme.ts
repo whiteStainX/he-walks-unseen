@@ -12,6 +12,26 @@ export interface CanvasTheme {
 }
 
 export interface IsoTheme {
+  view: {
+    cellSpacing: number
+    sliceSpacing: number
+    sliceThickness: number
+    objectSize: number
+    objectHeight: number
+    playerSize: number
+    playerHeight: number
+    objectTrackTubeRadius: number
+    cameraPosition: [number, number, number]
+    defaultZoomInSteps: number
+    zoomStepFactor: number
+    sliceOpacityMin: number
+    sliceOpacityDecay: number
+    slabFocusOpacity: number
+    slabMinOpacity: number
+    slabOpacityDecay: number
+    pathOpacityMin: number
+    pathOpacityDecay: number
+  }
   background: string
   layerFill: string
   layerFillFocus: string
@@ -67,6 +87,26 @@ export const minimalMonoTheme: AppTheme = {
     dangerMarkerFill: '#cfcfcf',
   },
   iso: {
+    view: {
+      cellSpacing: 1,
+      sliceSpacing: 0.86,
+      sliceThickness: 0.06,
+      objectSize: 0.58,
+      objectHeight: 0.3,
+      playerSize: 0.5,
+      playerHeight: 0.44,
+      objectTrackTubeRadius: 0.05,
+      cameraPosition: [11.2, 12.8, 11.2],
+      defaultZoomInSteps: 5,
+      zoomStepFactor: 1.15,
+      sliceOpacityMin: 0.34,
+      sliceOpacityDecay: 0.1,
+      slabFocusOpacity: 0.08,
+      slabMinOpacity: 0.02,
+      slabOpacityDecay: 0.008,
+      pathOpacityMin: 0.25,
+      pathOpacityDecay: 0.08,
+    },
     background: '#ffffff',
     layerFill: '#f6f6f6',
     layerFillFocus: '#ececec',
