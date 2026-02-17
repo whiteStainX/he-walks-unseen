@@ -199,6 +199,22 @@ Validation:
 Remaining items:
 1. C9 refactor remains pending.
 
+### 2026-02-17: C9 implemented
+
+Implemented:
+1. Replaced stale hardcoded header subtitle with neutral runtime metadata:
+- `Pack: <contentPackId> | Channel: <MODE>`
+2. Header now reflects active content pack and current build channel.
+
+Validation:
+1. `npm run -s lint`
+2. `npm run -s test -- --run`
+3. `npm run -s build`
+4. `npx tsc --noEmit`
+
+Remaining items:
+1. No remaining C-series findings from this review.
+
 ---
 
 ## Docs Findings
@@ -478,6 +494,9 @@ Recommendation:
 Execution order: 8 (code)
 
 ### C9 (Low): UI header still references old phase label
+
+Status:
+1. Resolved on 2026-02-17 (see progress update: C9 implemented).
 
 Evidence:
 1. `frontend/src/app/GameShell.tsx:514`

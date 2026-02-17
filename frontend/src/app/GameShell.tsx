@@ -34,6 +34,8 @@ const LazyIsoTimeCubePanel = lazy(async () => {
   return { default: module.IsoTimeCubePanel }
 })
 
+const BUILD_CHANNEL = String(import.meta.env.MODE ?? 'development').toUpperCase()
+
 export function GameShell() {
   const dispatch = useAppDispatch()
   const [inputMachine, setInputMachine] = useState(createInputStateMachine)
@@ -189,7 +191,7 @@ export function GameShell() {
     <div className="game-shell">
       <header className="game-header">
         <h1>He Walks Unseen</h1>
-        <p>HUD + Isometric + Icon System</p>
+        <p>{`Pack: ${contentPackId} | Channel: ${BUILD_CHANNEL}`}</p>
       </header>
 
       <main className="game-layout">
