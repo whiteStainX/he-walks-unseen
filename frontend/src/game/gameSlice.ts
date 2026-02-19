@@ -208,6 +208,7 @@ function createInitialState(): GameState {
     lastDetection: null,
     lastParadox: null,
     causalAnchors: [],
+    causalAnchorsByTime: {},
     history: [],
     status: objectState.status,
   }
@@ -300,6 +301,7 @@ const gameSlice = createSlice({
       state.lastDetection = null
       state.lastParadox = null
       state.causalAnchors = []
+      state.causalAnchorsByTime = {}
       state.history = []
       state.status = `Loaded content pack: ${action.payload.packId}`
     },
@@ -342,6 +344,7 @@ const gameSlice = createSlice({
       state.paradoxConfig = { ...state.defaultParadoxConfig }
       state.lastParadox = null
       state.causalAnchors = []
+      state.causalAnchorsByTime = {}
       state.history = []
       state.phase = 'Playing'
       state.status = 'Restarted'

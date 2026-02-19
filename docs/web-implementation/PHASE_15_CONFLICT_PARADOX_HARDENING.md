@@ -19,7 +19,12 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: In Progress
+
+Progress:
+1. 15A anchor canonicalization + dedup/index integration implemented.
+2. Pipeline now merges anchors through canonical rules before paradox evaluation.
+3. Remaining: 15B/15C/15D/15E.
 
 ---
 
@@ -69,6 +74,9 @@ File targets:
 Exit criteria:
 1. Same paradox outcomes as baseline for existing tests.
 2. No paradox false negatives introduced by dedup/index logic.
+
+Implementation status:
+1. Completed in current pass.
 
 ## 15B. LOS Utility (Deterministic Grid Trace)
 

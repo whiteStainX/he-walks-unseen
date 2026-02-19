@@ -1,5 +1,9 @@
 import { evaluateDetectionV1 } from '../../core/detection'
-import { evaluateParadoxV1, type CausalAnchor } from '../../core/paradox'
+import {
+  evaluateParadoxV1,
+  mergeCausalAnchors,
+  type CausalAnchor,
+} from '../../core/paradox'
 import { getObjectById, hasExit } from '../../core/timeCube'
 import { currentPosition } from '../../core/worldLine'
 import { executeRegisteredInteraction } from './registry'
@@ -86,7 +90,12 @@ export function runInteractionPipeline(
   state.turn += 1
   state.currentTime = player.t
   const commitMeta = buildCommitAnchors(state, result.outcome, state.turn)
-  state.causalAnchors.push(...commitMeta.anchors)
+  const mergedAnchors = mergeCausalAnchors({
+    existing: state.causalAnchors,
+    incoming: commitMeta.anchors,
+  })
+  state.causalAnchors = mergedAnchors.anchors
+  state.causalAnchorsByTime = mergedAnchors.anchorsByTime
   state.history.push({
     turn: state.turn,
     action,
@@ -99,6 +108,7 @@ export function runInteractionPipeline(
     cube: state.cube,
     worldLine: state.worldLine,
     anchors: state.causalAnchors,
+    anchorsByTime: state.causalAnchorsByTime,
     checkedFromTime: commitMeta.affectedFromTime,
     config: state.paradoxConfig,
   })

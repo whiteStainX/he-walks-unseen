@@ -6,6 +6,7 @@ import type { Result } from '../../core/result'
 import type { DetectionConfig, DetectionReport } from '../../core/detection'
 import type {
   CausalAnchor,
+  CausalAnchorIndexByTime,
   ParadoxConfig,
   ParadoxReport,
 } from '../../core/paradox'
@@ -73,6 +74,7 @@ export interface InteractionState {
   paradoxConfig: ParadoxConfig
   lastParadox: ParadoxReport | null
   causalAnchors: CausalAnchor[]
+  causalAnchorsByTime: CausalAnchorIndexByTime
   status: string
 }
 

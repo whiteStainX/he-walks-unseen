@@ -153,6 +153,7 @@ function createInitialSolverState(pack: ContentPack): InteractionState | null {
     paradoxConfig: { enabled: false },
     lastParadox: null,
     causalAnchors: [],
+    causalAnchorsByTime: {},
     status: 'solver',
   }
 }

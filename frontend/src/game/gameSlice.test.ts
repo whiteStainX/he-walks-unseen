@@ -350,6 +350,7 @@ describe('gameSlice', () => {
     expect(reset.phase).toBe('Playing')
     expect(reset.lastParadox).toBeNull()
     expect(reset.causalAnchors).toHaveLength(0)
+    expect(reset.causalAnchorsByTime).toEqual({})
   })
 
   it('keeps paradox priority over win and detection on the same action', () => {
