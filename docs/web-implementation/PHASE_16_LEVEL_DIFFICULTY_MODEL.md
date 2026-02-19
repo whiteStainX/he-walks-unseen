@@ -21,7 +21,8 @@ Implement a deterministic, data-driven difficulty system that:
 - `Completed`: 16B Deterministic evaluator (`score`, `vector`, suggested tier) with test coverage
 - `Completed`: 16D Override policy core (`policy.ts` + tests)
 - `Completed`: 16E progression ramp validator (main track cooldown + expert gate) with tests and CLI validation hook
-- `Next`: 16C metadata/loader wiring, then 16F tooling + runtime surface
+- `Completed`: 16C metadata wiring (manifest + progression optional fields, loader/parser compatibility, runtime propagation)
+- `Next`: 16F tooling + runtime surface
 
 ---
 

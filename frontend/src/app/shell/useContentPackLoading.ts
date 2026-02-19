@@ -4,6 +4,7 @@ import {
   loadBootContentFromPublic,
   loadContentPackManifestFromPublic,
   type PublicContentPackClass,
+  type PublicPackDifficultyMeta,
 } from '../../data/loader'
 import type { AppDispatch } from '../../game/store'
 import { applyLoadedContent, setContentPackId, setStatus } from '../../game/gameSlice'
@@ -11,6 +12,8 @@ import { applyLoadedContent, setContentPackId, setStatus } from '../../game/game
 export interface PackDisplayMeta {
   class?: PublicContentPackClass
   difficulty?: string
+  /** Optional detailed difficulty metadata from public pack manifest. */
+  difficultyMeta?: PublicPackDifficultyMeta
 }
 
 export function useContentPackManifest(
@@ -34,6 +37,7 @@ export function useContentPackManifest(
         packMetaById[pack.id] = {
           class: pack.class,
           difficulty: pack.difficulty,
+          difficultyMeta: pack.difficultyMeta,
         }
       }
 

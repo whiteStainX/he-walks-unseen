@@ -6,6 +6,18 @@
       "name": "Default Lab",
       "class": "curated",
       "difficulty": "normal",
+      "difficultyMeta": {
+        "score": 22,
+        "vector": {
+          "spatialPressure": 25,
+          "temporalPressure": 18,
+          "detectionPressure": 14,
+          "interactionComplexity": 16,
+          "paradoxRisk": 10
+        },
+        "source": "measured",
+        "modelVersion": "v1"
+      },
       "tags": ["baseline", "tutorial"],
       "source": {
         "kind": "manual",
@@ -17,6 +29,18 @@
       "name": "Variant Hall",
       "class": "curated",
       "difficulty": "normal",
+      "difficultyMeta": {
+        "score": 39,
+        "vector": {
+          "spatialPressure": 41,
+          "temporalPressure": 32,
+          "detectionPressure": 36,
+          "interactionComplexity": 42,
+          "paradoxRisk": 20
+        },
+        "source": "measured",
+        "modelVersion": "v1"
+      },
       "tags": ["variant"],
       "source": {
         "kind": "manual",
@@ -28,6 +52,18 @@
       "name": "Generated fixture-001",
       "class": "generated",
       "difficulty": "normal",
+      "difficultyMeta": {
+        "score": 56,
+        "vector": {
+          "spatialPressure": 58,
+          "temporalPressure": 52,
+          "detectionPressure": 60,
+          "interactionComplexity": 55,
+          "paradoxRisk": 35
+        },
+        "source": "measured",
+        "modelVersion": "v1"
+      },
       "tags": ["fixture", "generated"],
       "source": {
         "kind": "generator",

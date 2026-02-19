@@ -367,10 +367,10 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Deterministic evaluator (`score`, `vector`, suggested tier)
 - [x] Override policy validation core (delta/note/review-evidence rules)
 - [x] Progression ramp validator (cooldown constraints + expert gate)
-- [ ] Metadata wiring for manifest/progression and UI surface
+- [x] Metadata wiring for manifest/progression and UI surface
 - [ ] Difficulty evaluation CLI (`--pack-id`, `--all`)
 
-Execution order for remaining work: `16C -> 16F`.
+Execution order for remaining work: `16F`.
 
 ### Exit Criteria
 - [ ] Difficulty output is config-driven and deterministic

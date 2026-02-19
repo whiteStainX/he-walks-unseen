@@ -176,6 +176,18 @@ describe('loadContentPackManifestFromPublic', () => {
             seed: 'fixture-001',
             profileId: 'default-v1',
           },
+          difficultyMeta: {
+            score: 47.5,
+            vector: {
+              spatialPressure: 52,
+              temporalPressure: 40,
+              detectionPressure: 60,
+              interactionComplexity: 35,
+              paradoxRisk: 20,
+            },
+            source: 'measured',
+            modelVersion: 'v1',
+          },
         },
       ],
     })
@@ -194,6 +206,19 @@ describe('loadContentPackManifestFromPublic', () => {
       profileId: 'default-v1',
       author: undefined,
     })
+    expect(manifest.value.packs[0]?.difficultyMeta).toEqual({
+      score: 47.5,
+      vector: {
+        spatialPressure: 52,
+        temporalPressure: 40,
+        detectionPressure: 60,
+        interactionComplexity: 35,
+        paradoxRisk: 20,
+      },
+      source: 'measured',
+      note: undefined,
+      modelVersion: 'v1',
+    })
   })
 
   it('rejects invalid manifest metadata', () => {
@@ -203,6 +228,34 @@ describe('loadContentPackManifestFromPublic', () => {
         {
           id: 'broken',
           class: 'unsupported',
+        },
+      ],
+    })
+
+    expect(manifest.ok).toBe(false)
+    if (!manifest.ok) {
+      expect(manifest.error.kind).toBe('InvalidManifest')
+    }
+  })
+
+  it('rejects invalid difficultyMeta shape', () => {
+    const manifest = parsePublicContentPackManifest({
+      schemaVersion: 1,
+      packs: [
+        {
+          id: 'broken-meta',
+          difficultyMeta: {
+            score: 20,
+            vector: {
+              spatialPressure: 10,
+              temporalPressure: 10,
+              detectionPressure: 10,
+              interactionComplexity: 10,
+              paradoxRisk: 200,
+            },
+            source: 'measured',
+            modelVersion: 'v1',
+          },
         },
       ],
     })

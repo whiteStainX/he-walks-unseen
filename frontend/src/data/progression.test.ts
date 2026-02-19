@@ -17,8 +17,16 @@ describe('progression manifest', () => {
           id: 'main',
           title: 'Main',
           entries: [
-            { packId: 'default' },
-            { packId: 'variant', unlock: { kind: 'CompletePack', packId: 'default' } },
+            {
+              packId: 'default',
+              difficultyTarget: 'easy',
+              difficultyFlavor: 'Opening cadence',
+            },
+            {
+              packId: 'variant',
+              unlock: { kind: 'CompletePack', packId: 'default' },
+              difficultyTarget: 'normal',
+            },
           ],
         },
       ],
@@ -31,12 +39,31 @@ describe('progression manifest', () => {
 
     expect(parsed.value.defaultTrack).toBe('main')
     expect(parsed.value.tracks[0]?.entries).toHaveLength(2)
+    expect(parsed.value.tracks[0]?.entries[0]?.difficultyTarget).toBe('easy')
+    expect(parsed.value.tracks[0]?.entries[0]?.difficultyFlavor).toBe('Opening cadence')
   })
 
   it('rejects invalid progression shape', () => {
     const parsed = parseProgressionManifest({
       schemaVersion: 1,
       tracks: [],
+    })
+
+    expect(parsed.ok).toBe(false)
+    if (!parsed.ok) {
+      expect(parsed.error.kind).toBe('InvalidProgression')
+    }
+  })
+
+  it('rejects non-string difficultyFlavor when provided', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [{ packId: 'default', difficultyFlavor: 7 }],
+        },
+      ],
     })
 
     expect(parsed.ok).toBe(false)

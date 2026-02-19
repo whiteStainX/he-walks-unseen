@@ -227,8 +227,28 @@ export interface PublicContentPackManifestEntry {
   name?: string
   class?: PublicContentPackClass
   difficulty?: string
+  /** Optional measured/authored difficulty internals for runtime UI/tooling. */
+  difficultyMeta?: PublicPackDifficultyMeta
   tags?: string[]
   source?: PublicContentPackSourceMeta
+}
+
+/** Five-axis pressure breakdown normalized to 0..100. */
+export interface PublicPackDifficultyVector {
+  spatialPressure: number
+  temporalPressure: number
+  detectionPressure: number
+  interactionComplexity: number
+  paradoxRisk: number
+}
+
+/** Optional pack-level difficulty metadata attached in public manifest. */
+export interface PublicPackDifficultyMeta {
+  score: number
+  vector: PublicPackDifficultyVector
+  source: 'measured' | 'authored-override'
+  note?: string
+  modelVersion: string
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -237,6 +257,29 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function parseNumberInRange(
+  value: unknown,
+  min: number,
+  max: number,
+  message: string,
+): Result<number, PublicContentLoadError> {
+  if (!isFiniteNumber(value) || value < min || value > max) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message,
+      },
+    }
+  }
+
+  return { ok: true, value }
 }
 
 function isPackClass(value: unknown): value is PublicContentPackClass {
@@ -313,6 +356,138 @@ function parsePackSourceMeta(
   }
 }
 
+function parsePackDifficultyMeta(
+  entry: Record<string, unknown>,
+): Result<PublicPackDifficultyMeta | undefined, PublicContentLoadError> {
+  if (entry.difficultyMeta === undefined) {
+    return { ok: true, value: undefined }
+  }
+
+  if (!isRecord(entry.difficultyMeta)) {
+    return {
+      ok: false,
+      error: { kind: 'InvalidManifest', message: 'Pack difficultyMeta must be an object when provided' },
+    }
+  }
+
+  const difficultyMeta = entry.difficultyMeta
+
+  const score = parseNumberInRange(
+    difficultyMeta.score,
+    0,
+    100,
+    'Pack difficultyMeta.score must be a number in [0,100]',
+  )
+
+  if (!score.ok) {
+    return score
+  }
+
+  if (!isRecord(difficultyMeta.vector)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message: 'Pack difficultyMeta.vector must be an object',
+      },
+    }
+  }
+
+  const vector = difficultyMeta.vector
+  const spatialPressure = parseNumberInRange(
+    vector.spatialPressure,
+    0,
+    100,
+    'Pack difficultyMeta.vector.spatialPressure must be a number in [0,100]',
+  )
+  if (!spatialPressure.ok) {
+    return spatialPressure
+  }
+  const temporalPressure = parseNumberInRange(
+    vector.temporalPressure,
+    0,
+    100,
+    'Pack difficultyMeta.vector.temporalPressure must be a number in [0,100]',
+  )
+  if (!temporalPressure.ok) {
+    return temporalPressure
+  }
+  const detectionPressure = parseNumberInRange(
+    vector.detectionPressure,
+    0,
+    100,
+    'Pack difficultyMeta.vector.detectionPressure must be a number in [0,100]',
+  )
+  if (!detectionPressure.ok) {
+    return detectionPressure
+  }
+  const interactionComplexity = parseNumberInRange(
+    vector.interactionComplexity,
+    0,
+    100,
+    'Pack difficultyMeta.vector.interactionComplexity must be a number in [0,100]',
+  )
+  if (!interactionComplexity.ok) {
+    return interactionComplexity
+  }
+  const paradoxRisk = parseNumberInRange(
+    vector.paradoxRisk,
+    0,
+    100,
+    'Pack difficultyMeta.vector.paradoxRisk must be a number in [0,100]',
+  )
+  if (!paradoxRisk.ok) {
+    return paradoxRisk
+  }
+
+  if (difficultyMeta.source !== 'measured' && difficultyMeta.source !== 'authored-override') {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message: 'Pack difficultyMeta.source must be measured|authored-override',
+      },
+    }
+  }
+
+  if (difficultyMeta.note !== undefined && !isNonEmptyString(difficultyMeta.note)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message: 'Pack difficultyMeta.note must be a non-empty string when provided',
+      },
+    }
+  }
+
+  if (!isNonEmptyString(difficultyMeta.modelVersion)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidManifest',
+        message: 'Pack difficultyMeta.modelVersion must be a non-empty string',
+      },
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      score: score.value,
+      vector: {
+        spatialPressure: spatialPressure.value,
+        temporalPressure: temporalPressure.value,
+        detectionPressure: detectionPressure.value,
+        interactionComplexity: interactionComplexity.value,
+        paradoxRisk: paradoxRisk.value,
+      },
+      source: difficultyMeta.source,
+      note: difficultyMeta.note,
+      modelVersion: difficultyMeta.modelVersion,
+    },
+  }
+}
+
 function parsePackEntry(
   value: unknown,
 ): Result<PublicContentPackManifestEntry, PublicContentLoadError> {
@@ -371,6 +546,12 @@ function parsePackEntry(
     return source
   }
 
+  const difficultyMeta = parsePackDifficultyMeta(value)
+
+  if (!difficultyMeta.ok) {
+    return difficultyMeta
+  }
+
   return {
     ok: true,
     value: {
@@ -378,6 +559,7 @@ function parsePackEntry(
       name: value.name,
       class: value.class,
       difficulty: value.difficulty,
+      difficultyMeta: difficultyMeta.value,
       tags: value.tags,
       source: source.value,
     },

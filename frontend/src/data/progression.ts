@@ -12,6 +12,8 @@ export interface ProgressionEntry {
   packId: string
   title?: string
   difficulty?: string
+  difficultyTarget?: string
+  difficultyFlavor?: string
   tags?: string[]
   unlock?: ProgressionUnlockCondition
 }
@@ -149,6 +151,26 @@ function parseProgressionEntry(
     }
   }
 
+  if (value.difficultyTarget !== undefined && !isNonEmptyString(value.difficultyTarget)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidProgression',
+        message: `entry ${value.packId} difficultyTarget must be non-empty string`,
+      },
+    }
+  }
+
+  if (value.difficultyFlavor !== undefined && !isNonEmptyString(value.difficultyFlavor)) {
+    return {
+      ok: false,
+      error: {
+        kind: 'InvalidProgression',
+        message: `entry ${value.packId} difficultyFlavor must be non-empty string`,
+      },
+    }
+  }
+
   if (value.tags !== undefined) {
     if (!Array.isArray(value.tags) || !value.tags.every(isNonEmptyString)) {
       return {
@@ -173,6 +195,8 @@ function parseProgressionEntry(
       packId: value.packId,
       title: value.title,
       difficulty: value.difficulty,
+      difficultyTarget: value.difficultyTarget,
+      difficultyFlavor: value.difficultyFlavor,
       tags: value.tags,
       unlock: unlock.value,
     },
