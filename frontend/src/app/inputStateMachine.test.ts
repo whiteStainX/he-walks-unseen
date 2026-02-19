@@ -7,6 +7,7 @@ import {
   selectDirectionalMode,
   toggleActionMenu,
   toggleLogOverlay,
+  toggleProgressionOverlay,
   toggleStateOverlay,
   toggleSystemMenu,
 } from './inputStateMachine'
@@ -51,5 +52,25 @@ describe('inputStateMachine', () => {
 
     const closed = closeTopLayer(opened)
     expect(closed.layer).toBe('Gameplay')
+  })
+
+  it('toggles progression overlay from gameplay and back', () => {
+    const opened = toggleProgressionOverlay(createInputStateMachine())
+    expect(opened.layer).toBe('ProgressionOverlay')
+
+    const closed = closeTopLayer(opened)
+    expect(closed.layer).toBe('Gameplay')
+  })
+
+  it('blocks progression overlay when another overlay layer is active', () => {
+    const blockedFromSystem = toggleProgressionOverlay(toggleSystemMenu(createInputStateMachine()))
+    const blockedFromLog = toggleProgressionOverlay(toggleLogOverlay(createInputStateMachine()))
+    const blockedFromState = toggleProgressionOverlay(toggleStateOverlay(createInputStateMachine()))
+    const blockedFromAction = toggleProgressionOverlay(toggleActionMenu(createInputStateMachine()))
+
+    expect(blockedFromSystem.layer).toBe('SystemMenu')
+    expect(blockedFromLog.layer).toBe('LogOverlay')
+    expect(blockedFromState.layer).toBe('StateOverlay')
+    expect(blockedFromAction.layer).toBe('ActionMenu')
   })
 })

@@ -18,11 +18,14 @@ import {
   selectDirectionalMode,
   toggleActionMenu,
   toggleLogOverlay,
+  toggleProgressionOverlay,
   toggleStateOverlay,
   toggleSystemMenu,
   type DirectionalActionMode,
   type InputStateMachine,
 } from '../inputStateMachine'
+import type { ProgressionManifest } from '../../data/progression'
+import type { ProgressionSnapshot } from './useProgressionState'
 
 function directionForKey(key: string): Direction2D | null {
   switch (key) {
@@ -51,10 +54,15 @@ interface UseKeyboardControlsInput {
   dispatch: AppDispatch
   inputMachine: InputStateMachine
   isActionMenuOpen: boolean
+  isProgressionOverlayOpen: boolean
   availablePackIds: string[]
   contentPackId: string
   riftDefaultDelta: number
   interactionMaxPushChain: number
+  progressionManifest: ProgressionManifest | null
+  progressionState: ProgressionSnapshot | null
+  setSelectedTrack: (trackId: string) => void
+  setCurrentEntryIndex: (index: number) => void
   applyMachineTransition: (nextMachine: InputStateMachine) => void
   dispatchDirectionalIntent: (intent: { mode: DirectionalActionMode; direction: Direction2D }) => void
   setShowDangerPreview: Dispatch<SetStateAction<boolean>>
@@ -65,10 +73,15 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
     dispatch,
     inputMachine,
     isActionMenuOpen,
+    isProgressionOverlayOpen,
     availablePackIds,
     contentPackId,
     riftDefaultDelta,
     interactionMaxPushChain,
+    progressionManifest,
+    progressionState,
+    setSelectedTrack,
+    setCurrentEntryIndex,
     applyMachineTransition,
     dispatchDirectionalIntent,
     setShowDangerPreview,
@@ -106,19 +119,9 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
         return
       }
 
-      if (event.key === 'p' || event.key === 'P') {
+      if (event.key === 'g' || event.key === 'G') {
         event.preventDefault()
-        setShowDangerPreview((enabled) => !enabled)
-        return
-      }
-
-      if (event.key === 'v' || event.key === 'V') {
-        event.preventDefault()
-        if (availablePackIds.length > 0) {
-          const currentIndex = availablePackIds.findIndex((id) => id === contentPackId)
-          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % availablePackIds.length
-          dispatch(setContentPackId(availablePackIds[nextIndex]))
-        }
+        applyMachineTransition(toggleProgressionOverlay(inputMachine))
         return
       }
 
@@ -152,6 +155,69 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
         }
       }
 
+      if (isProgressionOverlayOpen) {
+        event.preventDefault()
+
+        if (!progressionManifest || !progressionState) {
+          return
+        }
+
+        const trackCount = progressionManifest.tracks.length
+        const selectedTrackIndex = progressionManifest.tracks.findIndex(
+          (track) => track.id === progressionState.selectedTrackId,
+        )
+        const activeTrackIndex = selectedTrackIndex < 0 ? 0 : selectedTrackIndex
+        const selectedTrack = progressionManifest.tracks[activeTrackIndex]
+
+        if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') {
+          if (trackCount > 1) {
+            const nextTrackIndex = activeTrackIndex <= 0 ? trackCount - 1 : activeTrackIndex - 1
+            setSelectedTrack(progressionManifest.tracks[nextTrackIndex].id)
+          }
+          return
+        }
+
+        if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') {
+          if (trackCount > 1) {
+            const nextTrackIndex = activeTrackIndex >= trackCount - 1 ? 0 : activeTrackIndex + 1
+            setSelectedTrack(progressionManifest.tracks[nextTrackIndex].id)
+          }
+          return
+        }
+
+        if (event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') {
+          if (selectedTrack) {
+            const nextIndex = Math.max(0, progressionState.currentEntryIndex - 1)
+            setCurrentEntryIndex(nextIndex)
+          }
+          return
+        }
+
+        if (event.key === 'ArrowDown' || event.key === 's' || event.key === 'S') {
+          if (selectedTrack) {
+            const maxIndex = Math.max(0, selectedTrack.entries.length - 1)
+            const nextIndex = Math.min(maxIndex, progressionState.currentEntryIndex + 1)
+            setCurrentEntryIndex(nextIndex)
+          }
+          return
+        }
+
+        if (event.key === 'Enter' && selectedTrack) {
+          const entry = selectedTrack.entries[progressionState.currentEntryIndex]
+
+          if (!entry) {
+            return
+          }
+
+          // 14C allows direct browsing/load of any listed pack.
+          // Unlock gating/policy is finalized in 14D.
+          dispatch(setContentPackId(entry.packId))
+          applyMachineTransition(closeTopLayer(inputMachine))
+        }
+
+        return
+      }
+
       if (direction) {
         event.preventDefault()
         const result = pushDirectionalInput(inputMachine, direction)
@@ -164,6 +230,22 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
       }
 
       if (inputMachine.layer !== 'Gameplay') {
+        return
+      }
+
+      if (event.key === 'p' || event.key === 'P') {
+        event.preventDefault()
+        setShowDangerPreview((enabled) => !enabled)
+        return
+      }
+
+      if (event.key === 'v' || event.key === 'V') {
+        event.preventDefault()
+        if (availablePackIds.length > 0) {
+          const currentIndex = availablePackIds.findIndex((id) => id === contentPackId)
+          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % availablePackIds.length
+          dispatch(setContentPackId(availablePackIds[nextIndex]))
+        }
         return
       }
 
@@ -237,7 +319,12 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
     inputMachine,
     interactionMaxPushChain,
     isActionMenuOpen,
+    isProgressionOverlayOpen,
+    progressionManifest,
+    progressionState,
     riftDefaultDelta,
+    setCurrentEntryIndex,
+    setSelectedTrack,
     setShowDangerPreview,
   ])
 }

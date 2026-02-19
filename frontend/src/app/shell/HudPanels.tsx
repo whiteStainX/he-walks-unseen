@@ -33,6 +33,7 @@ export function HudPanels({
           <p className="window-note">Mode: {directionalActionMode}</p>
           <div className="command-meta command-meta-compact">
             <span>F Menu</span>
+            <span>G Levels</span>
             <span>Space Rift</span>
             <span>Enter Wait</span>
             <span>R Restart</span>

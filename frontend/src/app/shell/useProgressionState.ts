@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { ProgressionManifest } from '../../data/progression'
 import { loadValidatedProgressionFromPublic } from '../../data/progression'
@@ -175,24 +175,10 @@ function loadStoredSnapshot(
   )
 }
 
-export function useProgressionState(input: {
-  contentPackId: string
-}): UseProgressionStateResult {
+export function useProgressionState(): UseProgressionStateResult {
   const [progressionManifest, setProgressionManifest] = useState<ProgressionManifest | null>(null)
   const [progressionState, setProgressionState] = useState<ProgressionSnapshot | null>(null)
   const [progressionError, setProgressionError] = useState<string | null>(null)
-
-  const syncedProgressionState = useMemo(() => {
-    if (!progressionManifest || !progressionState) {
-      return null
-    }
-
-    return syncProgressionSnapshotToContentPack(
-      progressionManifest,
-      progressionState,
-      input.contentPackId,
-    )
-  }, [input.contentPackId, progressionManifest, progressionState])
 
   useEffect(() => {
     let cancelled = false
@@ -222,23 +208,24 @@ export function useProgressionState(input: {
   }, [])
 
   useEffect(() => {
-    if (!syncedProgressionState || typeof window === 'undefined') {
+    if (!progressionManifest || !progressionState || typeof window === 'undefined') {
       return
     }
 
+    const normalized = normalizeProgressionSnapshot(progressionManifest, progressionState)
     window.localStorage.setItem(
       PROGRESSION_STORAGE_KEY,
-      JSON.stringify(syncedProgressionState),
+      JSON.stringify(normalized),
     )
-  }, [syncedProgressionState])
+  }, [progressionManifest, progressionState])
 
   const setSelectedTrack = (trackId: string) => {
-    if (!progressionManifest || !syncedProgressionState) {
+    if (!progressionManifest || !progressionState) {
       return
     }
 
     const next = normalizeProgressionSnapshot(progressionManifest, {
-      ...syncedProgressionState,
+      ...progressionState,
       selectedTrackId: trackId,
       currentEntryIndex: 0,
     })
@@ -247,12 +234,12 @@ export function useProgressionState(input: {
   }
 
   const setCurrentEntryIndex = (index: number) => {
-    if (!progressionManifest || !syncedProgressionState) {
+    if (!progressionManifest || !progressionState) {
       return
     }
 
     const next = normalizeProgressionSnapshot(progressionManifest, {
-      ...syncedProgressionState,
+      ...progressionState,
       currentEntryIndex: index,
     })
 
@@ -260,34 +247,34 @@ export function useProgressionState(input: {
   }
 
   const unlockPack = (packId: string) => {
-    if (!progressionManifest || !syncedProgressionState) {
+    if (!progressionManifest || !progressionState) {
       return
     }
 
-    if (syncedProgressionState.unlockedPackIds.includes(packId)) {
+    if (progressionState.unlockedPackIds.includes(packId)) {
       return
     }
 
     const next = normalizeProgressionSnapshot(progressionManifest, {
-      ...syncedProgressionState,
-      unlockedPackIds: [...syncedProgressionState.unlockedPackIds, packId],
+      ...progressionState,
+      unlockedPackIds: [...progressionState.unlockedPackIds, packId],
     })
 
     setProgressionState(next)
   }
 
   const markPackCompleted = (packId: string) => {
-    if (!progressionManifest || !syncedProgressionState) {
+    if (!progressionManifest || !progressionState) {
       return
     }
 
-    if (syncedProgressionState.completedPackIds.includes(packId)) {
+    if (progressionState.completedPackIds.includes(packId)) {
       return
     }
 
     const next = normalizeProgressionSnapshot(progressionManifest, {
-      ...syncedProgressionState,
-      completedPackIds: [...syncedProgressionState.completedPackIds, packId],
+      ...progressionState,
+      completedPackIds: [...progressionState.completedPackIds, packId],
     })
 
     setProgressionState(next)
@@ -303,7 +290,7 @@ export function useProgressionState(input: {
 
   return {
     progressionManifest,
-    progressionState: syncedProgressionState,
+    progressionState,
     progressionError,
     setSelectedTrack,
     setCurrentEntryIndex,

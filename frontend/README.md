@@ -74,6 +74,10 @@ npm run lint
 | `Enter` | Wait one turn |
 | `L` | Open/close full log overlay |
 | `M` | Open/close settings overlay |
+| `G` | Open/close progression overlay |
+| `ArrowUp/ArrowDown` (`W/S`) in progression overlay | Move selected level entry |
+| `ArrowLeft/ArrowRight` (`A/D`) in progression overlay | Switch track |
+| `Enter` in progression overlay | Load selected unlocked level |
 | `P` | Toggle danger preview overlay |
 | `V` | Cycle content pack entries from `frontend/public/data/index.json` |
 | `[` / `]` | Rift delta - / + |

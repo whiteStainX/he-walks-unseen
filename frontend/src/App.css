@@ -428,6 +428,105 @@
   height: 16px;
 }
 
+.progression-window {
+  width: min(1040px, 100%);
+}
+
+.progression-body {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+}
+
+.progression-track-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.progression-track-button {
+  border: 1px solid var(--ui-line);
+  background: var(--ui-bg);
+  color: var(--ui-fg);
+  font-family: var(--ui-font-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.progression-track-button:hover {
+  background: var(--ui-fill-alt);
+}
+
+.progression-track-label {
+  margin: 0;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-fill-alt);
+  padding: 5px 8px;
+  color: var(--ui-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.78rem;
+}
+
+.progression-entry-list {
+  display: grid;
+  gap: 5px;
+  max-height: 52dvh;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.progression-entry {
+  display: grid;
+  grid-template-columns: 36px minmax(130px, 1.4fr) minmax(140px, 1.2fr) 86px 86px 92px 76px;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--ui-line);
+  background: var(--ui-bg);
+  padding: 6px 8px;
+  text-align: left;
+  color: var(--ui-fg);
+  font-family: var(--ui-font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.progression-entry:hover {
+  background: var(--ui-fill-alt);
+}
+
+.progression-entry.is-selected {
+  border-width: 2px;
+}
+
+.progression-entry.is-locked {
+  color: var(--ui-muted);
+}
+
+.progression-entry.is-complete {
+  background: var(--ui-fill-alt);
+}
+
+.progression-entry.is-current {
+  background: var(--ui-fill-selected);
+  color: var(--ui-bg);
+}
+
+.progression-entry-col {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+.progression-entry-current {
+  text-align: right;
+}
+
 .bottom-bar {
   display: flex;
   flex-wrap: wrap;
@@ -458,6 +557,11 @@
 
   .ui-window {
     min-height: 180px;
+  }
+
+  .progression-entry {
+    grid-template-columns: 32px minmax(110px, 1.2fr) minmax(120px, 1fr) 80px 80px 88px 68px;
+    gap: 6px;
   }
 }
 

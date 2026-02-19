@@ -14,7 +14,8 @@ Progress:
 1. 14A progression manifest contract implemented (`frontend/src/data/progression.ts` + tests).
 2. Baseline progression manifest added at `frontend/public/data/progression/index.json`.
 3. 14B runtime progression state + local persistence implemented (`useProgressionState` + helper tests).
-4. Remaining: 14C/14D/14E.
+4. 14C minimal progression/level selection overlay implemented (`ProgressionOverlay` + keyboard navigation).
+5. Remaining: 14D/14E.
 
 ---
 
@@ -85,14 +86,16 @@ Implement:
 - class
 - difficulty
 - lock/completion state
-3. Keyboard-first controls for selection and load.
-4. Keep current `V` cycling as fallback.
+3. Keyboard-first controls for selection and load (`G` open/close, arrows/WASD navigate, `Enter` load).
+4. During 14C, load is allowed for listed packs even if marked locked; strict unlock gating is finalized in 14D.
+5. Keep current `V` cycling as fallback.
 
 File targets:
 1. `frontend/src/app/shell/ProgressionOverlay.tsx` (new)
 2. `frontend/src/app/inputStateMachine.ts`
 3. `frontend/src/app/shell/useKeyboardControls.ts`
 4. `frontend/src/app/GameShell.tsx`
+5. `frontend/src/App.css`
 
 Exit criteria:
 1. Player can choose level from overlay without editing manifest or using key cycle.

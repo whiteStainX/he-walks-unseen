@@ -95,6 +95,8 @@ Detailed HUD and overlay specification:
   - `Space` applies Rift
   - `Enter` waits one turn
   - `L` opens/closes action log overlay
+  - `G` opens/closes progression overlay
+  - in progression overlay: arrows/WASD navigate, `Enter` loads selected unlocked level
   - `P` toggles danger preview overlay
   - `V` cycles loaded content pack
   - `R` restarts
