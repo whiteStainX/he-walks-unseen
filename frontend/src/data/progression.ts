@@ -1,4 +1,5 @@
 import type { Result } from '../core/result'
+import type { DifficultyRampPolicy, DifficultyTier } from './contracts'
 import type { PublicContentPackManifestEntry } from './loader'
 import { loadContentPackManifestFromPublic } from './loader'
 
@@ -31,6 +32,50 @@ export type ProgressionLoadError =
   | { kind: 'FetchFailed'; file: string; status?: number; message: string }
   | { kind: 'InvalidProgression'; message: string }
   | { kind: 'InvalidProgressionReference'; trackId: string; packId: string; message: string }
+  | {
+      kind: 'InvalidProgressionDifficulty'
+      trackId: string
+      entryIndex: number
+      packId: string
+      message: string
+    }
+  | {
+      kind: 'InvalidProgressionRamp'
+      trackId: string
+      fromEntryIndex: number
+      toEntryIndex: number
+      fromPackId: string
+      toPackId: string
+      message: string
+    }
+
+const DEFAULT_RAMP_POLICY: DifficultyRampPolicy = {
+  allowCooldownInMain: true,
+  cooldownMaxTierDrop: 1,
+  allowConsecutiveCooldown: false,
+  requireHardBeforeExpert: true,
+}
+
+function toDifficultyTier(value: string | undefined): DifficultyTier | null {
+  if (value === 'easy' || value === 'normal' || value === 'hard' || value === 'expert') {
+    return value
+  }
+
+  return null
+}
+
+function tierValue(tier: DifficultyTier): number {
+  switch (tier) {
+    case 'easy':
+      return 0
+    case 'normal':
+      return 1
+    case 'hard':
+      return 2
+    case 'expert':
+      return 3
+  }
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -287,6 +332,123 @@ export function validateProgressionReferences(
   return { ok: true, value: manifest }
 }
 
+export function validateProgressionDifficultyRamp(
+  manifest: ProgressionManifest,
+  packs: PublicContentPackManifestEntry[],
+  policy: DifficultyRampPolicy = DEFAULT_RAMP_POLICY,
+): Result<ProgressionManifest, ProgressionLoadError> {
+  const mainTrack = manifest.tracks.find((track) => track.id === 'main')
+
+  if (!mainTrack) {
+    return { ok: true, value: manifest }
+  }
+
+  const packsById = new Map(packs.map((pack) => [pack.id, pack]))
+  let previousTier: DifficultyTier | null = null
+  let previousWasCooldown = false
+  let seenHardBeforeExpert = false
+
+  for (let index = 0; index < mainTrack.entries.length; index += 1) {
+    const entry = mainTrack.entries[index]
+    const pack = packsById.get(entry.packId)
+    const resolvedTier = toDifficultyTier(entry.difficulty ?? pack?.difficulty)
+
+    if (!resolvedTier) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidProgressionDifficulty',
+          trackId: mainTrack.id,
+          entryIndex: index,
+          packId: entry.packId,
+          message: 'main track entry must resolve to easy|normal|hard|expert difficulty',
+        },
+      }
+    }
+
+    if (resolvedTier === 'expert' && policy.requireHardBeforeExpert && !seenHardBeforeExpert) {
+      return {
+        ok: false,
+        error: {
+          kind: 'InvalidProgressionRamp',
+          trackId: mainTrack.id,
+          fromEntryIndex: Math.max(0, index - 1),
+          toEntryIndex: index,
+          fromPackId: index > 0 ? mainTrack.entries[index - 1].packId : entry.packId,
+          toPackId: entry.packId,
+          message: 'expert slot requires at least one prior hard slot in main track',
+        },
+      }
+    }
+
+    if (previousTier) {
+      const previousValue = tierValue(previousTier)
+      const currentValue = tierValue(resolvedTier)
+
+      if (currentValue < previousValue) {
+        if (!policy.allowCooldownInMain) {
+          return {
+            ok: false,
+            error: {
+              kind: 'InvalidProgressionRamp',
+              trackId: mainTrack.id,
+              fromEntryIndex: index - 1,
+              toEntryIndex: index,
+              fromPackId: mainTrack.entries[index - 1].packId,
+              toPackId: entry.packId,
+              message: 'main track must be non-decreasing when cooldowns are disabled',
+            },
+          }
+        }
+
+        const drop = previousValue - currentValue
+
+        if (drop > policy.cooldownMaxTierDrop) {
+          return {
+            ok: false,
+            error: {
+              kind: 'InvalidProgressionRamp',
+              trackId: mainTrack.id,
+              fromEntryIndex: index - 1,
+              toEntryIndex: index,
+              fromPackId: mainTrack.entries[index - 1].packId,
+              toPackId: entry.packId,
+              message: `cooldown drop exceeds policy (drop=${drop}, max=${policy.cooldownMaxTierDrop})`,
+            },
+          }
+        }
+
+        if (!policy.allowConsecutiveCooldown && previousWasCooldown) {
+          return {
+            ok: false,
+            error: {
+              kind: 'InvalidProgressionRamp',
+              trackId: mainTrack.id,
+              fromEntryIndex: index - 1,
+              toEntryIndex: index,
+              fromPackId: mainTrack.entries[index - 1].packId,
+              toPackId: entry.packId,
+              message: 'consecutive cooldown slots are not allowed',
+            },
+          }
+        }
+
+        previousWasCooldown = true
+      } else {
+        previousWasCooldown = false
+      }
+    }
+
+    if (resolvedTier === 'hard') {
+      seenHardBeforeExpert = true
+    }
+
+    previousTier = resolvedTier
+  }
+
+  return { ok: true, value: manifest }
+}
+
 async function fetchJson(path: string): Promise<Result<unknown, ProgressionLoadError>> {
   try {
     const response = await fetch(path)
@@ -351,5 +513,11 @@ export async function loadValidatedProgressionFromPublic(
     }
   }
 
-  return validateProgressionReferences(progression.value, packs.value.packs)
+  const references = validateProgressionReferences(progression.value, packs.value.packs)
+
+  if (!references.ok) {
+    return references
+  }
+
+  return validateProgressionDifficultyRamp(references.value, packs.value.packs, DEFAULT_RAMP_POLICY)
 }

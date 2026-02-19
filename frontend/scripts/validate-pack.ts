@@ -8,6 +8,12 @@ import {
   type PublicContentPackManifestEntry,
 } from '../src/data/loader'
 import {
+  parseProgressionManifest,
+  validateProgressionDifficultyRamp,
+  validateProgressionReferences,
+  type ProgressionLoadError,
+} from '../src/data/progression'
+import {
   validateContentPack,
   validateIconPackConfig,
   validateLevelSymbolSlots,
@@ -89,6 +95,21 @@ function formatContentLoadError(error: ContentLoadError): string {
       return `${error.kind}: (${error.start.x},${error.start.y},t=${error.start.t})`
     case 'UnsupportedBehaviorPolicy':
       return `${error.kind}: key=${error.key}, kind=${error.policyKind}`
+  }
+}
+
+function formatProgressionError(error: ProgressionLoadError): string {
+  switch (error.kind) {
+    case 'FetchFailed':
+      return `${error.kind}: file=${error.file}, message=${error.message}`
+    case 'InvalidProgression':
+      return `${error.kind}: ${error.message}`
+    case 'InvalidProgressionReference':
+      return `${error.kind}: track=${error.trackId}, pack=${error.packId}, message=${error.message}`
+    case 'InvalidProgressionDifficulty':
+      return `${error.kind}: track=${error.trackId}, index=${error.entryIndex}, pack=${error.packId}, message=${error.message}`
+    case 'InvalidProgressionRamp':
+      return `${error.kind}: track=${error.trackId}, from=${error.fromPackId}, to=${error.toPackId}, message=${error.message}`
   }
 }
 
@@ -211,6 +232,48 @@ async function main(): Promise<void> {
     process.exitCode = 1
     return
   }
+
+  const progressionPath = path.join(cli.publicDataDir, 'progression', 'index.json')
+  const progressionRaw = await readJson(progressionPath)
+
+  if (!progressionRaw.ok) {
+    console.error(`[validate:pack] progression read failed: ${progressionRaw.error}`)
+    process.exitCode = 1
+    return
+  }
+
+  const progression = parseProgressionManifest(progressionRaw.value)
+
+  if (!progression.ok) {
+    console.error(`[validate:pack] progression parse failed: ${formatProgressionError(progression.error)}`)
+    process.exitCode = 1
+    return
+  }
+
+  const progressionRefs = validateProgressionReferences(progression.value, manifest.value.packs)
+
+  if (!progressionRefs.ok) {
+    console.error(
+      `[validate:pack] progression reference validation failed: ${formatProgressionError(progressionRefs.error)}`,
+    )
+    process.exitCode = 1
+    return
+  }
+
+  const progressionRamp = validateProgressionDifficultyRamp(
+    progressionRefs.value,
+    manifest.value.packs,
+  )
+
+  if (!progressionRamp.ok) {
+    console.error(
+      `[validate:pack] progression ramp validation failed: ${formatProgressionError(progressionRamp.error)}`,
+    )
+    process.exitCode = 1
+    return
+  }
+
+  console.log('[validate:pack] progression manifest validated')
 
   const entries = cli.all
     ? manifest.value.packs

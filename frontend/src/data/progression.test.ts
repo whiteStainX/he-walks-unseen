@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   loadValidatedProgressionFromPublic,
   parseProgressionManifest,
+  validateProgressionDifficultyRamp,
   validateProgressionReferences,
 } from './progression'
 
@@ -66,6 +67,152 @@ describe('progression manifest', () => {
   })
 })
 
+describe('validateProgressionDifficultyRamp', () => {
+  const packs = [
+    { id: 'p1', difficulty: 'easy' },
+    { id: 'p2', difficulty: 'normal' },
+    { id: 'p3', difficulty: 'hard' },
+    { id: 'p4', difficulty: 'expert' },
+  ]
+
+  it('accepts non-decreasing ramp with one cooldown and prior hard before expert', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'p1', difficulty: 'easy' },
+            { packId: 'p2', difficulty: 'normal' },
+            { packId: 'p3', difficulty: 'hard' },
+            { packId: 'p2', difficulty: 'normal' },
+            { packId: 'p3', difficulty: 'hard' },
+            { packId: 'p4', difficulty: 'expert' },
+          ],
+        },
+      ],
+    })
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) {
+      return
+    }
+
+    const validated = validateProgressionDifficultyRamp(parsed.value, packs)
+    expect(validated.ok).toBe(true)
+  })
+
+  it('rejects cooldown drops greater than one tier', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'p3', difficulty: 'hard' },
+            { packId: 'p1', difficulty: 'easy' },
+          ],
+        },
+      ],
+    })
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) {
+      return
+    }
+
+    const validated = validateProgressionDifficultyRamp(parsed.value, packs)
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidProgressionRamp')
+    }
+  })
+
+  it('rejects consecutive cooldown slots', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'p3', difficulty: 'hard' },
+            { packId: 'p2', difficulty: 'normal' },
+            { packId: 'p1', difficulty: 'easy' },
+          ],
+        },
+      ],
+    })
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) {
+      return
+    }
+
+    const validated = validateProgressionDifficultyRamp(parsed.value, packs)
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidProgressionRamp')
+      if (validated.error.kind === 'InvalidProgressionRamp') {
+        expect(validated.error.message).toContain('consecutive cooldown')
+      }
+    }
+  })
+
+  it('rejects expert before hard', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'p1', difficulty: 'easy' },
+            { packId: 'p4', difficulty: 'expert' },
+          ],
+        },
+      ],
+    })
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) {
+      return
+    }
+
+    const validated = validateProgressionDifficultyRamp(parsed.value, packs)
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidProgressionRamp')
+      if (validated.error.kind === 'InvalidProgressionRamp') {
+        expect(validated.error.message).toContain('prior hard slot')
+      }
+    }
+  })
+
+  it('rejects unresolved/unsupported difficulty labels in main track', () => {
+    const parsed = parseProgressionManifest({
+      schemaVersion: 1,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'p1', difficulty: 'tutorial' },
+          ],
+        },
+      ],
+    })
+
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) {
+      return
+    }
+
+    const validated = validateProgressionDifficultyRamp(parsed.value, packs)
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidProgressionDifficulty')
+    }
+  })
+})
+
 describe('loadValidatedProgressionFromPublic', () => {
   const originalFetch = globalThis.fetch
 
@@ -79,11 +226,22 @@ describe('loadValidatedProgressionFromPublic', () => {
       '/data/progression/index.json': {
         schemaVersion: 1,
         defaultTrack: 'main',
-        tracks: [{ id: 'main', entries: [{ packId: 'default' }, { packId: 'variant' }] }],
+        tracks: [
+          {
+            id: 'main',
+            entries: [
+              { packId: 'default', difficulty: 'easy' },
+              { packId: 'variant', difficulty: 'normal' },
+            ],
+          },
+        ],
       },
       '/data/index.json': {
         schemaVersion: 1,
-        packs: [{ id: 'default' }, { id: 'variant' }],
+        packs: [
+          { id: 'default', difficulty: 'easy' },
+          { id: 'variant', difficulty: 'normal' },
+        ],
       },
     }
 
