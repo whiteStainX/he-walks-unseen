@@ -353,3 +353,25 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Detection behavior is LOS-based and deterministic
 - [x] Phase ordering remains `Paradox -> Won -> Detected`
 - [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 16: Level Difficulty Model
+
+**Goal:** Implement deterministic, tunable difficulty evaluation with progression-ramp policy validation and player-visible difficulty internals.
+**Implementation Detail:** `docs/web-implementation/PHASE_16_LEVEL_DIFFICULTY_MODEL.md`
+**Design Detail:** `docs/web-design/LEVEL_DIFFICULTY_MODEL.md`
+
+### Deliverables
+- [ ] Versioned difficulty model config (thresholds/weights/tier bounds)
+- [ ] Deterministic evaluator (`score`, `vector`, suggested tier)
+- [ ] Override policy validation (delta/note/review-evidence rules)
+- [ ] Progression ramp validator (cooldown constraints + expert gate)
+- [ ] Metadata wiring for manifest/progression and UI surface
+- [ ] Difficulty evaluation CLI (`--pack-id`, `--all`)
+
+### Exit Criteria
+- [ ] Difficulty output is config-driven and deterministic
+- [ ] Existing packs remain loadable (backward-compatible metadata path)
+- [ ] Player can view difficulty internals in runtime UI
+- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
