@@ -7,12 +7,19 @@ import {
   appendGeneratedPackToManifest,
   exportGeneratedPackToPublicFiles,
 } from '../src/data/generation/export'
-import type { PublicContentPackManifest } from '../src/data/loader'
+import { loadDefaultGenerationProfile } from '../src/data/generation/profile'
+import type {
+  PublicContentPackClass,
+  PublicContentPackManifest,
+} from '../src/data/loader'
 
 interface CliArgs {
   seed: string
   packId: string
   difficulty: 'easy' | 'normal' | 'hard'
+  packClass: PublicContentPackClass
+  tags: string[]
+  author?: string
   width: number
   height: number
   timeDepth: number
@@ -36,6 +43,7 @@ function parseNumber(value: string | undefined, fallback: number): number {
 
 function parseArgs(argv: string[]): CliArgs {
   const args = new Map<string, string>()
+  const tags: string[] = []
 
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index]
@@ -46,6 +54,14 @@ function parseArgs(argv: string[]): CliArgs {
 
     const key = token.slice(2)
     const next = argv[index + 1]
+
+    if (key === 'tag') {
+      if (next && !next.startsWith('--')) {
+        tags.push(next)
+        index += 1
+      }
+      continue
+    }
 
     if (!next || next.startsWith('--')) {
       args.set(key, 'true')
@@ -61,11 +77,22 @@ function parseArgs(argv: string[]): CliArgs {
   const difficultyRaw = args.get('difficulty')
   const difficulty =
     difficultyRaw === 'easy' || difficultyRaw === 'hard' ? difficultyRaw : 'normal'
+  const packClassRaw = args.get('class')
+  const packClass: PublicContentPackClass =
+    packClassRaw === 'curated' ||
+    packClassRaw === 'hybrid' ||
+    packClassRaw === 'experimental'
+      ? packClassRaw
+      : 'generated'
+  const author = args.get('author')
 
   return {
     seed,
     packId,
     difficulty,
+    packClass,
+    tags,
+    author: author && author.length > 0 ? author : undefined,
     width: parseNumber(args.get('width'), 12),
     height: parseNumber(args.get('height'), 12),
     timeDepth: parseNumber(args.get('time-depth'), 16),
@@ -97,6 +124,8 @@ async function loadManifest(manifestPath: string): Promise<PublicContentPackMani
 
 async function main(): Promise<void> {
   const cli = parseArgs(process.argv.slice(2))
+  const defaultProfile = loadDefaultGenerationProfile()
+  const profileId = defaultProfile.ok ? defaultProfile.value.id : undefined
   const generated = generateMapPack({
     seed: cli.seed,
     board: {
@@ -133,6 +162,15 @@ async function main(): Promise<void> {
   const nextManifest = appendGeneratedPackToManifest(manifest, {
     id: outputPackId,
     name: `Generated ${cli.seed}`,
+    class: cli.packClass,
+    difficulty: cli.difficulty,
+    tags: cli.tags.length > 0 ? cli.tags : undefined,
+    source: {
+      kind: 'generator',
+      seed: cli.seed,
+      profileId,
+      author: cli.author,
+    },
   })
   await writeFile(manifestPath, prettyJson(nextManifest), 'utf8')
 

@@ -34,6 +34,10 @@ npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --wid
 Notes:
 - Writes files to `frontend/public/data/generated/` by default.
 - Updates `frontend/public/data/index.json` with the generated pack id.
+- Optional metadata flags:
+  - `--class generated|hybrid|curated|experimental`
+  - `--tag <label>` (repeatable)
+  - `--author <name>`
 
 ## Validate Packs
 

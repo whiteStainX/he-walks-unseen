@@ -1,4 +1,7 @@
-import type { PublicContentPackManifest } from '../loader'
+import type {
+  PublicContentPackManifest,
+  PublicContentPackManifestEntry,
+} from '../loader'
 import type { ContentPack } from '../contracts'
 
 export interface GeneratedPackExport {
@@ -37,7 +40,7 @@ export function exportGeneratedPackToPublicFiles(
  */
 export function appendGeneratedPackToManifest(
   manifest: PublicContentPackManifest,
-  entry: { id: string; name?: string },
+  entry: PublicContentPackManifestEntry,
 ): PublicContentPackManifest {
   const withoutDup = manifest.packs.filter((pack) => pack.id !== entry.id)
 
@@ -48,6 +51,10 @@ export function appendGeneratedPackToManifest(
       {
         id: entry.id,
         name: entry.name,
+        class: entry.class,
+        difficulty: entry.difficulty,
+        tags: entry.tags,
+        source: entry.source,
       },
     ],
   }

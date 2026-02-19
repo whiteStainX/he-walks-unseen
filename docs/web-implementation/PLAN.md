@@ -302,7 +302,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Manifest metadata extension with backward compatibility
 - [x] Pack validation CLI for single/all packs
 - [x] Pack-class quality policy (`curated/generated/hybrid/experimental`)
-- [ ] Generation export metadata support for hybrid workflow
+- [x] Generation export metadata support for hybrid workflow
 - [ ] Minimal runtime UI surfacing of pack class/difficulty
 
 ### Exit Criteria
