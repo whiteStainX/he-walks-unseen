@@ -332,3 +332,24 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Unlock/completion state persists across reloads
 - [x] Existing gameplay determinism remains unchanged
 - [x] `npm run lint`, `npm run test`, `npm run build`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 15: Conflict + Paradox Hardening
+
+**Goal:** Harden conflict/paradox correctness and migrate detection to LOS-based model with explicit vision occlusion.
+**Implementation Detail:** `docs/web-implementation/PHASE_15_CONFLICT_PARADOX_HARDENING.md`
+**Design Detail:** `docs/web-design/PHASE_15_CONFLICT_PARADOX_HARDENING.md`
+
+### Deliverables
+- [ ] Anchor dedup/index hardening with strict no-prune lifecycle
+- [ ] LOS detection utility with diagonal support and robust tests
+- [ ] Detection migration to LOS-only runtime path
+- [ ] `BlocksVision`-based occlusion semantics aligned in data and docs
+- [ ] Full regression/quality gate pass
+
+### Exit Criteria
+- [ ] Paradox outcomes remain correct under long-run play (no prune regressions)
+- [ ] Detection behavior is LOS-based and deterministic
+- [ ] Phase ordering remains `Paradox -> Won -> Detected`
+- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
