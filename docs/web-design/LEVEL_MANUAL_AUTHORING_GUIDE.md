@@ -206,3 +206,12 @@ To support future story-to-level conversion:
 2. Keep behavior/rules/theme separated from geometry to preserve modular generation.
 3. Prefer small, explicit archetypes/components over overloaded polymorphic entries.
 4. Keep progression metadata (`difficultyTarget`, `difficultyFlavor`) authored as presentation layer only.
+
+Story pipeline commands (implemented baseline):
+1. `npm run story:spec -- --prompt "<story text>"`
+2. `npm run story:compile -- --spec <story-spec.json> --manifest public/data/index.json`
+3. `npm run story:build -- --prompt "<story text>" --reviewed --promote-class generated`
+
+Provider policy:
+1. Ollama is the default provider for story generation.
+2. Provider override remains opt-in and must preserve Ollama as default unless design policy changes.

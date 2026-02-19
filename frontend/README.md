@@ -60,6 +60,31 @@ Notes:
 - Default output is a compact table for quick review.
 - `--json` emits one machine-readable JSON payload (`results` + `errors` + summary).
 
+## Story Pipeline (Ollama Default)
+
+Ollama is the default provider for story-to-level generation.
+
+```bash
+# 1) Prompt -> StorySpec JSON
+npm run story:spec -- --prompt \"A compact room with one patrol guard and one rift\" --out public/data/story-spec/demo.story.json
+
+# 2) StorySpec -> pack files (+ optional manifest update)
+npm run story:compile -- --spec public/data/story-spec/examples/minimal.valid.json --manifest public/data/index.json
+
+# 3) End-to-end generate + compile + gates + promotion hook
+npm run story:build -- --prompt \"Stealth route with temporal bait\" --reviewed --promote-class generated
+```
+
+Useful flags:
+- `--base-url <url>` and `--model <name>` for Ollama endpoint/model override.
+- `--difficulty-model <path>` for build-time difficulty evaluation model override.
+- `--spec <path>` for deterministic compile/build from existing StorySpec (no provider call).
+- `--reviewed --promote-class generated|hybrid|curated` to promote after gates; otherwise output is staged as `experimental`.
+
+Gate behavior:
+- `story:build` always writes staged outputs first.
+- If solver/quality/difficulty/icon gates fail, the command exits non-zero and keeps class as `experimental`.
+
 ## Manual Level Authoring
 
 Use:

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "storyId": "story-fixture",
+  "title": "Story Fixture",
+  "board": { "width": 12, "height": 12, "timeDepth": 12 },
+  "start": { "x": 1, "y": 1, "t": 0 },
+  "goal": { "type": "ReachExit", "target": { "x": 10, "y": 10, "t": 0 } },
+  "layout": {
+    "walls": [
+      { "position": { "x": 5, "y": 5, "t": 0 } },
+      { "position": { "x": 6, "y": 5, "t": 0 } }
+    ]
+  },
+  "actors": {
+    "enemies": [
+      {
+        "position": { "x": 3, "y": 3, "t": 0 },
+        "movement": {
+          "kind": "PatrolPingPong",
+          "path": [{ "x": 3, "y": 3 }, { "x": 4, "y": 3 }, { "x": 4, "y": 4 }]
+        },
+        "detection": { "enabled": true, "delayTurns": 2, "maxDistance": 3 }
+      }
+    ]
+  },
+  "interactives": {
+    "boxes": [{ "position": { "x": 2, "y": 2, "t": 0 } }],
+    "rifts": [
+      {
+        "source": { "x": 1, "y": 2, "t": 6 },
+        "target": { "x": 9, "y": 9, "t": 2 },
+        "bidirectional": false
+      }
+    ]
+  },
+  "rulesIntent": {
+    "rift": { "defaultDelta": 4, "baseEnergyCost": 1 },
+    "interaction": { "maxPushChain": 3, "allowPull": true },
+    "detection": { "enabled": true, "delayTurns": 1, "maxDistance": 2 }
+  },
+  "difficultyIntent": { "tier": "hard", "flavor": "Compression under temporal pressure." }
+}

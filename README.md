@@ -32,6 +32,7 @@ Current playable baseline:
 - Seeded map-generation foundation with validation/solver/quality gating pipeline
 - Profile-driven generation defaults with baseline generated rift anchors
 - Generated-pack export utilities, CLI writer, and manifest registration flow
+- Story-to-level pipeline baseline (`StorySpec` + Ollama-default generator + compile/build CLI)
 
 ## Requirements
 
@@ -51,6 +52,15 @@ Generate a content pack:
 ```bash
 cd frontend
 npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --width 12 --height 12 --time-depth 16
+```
+
+Build a pack from StorySpec (or prompt via Ollama):
+
+```bash
+cd frontend
+npm run story:compile -- --spec public/data/story-spec/examples/minimal.valid.json --manifest public/data/index.json
+# or:
+npm run story:build -- --prompt \"A narrow lab with one patrol and one rift\" --reviewed --promote-class generated
 ```
 
 ## Controls

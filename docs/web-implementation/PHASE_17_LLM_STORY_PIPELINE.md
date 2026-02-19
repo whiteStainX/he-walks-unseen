@@ -16,7 +16,18 @@ Implement a deterministic authoring pipeline:
 
 ## Status
 
-- `Status`: Planned
+- `Status`: Implemented (baseline v1)
+
+Implemented now:
+1. StorySpec contracts, strict validator, and normalization.
+2. Ollama default provider abstraction and typed provider errors.
+3. Deterministic StorySpec compiler with manifest/progression metadata output.
+4. Promotion policy hook (`experimental` staging default; reviewed promotion path).
+5. CLI commands:
+- `npm run story:spec`
+- `npm run story:compile`
+- `npm run story:build`
+6. Story pipeline tests under `frontend/src/data/story/`.
 
 ---
 

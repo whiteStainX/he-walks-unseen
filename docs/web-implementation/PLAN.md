@@ -385,15 +385,15 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md`
 
 ### Deliverables
-- [ ] `StorySpec` contract + strict validator
-- [ ] Ollama default provider adapter + provider abstraction
-- [ ] Deterministic `StorySpec` normalization + compiler
-- [ ] CLI flow (`story:spec`, `story:compile`, `story:build`)
-- [ ] Post-compile gate integration (`validate:pack`, `eval:difficulty`)
-- [ ] Documentation and operational guidance for author workflow
+- [x] `StorySpec` contract + strict validator
+- [x] Ollama default provider adapter + provider abstraction
+- [x] Deterministic `StorySpec` normalization + compiler
+- [x] CLI flow (`story:spec`, `story:compile`, `story:build`)
+- [x] Post-compile gate integration (`validate:pack`, `eval:difficulty`)
+- [x] Documentation and operational guidance for author workflow
 
 ### Exit Criteria
-- [ ] Same story prompt/spec + same seed yields deterministic compiled content
-- [ ] Ollama is default provider in implementation and docs
-- [ ] Compiled outputs pass existing pack/difficulty/progression gates
-- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+- [x] Same story prompt/spec + same seed yields deterministic compiled content
+- [x] Ollama is default provider in implementation and docs
+- [x] Compiled outputs pass existing pack/difficulty/progression gates
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
