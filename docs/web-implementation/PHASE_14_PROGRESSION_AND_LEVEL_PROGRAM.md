@@ -8,7 +8,7 @@
 
 ## Status
 
-- `Status`: In Progress
+- `Status`: Completed
 
 Progress:
 1. 14A progression manifest contract implemented (`frontend/src/data/progression.ts` + tests).
@@ -16,7 +16,7 @@ Progress:
 3. 14B runtime progression state + local persistence implemented (`useProgressionState` + helper tests).
 4. 14C minimal progression/level selection overlay implemented (`ProgressionOverlay` + keyboard navigation).
 5. 14D completion + unlock policy implemented (mark complete on win, unlock next, lock-gated selection).
-6. Remaining: 14E.
+6. 14E curated baseline documented and applied (current 3-slot coherent ramp with explicit 8-12 expansion target).
 
 ---
 
@@ -132,6 +132,7 @@ File targets:
 
 Exit criteria:
 1. There is a coherent playable progression path, not just independent packs.
+2. Current baseline may be shorter than 8-12 while pack inventory is limited, but must document explicit expansion policy and slot expectations.
 
 ---
 

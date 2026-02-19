@@ -160,6 +160,20 @@ Runtime constraint:
 1. progression metadata must not change core simulation determinism.
 2. progression only controls selection and presentation.
 
+Current baseline (14E):
+1. Active progression file: `frontend/public/data/progression/index.json`
+2. Active track: `main` (`Main Program v1`)
+3. Ordered sequence:
+- `default` (`easy`)
+- `variant` (`normal`)
+- `generated/fixture-001` (`hard`)
+4. Unlock policy:
+- `CompletePack` unlock conditions only
+- on `Won`, runtime marks completed pack and unlocks the next entry
+5. Expansion policy:
+- keep `main` coherent and non-decreasing in difficulty
+- expand to 8-12 slots by adding curated/hybrid packs while preserving deterministic load behavior
+
 ---
 
 ## 10. Tooling Roadmap (Full Level System)
@@ -193,8 +207,7 @@ The full level system is considered ready when:
 
 ## 12. Immediate Next Step
 
-Current follow-up implementation target:
-1. Execute progression and level-program implementation in:
-- `docs/web-implementation/PHASE_14_PROGRESSION_AND_LEVEL_PROGRAM.md`
-2. Add progression manifest + runtime selection/unlock loop.
-3. Keep progression metadata strictly presentation/select-flow only (no simulation-logic branching).
+Current follow-up target:
+1. Expand curated pack inventory so `main` progression reaches 8-12 slots.
+2. Keep progression manifest updates data-only (no reducer branch growth).
+3. Add slot-level author notes (mechanic focus + challenge profile) for every newly promoted pack.

@@ -325,7 +325,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Runtime progression state with local persistence
 - [x] Minimal progression/level selection overlay (keyboard-first)
 - [x] Completion-driven unlock flow
-- [ ] Curated level-program baseline (ordered sequence)
+- [x] Curated level-program baseline (ordered sequence)
 
 ### Exit Criteria
 - [x] Player can browse/select levels from progression UI

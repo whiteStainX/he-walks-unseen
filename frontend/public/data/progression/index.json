@@ -4,33 +4,33 @@
   "tracks": [
     {
       "id": "main",
-      "title": "Main Sequence",
+      "title": "Main Program v1",
       "entries": [
         {
           "packId": "default",
-          "title": "Opening Lab",
-          "difficulty": "normal",
-          "tags": ["baseline", "tutorial"]
+          "title": "S01 Opening Lab",
+          "difficulty": "easy",
+          "tags": ["slot-01", "baseline", "movement", "rift-intro"]
         },
         {
           "packId": "variant",
-          "title": "Variant Hall",
+          "title": "S02 Variant Hall",
           "difficulty": "normal",
           "unlock": {
             "kind": "CompletePack",
             "packId": "default"
           },
-          "tags": ["variant"]
+          "tags": ["slot-02", "variant", "push-pull", "patrol-pressure"]
         },
         {
           "packId": "generated/fixture-001",
-          "title": "Generated Fixture",
-          "difficulty": "normal",
+          "title": "S03 Generated Fixture",
+          "difficulty": "hard",
           "unlock": {
             "kind": "CompletePack",
             "packId": "variant"
           },
-          "tags": ["generated", "fixture"]
+          "tags": ["slot-03", "generated", "integration", "solver-validated"]
         }
       ]
     }
