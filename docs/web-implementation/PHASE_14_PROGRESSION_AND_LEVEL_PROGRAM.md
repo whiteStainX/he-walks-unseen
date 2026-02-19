@@ -13,7 +13,8 @@
 Progress:
 1. 14A progression manifest contract implemented (`frontend/src/data/progression.ts` + tests).
 2. Baseline progression manifest added at `frontend/public/data/progression/index.json`.
-3. Remaining: 14B/14C/14D/14E.
+3. 14B runtime progression state + local persistence implemented (`useProgressionState` + helper tests).
+4. Remaining: 14C/14D/14E.
 
 ---
 

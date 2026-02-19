@@ -322,7 +322,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ### Deliverables
 - [x] Progression manifest contract and parser
-- [ ] Runtime progression state with local persistence
+- [x] Runtime progression state with local persistence
 - [ ] Minimal progression/level selection overlay (keyboard-first)
 - [ ] Completion-driven unlock flow
 - [ ] Curated level-program baseline (ordered sequence)

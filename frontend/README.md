@@ -100,6 +100,7 @@ npm run lint
 - Isometric rendering is split by responsibility (`IsoTimeCubePanel`, `IsoSlices`, `IsoTracks`, `IsoActors`, `IsoCameraControls`) under `frontend/src/render/iso/`.
 - Input state machine lives under `frontend/src/app/inputStateMachine.ts`.
 - App shell hooks/components live under `frontend/src/app/shell/` (HUD, overlays, keyboard/content loading hooks).
+- Progression state/persistence hook lives under `frontend/src/app/shell/useProgressionState.ts`.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
 - Board canvas rendering is container-measured and DPR-aware (`frontend/src/render/board/GameBoardCanvas.tsx`).
 

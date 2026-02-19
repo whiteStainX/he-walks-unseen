@@ -28,6 +28,7 @@ import {
   useLoadSelectedContentPack,
 } from './shell/useContentPackLoading'
 import { useKeyboardControls } from './shell/useKeyboardControls'
+import { useProgressionState } from './shell/useProgressionState'
 import { useUiSettings } from './shell/useUiSettings'
 
 const LazyIsoTimeCubePanel = lazy(async () => {
@@ -153,6 +154,7 @@ export function GameShell() {
   useContentPackManifest(setAvailablePackIds, setPackMetaById)
   useEnsureSelectedContentPack(dispatch, availablePackIds, contentPackId)
   useLoadSelectedContentPack(dispatch, contentPackId)
+  useProgressionState({ contentPackId })
 
   useKeyboardControls({
     dispatch,
