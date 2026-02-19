@@ -19,6 +19,8 @@ Implement a deterministic, data-driven difficulty system that:
 - `Status`: In Progress
 - `Completed`: 16A Difficulty model config contract + validator + baseline model file
 - `Completed`: 16B Deterministic evaluator (`score`, `vector`, suggested tier) with test coverage
+- `Completed`: 16D Override policy core (`policy.ts` + tests)
+- `Next`: 16E progression ramp validator, then 16C metadata/loader wiring
 
 ---
 
@@ -143,6 +145,10 @@ File targets:
 Exit criteria:
 1. Invalid overrides fail fast in validator/CLI path.
 2. Policy enforcement is deterministic and documented.
+
+Implementation note:
+1. Core override policy module and tests are completed in 16D.
+2. Manifest/loader/CLI wiring is completed in 16C where `difficultyMeta` fields are introduced.
 
 ## 16E. Progression Ramp Validator
 
