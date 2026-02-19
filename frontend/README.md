@@ -51,12 +51,14 @@ npm run validate:pack -- --pack-id default
 ```bash
 npm run eval:difficulty -- --all
 npm run eval:difficulty -- --pack-id default
+npm run eval:difficulty -- --all --json
 ```
 
 Notes:
 - Uses `frontend/public/data/difficulty.model.v1.json` by default.
 - Optional override: `--model <path/to/difficulty.model.v1.json>`.
-- Emits one JSON object per evaluated pack plus summary line.
+- Default output is a compact table for quick review.
+- `--json` emits one machine-readable JSON payload (`results` + `errors` + summary).
 
 Policy notes:
 - `generated` and `hybrid` packs enforce solver + quality gates.

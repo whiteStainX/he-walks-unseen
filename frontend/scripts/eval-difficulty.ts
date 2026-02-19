@@ -15,6 +15,7 @@ interface CliArgs {
   manifestPath: string
   publicDataDir: string
   modelPath: string
+  json: boolean
 }
 
 function parseArgs(argv: string[]): CliArgs {
@@ -55,6 +56,7 @@ function parseArgs(argv: string[]): CliArgs {
     manifestPath,
     publicDataDir,
     modelPath,
+    json: args.get('json') === 'true',
   }
 }
 
@@ -76,6 +78,57 @@ function toTier(value: string | undefined): DifficultyTier | undefined {
   }
 
   return undefined
+}
+
+interface DifficultyEvaluationRow {
+  packId: string
+  modelVersion: string
+  measuredTier: DifficultyTier
+  measuredScore: number
+  effectiveTier: DifficultyTier
+  source: 'measured' | 'authored-override'
+  tierDelta: number
+  manifestDifficulty: string | null
+  manifestScore: number | null
+}
+
+function padRight(value: string, width: number): string {
+  if (value.length >= width) {
+    return value
+  }
+
+  return `${value}${' '.repeat(width - value.length)}`
+}
+
+function printTable(rows: DifficultyEvaluationRow[]): void {
+  if (rows.length === 0) {
+    console.log('[eval:difficulty] no rows to display')
+    return
+  }
+
+  const headers = ['PACK', 'MEASURED', 'SCORE', 'EFFECTIVE', 'SOURCE', 'DELTA', 'MANIFEST', 'M_SCORE']
+  const table = rows.map((row) => [
+    row.packId,
+    row.measuredTier,
+    row.measuredScore.toFixed(2),
+    row.effectiveTier,
+    row.source,
+    String(row.tierDelta),
+    row.manifestDifficulty ?? 'n/a',
+    row.manifestScore === null ? 'n/a' : row.manifestScore.toFixed(2),
+  ])
+  const widths = headers.map((header, index) =>
+    Math.max(header.length, ...table.map((values) => values[index].length)),
+  )
+  const headerLine = headers.map((header, index) => padRight(header, widths[index])).join('  ')
+  const separatorLine = widths.map((width) => '-'.repeat(width)).join('  ')
+
+  console.log(headerLine)
+  console.log(separatorLine)
+
+  for (const values of table) {
+    console.log(values.map((value, index) => padRight(value, widths[index])).join('  '))
+  }
 }
 
 async function loadPackFromPublicData(
@@ -184,13 +237,15 @@ async function main(): Promise<void> {
   }
 
   let failed = 0
+  const rows: DifficultyEvaluationRow[] = []
+  const errors: Array<{ packId: string; message: string }> = []
 
   for (const entry of entries) {
     const loaded = await loadPackFromPublicData(cli.publicDataDir, entry)
 
     if (!loaded.ok) {
       failed += 1
-      console.error(`[eval:difficulty] fail: ${loaded.error}`)
+      errors.push({ packId: entry.id, message: loaded.error })
       continue
     }
 
@@ -208,28 +263,47 @@ async function main(): Promise<void> {
 
     if (!override.ok) {
       failed += 1
-      console.error(
-        `[eval:difficulty] fail: override policy validation failed (${entry.id}): ${override.error.kind}`,
-      )
+      errors.push({
+        packId: entry.id,
+        message: `override policy validation failed: ${override.error.kind}`,
+      })
       continue
     }
 
+    rows.push({
+      packId: entry.id,
+      modelVersion: evaluation.modelVersion,
+      measuredTier: evaluation.tier,
+      measuredScore: evaluation.score,
+      effectiveTier: override.value.effectiveTier,
+      source: override.value.source,
+      tierDelta: override.value.tierDelta,
+      manifestDifficulty: entry.difficulty ?? null,
+      manifestScore: entry.difficultyMeta?.score ?? null,
+    })
+  }
+
+  if (cli.json) {
     console.log(
       JSON.stringify({
-        packId: entry.id,
-        modelVersion: evaluation.modelVersion,
-        measured: {
-          tier: evaluation.tier,
-          score: evaluation.score,
-          vector: evaluation.vector,
-        },
-        manifest: {
-          difficulty: entry.difficulty,
-          difficultyMeta: entry.difficultyMeta,
-        },
-        override: override.value,
+        modelVersion: model.value.modelVersion,
+        evaluated: rows.length,
+        failed,
+        results: rows,
+        errors,
       }),
     )
+  } else {
+    printTable(rows)
+
+    if (errors.length > 0) {
+      console.log('')
+      console.log('Errors:')
+
+      for (const error of errors) {
+        console.log(`- ${error.packId}: ${error.message}`)
+      }
+    }
   }
 
   if (failed > 0) {
@@ -238,7 +312,9 @@ async function main(): Promise<void> {
     return
   }
 
-  console.log(`[eval:difficulty] ${entries.length} pack(s) evaluated`)
+  if (!cli.json) {
+    console.log(`[eval:difficulty] ${rows.length} pack(s) evaluated`)
+  }
 }
 
 main().catch((error) => {
