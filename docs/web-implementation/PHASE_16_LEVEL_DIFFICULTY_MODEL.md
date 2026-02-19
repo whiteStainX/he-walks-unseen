@@ -16,13 +16,13 @@ Implement a deterministic, data-driven difficulty system that:
 
 ## Status
 
-- `Status`: In Progress
+- `Status`: Completed
 - `Completed`: 16A Difficulty model config contract + validator + baseline model file
 - `Completed`: 16B Deterministic evaluator (`score`, `vector`, suggested tier) with test coverage
 - `Completed`: 16D Override policy core (`policy.ts` + tests)
 - `Completed`: 16E progression ramp validator (main track cooldown + expert gate) with tests and CLI validation hook
 - `Completed`: 16C metadata wiring (manifest + progression optional fields, loader/parser compatibility, runtime propagation)
-- `Next`: 16F tooling + runtime surface
+- `Completed`: 16F evaluator CLI (`eval:difficulty`) + runtime difficulty internals surface in state overlay
 
 ---
 

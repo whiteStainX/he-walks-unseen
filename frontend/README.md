@@ -46,10 +46,22 @@ npm run validate:pack -- --all
 npm run validate:pack -- --pack-id default
 ```
 
+## Evaluate Difficulty
+
+```bash
+npm run eval:difficulty -- --all
+npm run eval:difficulty -- --pack-id default
+```
+
+Notes:
+- Uses `frontend/public/data/difficulty.model.v1.json` by default.
+- Optional override: `--model <path/to/difficulty.model.v1.json>`.
+- Emits one JSON object per evaluated pack plus summary line.
+
 Policy notes:
 - `generated` and `hybrid` packs enforce solver + quality gates.
 - `curated` packs enforce content/schema validity and emit solver warnings when not solver-confirmed.
-- Pack metadata (`class`, `difficulty`) is surfaced in `StateOverlay` (`Tab`).
+- Pack metadata (`class`, `difficulty`, `difficultyMeta`) is surfaced in `StateOverlay` (`Tab`), including vector breakdown and progression flavor/target when available.
 
 ## Test
 

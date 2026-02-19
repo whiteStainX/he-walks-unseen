@@ -368,12 +368,10 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Override policy validation core (delta/note/review-evidence rules)
 - [x] Progression ramp validator (cooldown constraints + expert gate)
 - [x] Metadata wiring for manifest/progression and UI surface
-- [ ] Difficulty evaluation CLI (`--pack-id`, `--all`)
-
-Execution order for remaining work: `16F`.
+- [x] Difficulty evaluation CLI (`--pack-id`, `--all`)
 
 ### Exit Criteria
-- [ ] Difficulty output is config-driven and deterministic
-- [ ] Existing packs remain loadable (backward-compatible metadata path)
-- [ ] Player can view difficulty internals in runtime UI
-- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+- [x] Difficulty output is config-driven and deterministic
+- [x] Existing packs remain loadable (backward-compatible metadata path)
+- [x] Player can view difficulty internals in runtime UI
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass

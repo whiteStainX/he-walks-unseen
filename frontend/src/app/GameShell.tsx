@@ -166,6 +166,21 @@ export function GameShell() {
     setCurrentEntryIndex,
     applyWinForPack,
   } = useProgressionState()
+  const currentProgressionEntry = useMemo(() => {
+    if (!progressionManifest) {
+      return null
+    }
+
+    for (const track of progressionManifest.tracks) {
+      const entry = track.entries.find((candidate) => candidate.packId === contentPackId)
+
+      if (entry) {
+        return entry
+      }
+    }
+
+    return null
+  }, [contentPackId, progressionManifest])
 
   useKeyboardControls({
     dispatch,
@@ -297,6 +312,9 @@ export function GameShell() {
         contentPackId={contentPackId}
         contentPackClass={packMetaById[contentPackId]?.class}
         contentPackDifficulty={packMetaById[contentPackId]?.difficulty}
+        contentPackDifficultyMeta={packMetaById[contentPackId]?.difficultyMeta}
+        contentPackDifficultyFlavor={currentProgressionEntry?.difficultyFlavor}
+        contentPackDifficultyTarget={currentProgressionEntry?.difficultyTarget}
       />
 
       <SettingsOverlay
