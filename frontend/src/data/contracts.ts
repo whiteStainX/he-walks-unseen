@@ -120,6 +120,75 @@ export interface ContentPack {
   rules: GameRulesConfig
 }
 
+export type DifficultyTier = 'easy' | 'normal' | 'hard' | 'expert'
+
+export interface DifficultyRange {
+  min: number
+  max: number
+}
+
+export interface DifficultyNormalizationConfig {
+  shortestSolutionLength: DifficultyRange
+  visitedNodes: DifficultyRange
+  deadEndRatio: DifficultyRange
+  requiredRiftCount: DifficultyRange
+  requiredPushPullCount: DifficultyRange
+  enemyExposureEvents: DifficultyRange
+  paradoxFragilityCount: DifficultyRange
+  timeDepth: DifficultyRange
+}
+
+export interface DifficultyScoreWeights {
+  path: number
+  branch: number
+  temporal: number
+  detection: number
+  interaction: number
+  paradox: number
+}
+
+export interface DifficultyDimensionWeights {
+  branchVisitedNodes: number
+  branchDeadEndRatio: number
+  temporalRiftCount: number
+  temporalTimeDepth: number
+}
+
+export interface DifficultyTierBounds {
+  easy: DifficultyRange
+  normal: DifficultyRange
+  hard: DifficultyRange
+  expert: DifficultyRange
+}
+
+export interface DifficultyRampPolicy {
+  allowCooldownInMain: boolean
+  cooldownMaxTierDrop: number
+  allowConsecutiveCooldown: boolean
+  requireHardBeforeExpert: boolean
+}
+
+export interface DifficultyOverridePolicy {
+  noteRequiredMaxDelta: number
+  reviewRequiredAboveDelta: number
+  requireEvidenceForReview: boolean
+}
+
+export interface DifficultyModelConfig {
+  schemaVersion: 1
+  modelVersion: string
+  normalization: DifficultyNormalizationConfig
+  scoreWeights: DifficultyScoreWeights
+  dimensionWeights: DifficultyDimensionWeights
+  tierBounds: DifficultyTierBounds
+  rampPolicy: DifficultyRampPolicy
+  overridePolicy: DifficultyOverridePolicy
+}
+
+export type DifficultyModelConfigError =
+  | { kind: 'InvalidDifficultyModel'; path: string; message: string }
+  | { kind: 'InvalidDifficultyModelVersion'; expected: number; actual: unknown }
+
 export type ContentLoadError =
   | { kind: 'InvalidShape'; file: string; message: string }
   | { kind: 'InvalidSchemaVersion'; file: string; expected: number; actual: unknown }

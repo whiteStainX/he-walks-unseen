@@ -5,6 +5,7 @@ import {
   loadContentPackManifestFromPublic,
   loadDefaultBootContent,
   loadIconPackFromPublic,
+  parsePublicContentPackManifest,
 } from './loader'
 
 describe('loadDefaultBootContent', () => {
@@ -158,6 +159,111 @@ describe('loadContentPackManifestFromPublic', () => {
     }
 
     expect(manifest.value.packs.map((pack) => pack.id)).toEqual(['default', 'variant'])
+  })
+
+  it('parses extended manifest metadata fields', () => {
+    const manifest = parsePublicContentPackManifest({
+      schemaVersion: 1,
+      packs: [
+        {
+          id: 'generated/fixture-001',
+          name: 'Generated fixture-001',
+          class: 'generated',
+          difficulty: 'normal',
+          tags: ['seeded', 'baseline'],
+          source: {
+            kind: 'generator',
+            seed: 'fixture-001',
+            profileId: 'default-v1',
+          },
+          difficultyMeta: {
+            score: 47.5,
+            vector: {
+              spatialPressure: 52,
+              temporalPressure: 40,
+              detectionPressure: 60,
+              interactionComplexity: 35,
+              paradoxRisk: 20,
+            },
+            source: 'measured',
+            modelVersion: 'v1',
+          },
+        },
+      ],
+    })
+
+    expect(manifest.ok).toBe(true)
+    if (!manifest.ok) {
+      return
+    }
+
+    expect(manifest.value.packs[0]?.class).toBe('generated')
+    expect(manifest.value.packs[0]?.difficulty).toBe('normal')
+    expect(manifest.value.packs[0]?.tags).toEqual(['seeded', 'baseline'])
+    expect(manifest.value.packs[0]?.source).toEqual({
+      kind: 'generator',
+      seed: 'fixture-001',
+      profileId: 'default-v1',
+      author: undefined,
+    })
+    expect(manifest.value.packs[0]?.difficultyMeta).toEqual({
+      score: 47.5,
+      vector: {
+        spatialPressure: 52,
+        temporalPressure: 40,
+        detectionPressure: 60,
+        interactionComplexity: 35,
+        paradoxRisk: 20,
+      },
+      source: 'measured',
+      note: undefined,
+      modelVersion: 'v1',
+    })
+  })
+
+  it('rejects invalid manifest metadata', () => {
+    const manifest = parsePublicContentPackManifest({
+      schemaVersion: 1,
+      packs: [
+        {
+          id: 'broken',
+          class: 'unsupported',
+        },
+      ],
+    })
+
+    expect(manifest.ok).toBe(false)
+    if (!manifest.ok) {
+      expect(manifest.error.kind).toBe('InvalidManifest')
+    }
+  })
+
+  it('rejects invalid difficultyMeta shape', () => {
+    const manifest = parsePublicContentPackManifest({
+      schemaVersion: 1,
+      packs: [
+        {
+          id: 'broken-meta',
+          difficultyMeta: {
+            score: 20,
+            vector: {
+              spatialPressure: 10,
+              temporalPressure: 10,
+              detectionPressure: 10,
+              interactionComplexity: 10,
+              paradoxRisk: 200,
+            },
+            source: 'measured',
+            modelVersion: 'v1',
+          },
+        },
+      ],
+    })
+
+    expect(manifest.ok).toBe(false)
+    if (!manifest.ok) {
+      expect(manifest.error.kind).toBe('InvalidManifest')
+    }
   })
 })
 

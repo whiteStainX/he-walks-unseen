@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "storyId": "bad-spec",
+  "title": "Bad Spec",
+  "board": {
+    "width": 8,
+    "height": 8,
+    "timeDepth": 8,
+    "depthAlias": 8
+  },
+  "start": {
+    "x": 0,
+    "y": 0,
+    "t": 0
+  },
+  "goal": {
+    "type": "ReachExit",
+    "target": {
+      "x": 7,
+      "y": 7,
+      "t": 0
+    }
+  },
+  "layout": {
+    "walls": []
+  },
+  "actors": {
+    "enemies": []
+  },
+  "interactives": {
+    "boxes": []
+  },
+  "unexpected": true
+}

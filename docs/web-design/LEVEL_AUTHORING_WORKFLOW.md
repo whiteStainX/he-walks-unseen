@@ -2,7 +2,7 @@
 
 > **Purpose:** Single source of truth for creating and iterating content packs (manual + generated).
 > **Scope:** `frontend/public/data/`, loader/validator contracts, deterministic playtest loop.
-> **Related:** `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/MAP_GENERATION_V1.md`, `docs/web-design/ENEMY_LOGIC_V1.md`
+> **Related:** `docs/web-design/LEVEL_MANUAL_AUTHORING_GUIDE.md`, `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/MAP_GENERATION_V1.md`, `docs/web-design/ENEMY_LOGIC_V1.md`
 
 ---
 
@@ -142,3 +142,25 @@ Recommended post-generation checks:
 4. Treat generation profile tuning and manual level tuning as separate concerns:
 - manual packs for curated puzzle design
 - generated packs for fast breadth and stress tests.
+
+---
+
+## 7. Progression Program Baseline (14E)
+
+Progression manifest source:
+1. `frontend/public/data/progression/index.json`
+
+Current baseline uses a coherent 3-slot ramp (bootstrap set), with explicit expansion target to 8-12 slots as new curated packs are added.
+
+| Slot | Pack ID | Class | Difficulty | Mechanic Focus | Intended Challenge Profile |
+|---|---|---|---|---|---|
+| 01 | `default` | curated | easy | movement + first rift usage | low branching, onboarding, deterministic warm-up |
+| 02 | `variant` | curated | normal | push/pull + patrol pressure | medium branching, higher local tactical cost |
+| 03 | `generated/fixture-001` | generated | hard | integrated pressure test | full-system stress under deterministic constraints |
+
+Authoring expectation per future slot:
+1. Each new slot must state one primary mechanic focus and one secondary pressure source.
+2. Difficulty labels should form a non-decreasing ramp unless a deliberate cooldown slot is documented.
+3. Unlock conditions should remain simple (`CompletePack`) unless design docs define a new approved condition kind.
+4. Generated-class slots used in main progression must remain solver-validated and quality-gated.
+5. Promotion from generated to curated/hybrid should be documented in pack metadata (`class`, `source`, `tags`) and progression entry metadata (`title`, `difficulty`, `tags`).

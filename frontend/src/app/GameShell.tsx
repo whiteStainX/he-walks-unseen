@@ -5,12 +5,13 @@ import type { Direction2D } from '../core/position'
 import { objectsAtTime } from '../core/timeCube'
 import { currentPosition, positionsAtTime } from '../core/worldLine'
 import { useAppDispatch, useAppSelector } from '../game/hooks'
-import { movePlayer2D, pullPlayer2D, pushPlayer2D } from '../game/gameSlice'
+import { movePlayer2D, pullPlayer2D, pushPlayer2D, setContentPackId } from '../game/gameSlice'
 import { buildActionPreview } from '../render/board/preview'
 import { GameBoardCanvas } from '../render/board/GameBoardCanvas'
 import { buildIsoViewModel } from '../render/iso/buildIsoViewModel'
 import { applyCssVars } from '../render/theme'
 import {
+  closeTopLayer,
   createInputStateMachine,
   type DirectionalActionMode,
   type InputStateMachine,
@@ -19,14 +20,17 @@ import { BottomHintsBar } from './shell/BottomHintsBar'
 import { DEFAULT_PACK_SEQUENCE, directionalOptions } from './shell/constants'
 import { HudPanels } from './shell/HudPanels'
 import { LogOverlay } from './shell/LogOverlay'
+import { ProgressionOverlay } from './shell/ProgressionOverlay'
 import { SettingsOverlay } from './shell/SettingsOverlay'
 import { StateOverlay } from './shell/StateOverlay'
 import {
+  type PackDisplayMeta,
   useContentPackManifest,
   useEnsureSelectedContentPack,
   useLoadSelectedContentPack,
 } from './shell/useContentPackLoading'
 import { useKeyboardControls } from './shell/useKeyboardControls'
+import { useProgressionState } from './shell/useProgressionState'
 import { useUiSettings } from './shell/useUiSettings'
 
 const LazyIsoTimeCubePanel = lazy(async () => {
@@ -40,6 +44,7 @@ export function GameShell() {
   const dispatch = useAppDispatch()
   const [inputMachine, setInputMachine] = useState(createInputStateMachine)
   const [availablePackIds, setAvailablePackIds] = useState<string[]>(DEFAULT_PACK_SEQUENCE)
+  const [packMetaById, setPackMetaById] = useState<Record<string, PackDisplayMeta>>({})
 
   const {
     uiSettings,
@@ -51,6 +56,7 @@ export function GameShell() {
   const logOverlayRef = useRef<HTMLElement | null>(null)
   const settingsOverlayRef = useRef<HTMLElement | null>(null)
   const stateOverlayRef = useRef<HTMLElement | null>(null)
+  const progressionOverlayRef = useRef<HTMLElement | null>(null)
 
   const boardWidth = useAppSelector((state) => state.game.boardWidth)
   const boardHeight = useAppSelector((state) => state.game.boardHeight)
@@ -74,6 +80,7 @@ export function GameShell() {
   const isStateOverlayOpen = inputMachine.layer === 'StateOverlay'
   const isLogOpen = inputMachine.layer === 'LogOverlay'
   const isSystemMenuOpen = inputMachine.layer === 'SystemMenu'
+  const isProgressionOverlayOpen = inputMachine.layer === 'ProgressionOverlay'
 
   const player = currentPosition(worldLine)
   const selvesAtCurrentTime = positionsAtTime(worldLine, currentTime)
@@ -148,18 +155,46 @@ export function GameShell() {
     [],
   )
 
-  useContentPackManifest(setAvailablePackIds)
+  useContentPackManifest(setAvailablePackIds, setPackMetaById)
   useEnsureSelectedContentPack(dispatch, availablePackIds, contentPackId)
   useLoadSelectedContentPack(dispatch, contentPackId)
+  const {
+    progressionManifest,
+    progressionState,
+    progressionError,
+    setSelectedTrack,
+    setCurrentEntryIndex,
+    applyWinForPack,
+  } = useProgressionState()
+  const currentProgressionEntry = useMemo(() => {
+    if (!progressionManifest) {
+      return null
+    }
+
+    for (const track of progressionManifest.tracks) {
+      const entry = track.entries.find((candidate) => candidate.packId === contentPackId)
+
+      if (entry) {
+        return entry
+      }
+    }
+
+    return null
+  }, [contentPackId, progressionManifest])
 
   useKeyboardControls({
     dispatch,
     inputMachine,
     isActionMenuOpen,
+    isProgressionOverlayOpen,
     availablePackIds,
     contentPackId,
     riftDefaultDelta,
     interactionMaxPushChain: interactionConfig.maxPushChain,
+    progressionManifest,
+    progressionState,
+    setSelectedTrack,
+    setCurrentEntryIndex,
     applyMachineTransition,
     dispatchDirectionalIntent,
     setShowDangerPreview,
@@ -186,6 +221,20 @@ export function GameShell() {
       stateOverlayRef.current?.focus()
     }
   }, [isStateOverlayOpen])
+
+  useEffect(() => {
+    if (isProgressionOverlayOpen) {
+      progressionOverlayRef.current?.focus()
+    }
+  }, [isProgressionOverlayOpen])
+
+  useEffect(() => {
+    if (phase !== 'Won') {
+      return
+    }
+
+    applyWinForPack(contentPackId)
+  }, [applyWinForPack, contentPackId, phase])
 
   return (
     <div className="game-shell">
@@ -261,6 +310,11 @@ export function GameShell() {
         objectsAtCurrentTimeCount={objectsAtCurrentTime.length}
         player={player}
         contentPackId={contentPackId}
+        contentPackClass={packMetaById[contentPackId]?.class}
+        contentPackDifficulty={packMetaById[contentPackId]?.difficulty}
+        contentPackDifficultyMeta={packMetaById[contentPackId]?.difficultyMeta}
+        contentPackDifficultyFlavor={currentProgressionEntry?.difficultyFlavor}
+        contentPackDifficultyTarget={currentProgressionEntry?.difficultyTarget}
       />
 
       <SettingsOverlay
@@ -269,6 +323,22 @@ export function GameShell() {
         uiSettings={uiSettings}
         setUiSettings={setUiSettings}
         setShowDangerPreview={setShowDangerPreview}
+      />
+
+      <ProgressionOverlay
+        isOpen={isProgressionOverlayOpen}
+        overlayRef={progressionOverlayRef}
+        progressionManifest={progressionManifest}
+        progressionState={progressionState}
+        progressionError={progressionError}
+        packMetaById={packMetaById}
+        currentContentPackId={contentPackId}
+        onSelectTrack={setSelectedTrack}
+        onSelectEntryIndex={setCurrentEntryIndex}
+        onLoadPack={(packId) => {
+          dispatch(setContentPackId(packId))
+          applyMachineTransition(closeTopLayer(inputMachine))
+        }}
       />
     </div>
   )

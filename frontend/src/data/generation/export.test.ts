@@ -50,6 +50,40 @@ describe('generation export', () => {
     expect(once.packs.map((entry) => entry.id)).toEqual(['default', 'generated-alpha'])
     expect(twice.packs.map((entry) => entry.id)).toEqual(['default', 'generated-alpha'])
   })
+
+  it('preserves generated metadata in manifest entry', () => {
+    const manifest: PublicContentPackManifest = {
+      schemaVersion: 1,
+      packs: [{ id: 'default', name: 'Default Lab' }],
+    }
+
+    const next = appendGeneratedPackToManifest(manifest, {
+      id: 'generated/beta',
+      name: 'Generated Beta',
+      class: 'generated',
+      difficulty: 'hard',
+      tags: ['seeded', 'stress'],
+      source: {
+        kind: 'generator',
+        seed: 'beta-seed',
+        profileId: 'default-v1',
+        author: 'dev',
+      },
+    })
+
+    const generatedEntry = next.packs.find((entry) => entry.id === 'generated/beta')
+
+    expect(generatedEntry).toBeDefined()
+    expect(generatedEntry?.class).toBe('generated')
+    expect(generatedEntry?.difficulty).toBe('hard')
+    expect(generatedEntry?.tags).toEqual(['seeded', 'stress'])
+    expect(generatedEntry?.source).toEqual({
+      kind: 'generator',
+      seed: 'beta-seed',
+      profileId: 'default-v1',
+      author: 'dev',
+    })
+  })
 })
 
 describe('generation export loader compatibility', () => {

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "defaultTrack": "main",
+  "tracks": [
+    {
+      "id": "main",
+      "title": "Main Program v1",
+      "entries": [
+        {
+          "packId": "default",
+          "title": "S01 Opening Lab",
+          "difficulty": "easy",
+          "difficultyTarget": "easy",
+          "difficultyFlavor": "Calibrate movement through stable corridors.",
+          "tags": ["slot-01", "baseline", "movement", "rift-intro"]
+        },
+        {
+          "packId": "variant",
+          "title": "S02 Variant Hall",
+          "difficulty": "normal",
+          "difficultyTarget": "normal",
+          "difficultyFlavor": "Branch pressure rises; commit to cleaner lines.",
+          "unlock": {
+            "kind": "CompletePack",
+            "packId": "default"
+          },
+          "tags": ["slot-02", "variant", "push-pull", "patrol-pressure"]
+        },
+        {
+          "packId": "generated/fixture-001",
+          "title": "S03 Generated Fixture",
+          "difficulty": "hard",
+          "difficultyTarget": "hard",
+          "difficultyFlavor": "Procedural density test under patrol pressure.",
+          "unlock": {
+            "kind": "CompletePack",
+            "packId": "variant"
+          },
+          "tags": ["slot-03", "generated", "integration", "solver-validated"]
+        }
+      ]
+    }
+  ]
+}

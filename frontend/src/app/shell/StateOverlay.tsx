@@ -4,6 +4,7 @@ import type { DirectionalActionMode } from '../inputStateMachine'
 import type { GamePhase } from '../../game/gameSlice'
 import type { Position3D } from '../../core/position'
 import type { InteractionConfig } from '../../game/interactions/types'
+import type { PublicPackDifficultyMeta } from '../../data/loader'
 
 interface StateOverlayProps {
   isOpen: boolean
@@ -21,6 +22,11 @@ interface StateOverlayProps {
   objectsAtCurrentTimeCount: number
   player: Position3D | null
   contentPackId: string
+  contentPackClass?: string
+  contentPackDifficulty?: string
+  contentPackDifficultyMeta?: PublicPackDifficultyMeta
+  contentPackDifficultyFlavor?: string
+  contentPackDifficultyTarget?: string
 }
 
 export function StateOverlay({
@@ -39,6 +45,11 @@ export function StateOverlay({
   objectsAtCurrentTimeCount,
   player,
   contentPackId,
+  contentPackClass,
+  contentPackDifficulty,
+  contentPackDifficultyMeta,
+  contentPackDifficultyFlavor,
+  contentPackDifficultyTarget,
 }: StateOverlayProps) {
   if (!isOpen) {
     return null
@@ -120,6 +131,76 @@ export function StateOverlay({
               <div className="metric-item">
                 <span className="metric-label">Content Pack</span>
                 <span className="metric-value">{contentPackId}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Pack Class</span>
+                <span className="metric-value">{contentPackClass ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Difficulty</span>
+                <span className="metric-value">{contentPackDifficulty ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Diff Source</span>
+                <span className="metric-value">{contentPackDifficultyMeta?.source ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Diff Score</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta ? contentPackDifficultyMeta.score.toFixed(2) : 'n/a'}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Diff Model</span>
+                <span className="metric-value">{contentPackDifficultyMeta?.modelVersion ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Diff Target</span>
+                <span className="metric-value">{contentPackDifficultyTarget ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item metric-item-wide">
+                <span className="metric-label">Flavor</span>
+                <span className="metric-value">{contentPackDifficultyFlavor ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Spatial</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta
+                    ? contentPackDifficultyMeta.vector.spatialPressure.toFixed(2)
+                    : 'n/a'}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Temporal</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta
+                    ? contentPackDifficultyMeta.vector.temporalPressure.toFixed(2)
+                    : 'n/a'}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Detect</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta
+                    ? contentPackDifficultyMeta.vector.detectionPressure.toFixed(2)
+                    : 'n/a'}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Interact</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta
+                    ? contentPackDifficultyMeta.vector.interactionComplexity.toFixed(2)
+                    : 'n/a'}
+                </span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Paradox</span>
+                <span className="metric-value">
+                  {contentPackDifficultyMeta
+                    ? contentPackDifficultyMeta.vector.paradoxRisk.toFixed(2)
+                    : 'n/a'}
+                </span>
               </div>
             </div>
           </section>

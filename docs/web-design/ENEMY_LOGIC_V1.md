@@ -72,11 +72,13 @@ V1 rule:
 
 ## 5. Detection Model Contract
 
-V1 keeps existing discrete-delay contract:
+Current runtime uses LOS-gated discrete-delay contract:
 
 1. At current player time `t_now`, compute `t_obs = t_now - delayTurns`.
 2. Compare enemy positions at `t_now` against player selves at `t_obs`.
-3. Trigger detection when Manhattan distance `<= maxDistance`.
+3. Apply range gate: Manhattan distance `<= maxDistance`.
+4. Apply LOS gate: line trace between enemy current cell and observed player cell must be clear.
+5. LOS blockers are objects with `BlocksVision`.
 
 Configuration:
 1. Global level defaults from `GameRulesConfig.detection`.
@@ -196,6 +198,9 @@ Required validation checks:
 - every `detectionAssignments` value references existing detection profile.
 - `defaultDetectionProfile` references existing detection profile.
 - detection profile fields satisfy runtime constraints (`delayTurns >= 1`, `maxDistance >= 0`).
+
+Note:
+1. No separate radius-vs-LOS mode toggle is active in current runtime; LOS is the single detection rule path.
 
 ### 8.5 Structured Error Surface
 

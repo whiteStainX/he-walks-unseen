@@ -2,7 +2,13 @@ import type { Direction2D } from '../core/position'
 
 export type DirectionalActionMode = 'Move' | 'Push' | 'Pull'
 
-export type InputLayer = 'Gameplay' | 'ActionMenu' | 'StateOverlay' | 'LogOverlay' | 'SystemMenu'
+export type InputLayer =
+  | 'Gameplay'
+  | 'ActionMenu'
+  | 'StateOverlay'
+  | 'LogOverlay'
+  | 'SystemMenu'
+  | 'ProgressionOverlay'
 
 export interface DirectionalIntent {
   mode: DirectionalActionMode
@@ -29,7 +35,8 @@ export function toggleActionMenu(machine: InputStateMachine): InputStateMachine 
   if (
     machine.layer === 'SystemMenu' ||
     machine.layer === 'LogOverlay' ||
-    machine.layer === 'StateOverlay'
+    machine.layer === 'StateOverlay' ||
+    machine.layer === 'ProgressionOverlay'
   ) {
     return machine
   }
@@ -41,7 +48,11 @@ export function toggleActionMenu(machine: InputStateMachine): InputStateMachine 
 }
 
 export function toggleLogOverlay(machine: InputStateMachine): InputStateMachine {
-  if (machine.layer === 'SystemMenu' || machine.layer === 'StateOverlay') {
+  if (
+    machine.layer === 'SystemMenu' ||
+    machine.layer === 'StateOverlay' ||
+    machine.layer === 'ProgressionOverlay'
+  ) {
     return machine
   }
 
@@ -52,7 +63,7 @@ export function toggleLogOverlay(machine: InputStateMachine): InputStateMachine 
 }
 
 export function toggleSystemMenu(machine: InputStateMachine): InputStateMachine {
-  if (machine.layer === 'StateOverlay') {
+  if (machine.layer === 'StateOverlay' || machine.layer === 'ProgressionOverlay') {
     return machine
   }
 
@@ -63,13 +74,34 @@ export function toggleSystemMenu(machine: InputStateMachine): InputStateMachine 
 }
 
 export function toggleStateOverlay(machine: InputStateMachine): InputStateMachine {
-  if (machine.layer === 'SystemMenu' || machine.layer === 'LogOverlay' || machine.layer === 'ActionMenu') {
+  if (
+    machine.layer === 'SystemMenu' ||
+    machine.layer === 'LogOverlay' ||
+    machine.layer === 'ActionMenu' ||
+    machine.layer === 'ProgressionOverlay'
+  ) {
     return machine
   }
 
   return {
     ...machine,
     layer: machine.layer === 'StateOverlay' ? 'Gameplay' : 'StateOverlay',
+  }
+}
+
+export function toggleProgressionOverlay(machine: InputStateMachine): InputStateMachine {
+  if (
+    machine.layer === 'SystemMenu' ||
+    machine.layer === 'LogOverlay' ||
+    machine.layer === 'StateOverlay' ||
+    machine.layer === 'ActionMenu'
+  ) {
+    return machine
+  }
+
+  return {
+    ...machine,
+    layer: machine.layer === 'ProgressionOverlay' ? 'Gameplay' : 'ProgressionOverlay',
   }
 }
 

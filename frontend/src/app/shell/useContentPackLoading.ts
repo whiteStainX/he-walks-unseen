@@ -1,10 +1,25 @@
 import { useEffect } from 'react'
 
-import { loadBootContentFromPublic, loadContentPackManifestFromPublic } from '../../data/loader'
+import {
+  loadBootContentFromPublic,
+  loadContentPackManifestFromPublic,
+  type PublicContentPackClass,
+  type PublicPackDifficultyMeta,
+} from '../../data/loader'
 import type { AppDispatch } from '../../game/store'
 import { applyLoadedContent, setContentPackId, setStatus } from '../../game/gameSlice'
 
-export function useContentPackManifest(setAvailablePackIds: (ids: string[]) => void) {
+export interface PackDisplayMeta {
+  class?: PublicContentPackClass
+  difficulty?: string
+  /** Optional detailed difficulty metadata from public pack manifest. */
+  difficultyMeta?: PublicPackDifficultyMeta
+}
+
+export function useContentPackManifest(
+  setAvailablePackIds: (ids: string[]) => void,
+  setPackMetaById: (meta: Record<string, PackDisplayMeta>) => void,
+) {
   useEffect(() => {
     let cancelled = false
 
@@ -16,16 +31,27 @@ export function useContentPackManifest(setAvailablePackIds: (ids: string[]) => v
       }
 
       const packIds = manifest.value.packs.map((pack) => pack.id)
+      const packMetaById: Record<string, PackDisplayMeta> = {}
+
+      for (const pack of manifest.value.packs) {
+        packMetaById[pack.id] = {
+          class: pack.class,
+          difficulty: pack.difficulty,
+          difficultyMeta: pack.difficultyMeta,
+        }
+      }
 
       if (packIds.length > 0) {
         setAvailablePackIds(packIds)
       }
+
+      setPackMetaById(packMetaById)
     })()
 
     return () => {
       cancelled = true
     }
-  }, [setAvailablePackIds])
+  }, [setAvailablePackIds, setPackMetaById])
 }
 
 export function useEnsureSelectedContentPack(

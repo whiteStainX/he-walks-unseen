@@ -93,6 +93,12 @@ frontend/
 - Avoid growing a monolithic reducer with action-specific branching.
 - Keep input intent-first: UI/input chooses action mode first, then direction/target; handlers stay keyed to typed `InteractionAction`.
 
+## LLM Provider Policy
+
+- For story-to-level generation and any future LLM integration, Ollama is the default provider.
+- Any change to that default must be made as an explicit design decision and documented.
+- Keep provider abstractions schema-stable (`StorySpec`) across providers.
+
 ---
 
 ## Error Handling

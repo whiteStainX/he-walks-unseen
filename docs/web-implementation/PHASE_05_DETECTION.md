@@ -10,16 +10,14 @@
 
 Add a deterministic enemy detection system that can transition game state to `Detected`.
 
-Phase 5 focuses on a simple, explicit model first:
-- discrete-delay detection (V1)
-- structured detection report for UI/logging
-- reducer integration after each successful interaction
+Phase 5 established the detection pipeline and contracts. Runtime now uses LOS-gated
+discrete-delay detection while keeping the same config surface (`enabled`, `delayTurns`, `maxDistance`).
 
 ---
 
 ## Status
 
-- `Status`: Implemented (V1 baseline)
+- `Status`: Implemented (LOS-gated runtime)
 
 ---
 
@@ -66,18 +64,20 @@ Phase 5 focuses on a simple, explicit model first:
 
 ## Detection Model (V1)
 
-Use **discrete-delay + bounded distance**:
+Use **discrete-delay + bounded distance + LOS gate**:
 
 Given enemy at `(ex, ey, te)` and a player position at `(px, py, tp)`:
 - `tp = te - delayTurns`
 - `manhattanDistance((ex, ey), (px, py)) <= maxDistance`
+- LOS between enemy cell at `te` and observed player cell at `tp` is clear at evaluated slice time
+- LOS blockers are objects with `BlocksVision`
 
-If any enemy matches any eligible player position at that `tp`, detection triggers.
+If any enemy matches any eligible player position at that `tp` and LOS is clear, detection triggers.
 
 Notes:
 - `delayTurns` is fixed integer (`>= 1`)
 - `maxDistance` can be fixed integer; keep small by default
-- LOS/raycast is not required in V1 (may be added in V1.1)
+- LOS supports diagonal traces via deterministic grid stepping
 
 ---
 
@@ -176,6 +176,8 @@ Implemented in current pass:
 - detects when delay and distance conditions match
 - does not detect when delay mismatch
 - does not detect when out of range
+- blocks detection when LOS is occluded by `BlocksVision`
+- validates diagonal LOS blocked/unblocked behavior
 - deterministic report event content
 
 2. Reducer tests (`frontend/src/game/gameSlice.test.ts`):

@@ -6,9 +6,10 @@ interface BottomHintsBarProps {
 
 export function BottomHintsBar({ uiSettings }: BottomHintsBarProps) {
   const bottomHints = uiSettings.compactHints
-    ? ['F Menu', 'Tab State', 'WASD/Arrows', 'Space Rift', 'Enter Wait', 'M Settings', 'R Restart']
+    ? ['F Menu', 'G Levels', 'Tab State', 'WASD/Arrows', 'Space Rift', 'Enter Wait', 'M Settings', 'R Restart']
     : [
         'F Menu',
+        'G Levels',
         '1/2/3 Mode',
         'Tab State',
         'WASD/Arrows Direction',

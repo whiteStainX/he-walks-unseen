@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { validateContentPack, validateIconPackConfig } from './validate'
+import { validateContentPack, validateDifficultyModelConfig, validateIconPackConfig } from './validate'
 
 function minimalValidInputs() {
   return {
@@ -271,6 +271,120 @@ describe('validateIconPackConfig', () => {
     expect(validated.ok).toBe(false)
     if (!validated.ok) {
       expect(validated.error.kind).toBe('InvalidShape')
+    }
+  })
+})
+
+function minimalDifficultyModel() {
+  return {
+    schemaVersion: 1,
+    modelVersion: 'v1',
+    normalization: {
+      shortestSolutionLength: { min: 4, max: 60 },
+      visitedNodes: { min: 16, max: 1200 },
+      deadEndRatio: { min: 0.05, max: 0.75 },
+      requiredRiftCount: { min: 0, max: 12 },
+      requiredPushPullCount: { min: 0, max: 24 },
+      enemyExposureEvents: { min: 0, max: 30 },
+      paradoxFragilityCount: { min: 0, max: 10 },
+      timeDepth: { min: 8, max: 64 },
+    },
+    scoreWeights: {
+      path: 0.2,
+      branch: 0.2,
+      temporal: 0.15,
+      detection: 0.2,
+      interaction: 0.15,
+      paradox: 0.1,
+    },
+    dimensionWeights: {
+      branchVisitedNodes: 0.7,
+      branchDeadEndRatio: 0.3,
+      temporalRiftCount: 0.6,
+      temporalTimeDepth: 0.4,
+    },
+    tierBounds: {
+      easy: { min: 0, max: 24 },
+      normal: { min: 25, max: 49 },
+      hard: { min: 50, max: 74 },
+      expert: { min: 75, max: 100 },
+    },
+    rampPolicy: {
+      allowCooldownInMain: true,
+      cooldownMaxTierDrop: 1,
+      allowConsecutiveCooldown: false,
+      requireHardBeforeExpert: true,
+    },
+    overridePolicy: {
+      noteRequiredMaxDelta: 1,
+      reviewRequiredAboveDelta: 1,
+      requireEvidenceForReview: true,
+    },
+  } as const
+}
+
+describe('validateDifficultyModelConfig', () => {
+  it('accepts a valid difficulty model config', () => {
+    const validated = validateDifficultyModelConfig(minimalDifficultyModel())
+
+    expect(validated.ok).toBe(true)
+    if (!validated.ok) {
+      return
+    }
+
+    expect(validated.value.modelVersion).toBe('v1')
+    expect(validated.value.scoreWeights.path).toBe(0.2)
+  })
+
+  it('rejects score weights that do not sum to 1', () => {
+    const input = {
+      ...minimalDifficultyModel(),
+      scoreWeights: {
+        ...minimalDifficultyModel().scoreWeights,
+        paradox: 0.2,
+      },
+    }
+
+    const validated = validateDifficultyModelConfig(input)
+
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidDifficultyModel')
+      if (validated.error.kind === 'InvalidDifficultyModel') {
+        expect(validated.error.path).toBe('scoreWeights')
+      }
+    }
+  })
+
+  it('rejects overlapping tier bounds', () => {
+    const input = {
+      ...minimalDifficultyModel(),
+      tierBounds: {
+        ...minimalDifficultyModel().tierBounds,
+        normal: { min: 20, max: 49 },
+      },
+    }
+
+    const validated = validateDifficultyModelConfig(input)
+
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidDifficultyModel')
+      if (validated.error.kind === 'InvalidDifficultyModel') {
+        expect(validated.error.path).toBe('tierBounds')
+      }
+    }
+  })
+
+  it('rejects schema version mismatch', () => {
+    const validated = validateDifficultyModelConfig({
+      ...minimalDifficultyModel(),
+      schemaVersion: 2,
+    })
+
+    expect(validated.ok).toBe(false)
+    if (!validated.ok) {
+      expect(validated.error.kind).toBe('InvalidDifficultyModelVersion')
     }
   })
 })

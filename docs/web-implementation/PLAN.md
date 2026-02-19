@@ -289,3 +289,111 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - Level editor
 - Shareable levels
 - Mobile/touch support
+
+---
+
+## Phase 13: Full Level System
+
+**Goal:** Build full level-system infrastructure (curated + generated + hybrid lifecycle, pack metadata, validation tooling).
+**Implementation Detail:** `docs/web-implementation/PHASE_13_FULL_LEVEL_SYSTEM.md`
+**Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
+
+### Deliverables
+- [x] Manifest metadata extension with backward compatibility
+- [x] Pack validation CLI for single/all packs
+- [x] Pack-class quality policy (`curated/generated/hybrid/experimental`)
+- [x] Generation export metadata support for hybrid workflow
+- [x] Minimal runtime UI surfacing of pack class/difficulty
+
+### Exit Criteria
+- [ ] Existing packs load unchanged
+- [x] Extended manifest entries parse/validate correctly
+- [x] `npm run validate:pack -- --all` gates manifest packs deterministically
+- [x] Generated/hybrid packs enforce configured solver/quality policy
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass
+
+---
+
+## Phase 14: Progression and Level Program
+
+**Goal:** Build player-facing progression and level-selection flow on top of Phase 13 pack infrastructure.
+**Implementation Detail:** `docs/web-implementation/PHASE_14_PROGRESSION_AND_LEVEL_PROGRAM.md`
+**Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
+
+### Deliverables
+- [x] Progression manifest contract and parser
+- [x] Runtime progression state with local persistence
+- [x] Minimal progression/level selection overlay (keyboard-first)
+- [x] Completion-driven unlock flow
+- [x] Curated level-program baseline (ordered sequence)
+
+### Exit Criteria
+- [x] Player can browse/select levels from progression UI
+- [x] Unlock/completion state persists across reloads
+- [x] Existing gameplay determinism remains unchanged
+- [x] `npm run lint`, `npm run test`, `npm run build`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 15: Conflict + Paradox Hardening
+
+**Goal:** Harden conflict/paradox correctness and migrate detection to LOS-based model with explicit vision occlusion.
+**Implementation Detail:** `docs/web-implementation/PHASE_15_CONFLICT_PARADOX_HARDENING.md`
+**Design Detail:** `docs/web-design/PHASE_15_CONFLICT_PARADOX_HARDENING.md`
+
+### Deliverables
+- [x] Anchor dedup/index hardening with strict no-prune lifecycle
+- [x] LOS detection utility with diagonal support and robust tests
+- [x] Detection migration to LOS-only runtime path
+- [x] `BlocksVision`-based occlusion semantics aligned in data and docs
+- [x] Full regression/quality gate pass
+
+### Exit Criteria
+- [x] Paradox outcomes remain correct under long-run play (no prune regressions)
+- [x] Detection behavior is LOS-based and deterministic
+- [x] Phase ordering remains `Paradox -> Won -> Detected`
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 16: Level Difficulty Model
+
+**Goal:** Implement deterministic, tunable difficulty evaluation with progression-ramp policy validation and player-visible difficulty internals.
+**Implementation Detail:** `docs/web-implementation/PHASE_16_LEVEL_DIFFICULTY_MODEL.md`
+**Design Detail:** `docs/web-design/LEVEL_DIFFICULTY_MODEL.md`
+
+### Deliverables
+- [x] Versioned difficulty model config (thresholds/weights/tier bounds)
+- [x] Deterministic evaluator (`score`, `vector`, suggested tier)
+- [x] Override policy validation core (delta/note/review-evidence rules)
+- [x] Progression ramp validator (cooldown constraints + expert gate)
+- [x] Metadata wiring for manifest/progression and UI surface
+- [x] Difficulty evaluation CLI (`--pack-id`, `--all`)
+
+### Exit Criteria
+- [x] Difficulty output is config-driven and deterministic
+- [x] Existing packs remain loadable (backward-compatible metadata path)
+- [x] Player can view difficulty internals in runtime UI
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 17: LLM Story-to-Level Pipeline
+
+**Goal:** Implement deterministic story-authoring pipeline (`story -> StorySpec -> pack files -> validation`) with Ollama as default provider.
+**Implementation Detail:** `docs/web-implementation/PHASE_17_LLM_STORY_PIPELINE.md`
+**Design Detail:** `docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md`
+
+### Deliverables
+- [x] `StorySpec` contract + strict validator
+- [x] Ollama default provider adapter + provider abstraction
+- [x] Deterministic `StorySpec` normalization + compiler
+- [x] CLI flow (`story:spec`, `story:compile`, `story:build`)
+- [x] Post-compile gate integration (`validate:pack`, `eval:difficulty`)
+- [x] Documentation and operational guidance for author workflow
+
+### Exit Criteria
+- [x] Same story prompt/spec + same seed yields deterministic compiled content
+- [x] Ollama is default provider in implementation and docs
+- [x] Compiled outputs pass existing pack/difficulty/progression gates
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass

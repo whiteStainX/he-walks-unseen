@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { CausalAnchor } from './paradox'
-import { evaluateParadoxV1 } from './paradox'
+import { canonicalizeCausalAnchors, evaluateParadoxV1, mergeCausalAnchors } from './paradox'
 import type { ResolvedObjectInstance } from './objects'
 import { createTimeCube, placeObjects } from './timeCube'
 import { createWorldLine } from './worldLine'
@@ -203,5 +203,62 @@ describe('evaluateParadoxV1', () => {
     expect(report.paradox).toBe(false)
     expect(report.violations).toHaveLength(0)
     expect(report.earliestSourceTurn).toBeNull()
+  })
+
+  it('deduplicates anchors by requirement and keeps earliest source turn', () => {
+    const merged = mergeCausalAnchors({
+      existing: [
+        {
+          id: 'player-1',
+          requirement: {
+            kind: 'PlayerAt',
+            position: { x: 2, y: 2, t: 1 },
+            sourceTurn: 8,
+          },
+        },
+      ],
+      incoming: [
+        {
+          id: 'player-2',
+          requirement: {
+            kind: 'PlayerAt',
+            position: { x: 2, y: 2, t: 1 },
+            sourceTurn: 3,
+          },
+        },
+      ],
+    })
+
+    expect(merged.anchors).toHaveLength(1)
+    expect(merged.anchors[0].requirement.sourceTurn).toBe(3)
+    expect(merged.anchorsByTime[1]).toHaveLength(1)
+  })
+
+  it('supports paradox evaluation via pre-indexed anchors', () => {
+    const canonical = canonicalizeCausalAnchors({
+      anchors: [
+        {
+          id: 'new.anchor',
+          requirement: {
+            kind: 'PlayerAt',
+            position: { x: 5, y: 5, t: 4 },
+            sourceTurn: 4,
+          },
+        },
+      ],
+    })
+
+    const report = evaluateParadoxV1({
+      cube: createTimeCube(8, 8, 6),
+      worldLine: createWorldLine({ x: 2, y: 2, t: 0 }),
+      anchors: canonical.anchors,
+      anchorsByTime: canonical.anchorsByTime,
+      checkedFromTime: 3,
+      config: { enabled: true },
+    })
+
+    expect(report.paradox).toBe(true)
+    expect(report.violations).toHaveLength(1)
+    expect(report.violations[0]?.anchorId).toBe('new.anchor')
   })
 })

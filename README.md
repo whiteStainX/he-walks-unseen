@@ -32,6 +32,7 @@ Current playable baseline:
 - Seeded map-generation foundation with validation/solver/quality gating pipeline
 - Profile-driven generation defaults with baseline generated rift anchors
 - Generated-pack export utilities, CLI writer, and manifest registration flow
+- Story-to-level pipeline baseline (`StorySpec` + Ollama-default generator + compile/build CLI)
 
 ## Requirements
 
@@ -51,6 +52,15 @@ Generate a content pack:
 ```bash
 cd frontend
 npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --width 12 --height 12 --time-depth 16
+```
+
+Build a pack from StorySpec (or prompt via Ollama):
+
+```bash
+cd frontend
+npm run story:compile -- --spec public/data/story-spec/examples/minimal.valid.json --manifest public/data/index.json
+# or:
+npm run story:build -- --prompt \"A narrow lab with one patrol and one rift\" --reviewed --promote-class generated
 ```
 
 ## Controls
@@ -78,12 +88,15 @@ npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --wid
 - [Map Generation V1 Design](docs/web-design/MAP_GENERATION_V1.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
+- [Manual Level Authoring Guide](docs/web-design/LEVEL_MANUAL_AUTHORING_GUIDE.md)
+- [LLM Story-to-Level Pipeline](docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
 - [Web Implementation Plan](docs/web-implementation/PLAN.md)
 - [Phase 7 Paradox Plan](docs/web-implementation/PHASE_07_PARADOX.md)
 - [Phase 8 Polish Plan](docs/web-implementation/PHASE_08_POLISH.md)
 - [Phase 10 Enemy Logic Plan](docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md)
 - [Phase 12 Map Generation Plan](docs/web-implementation/PHASE_12_MAP_GENERATION.md)
+- [Phase 17 LLM Story Pipeline Plan](docs/web-implementation/PHASE_17_LLM_STORY_PIPELINE.md)
 - [Agent Guide](AGENTS.md)
 
 ## License

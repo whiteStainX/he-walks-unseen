@@ -44,6 +44,7 @@
 7. **Render Feature Folders:** Place feature-specific render code under `frontend/src/render/<feature>/` (for example `board/`, `iso/`); keep only shared render utilities at `frontend/src/render/` (for example `theme.ts`)
 8. **Modular Interactions:** Follow `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`; new interactions must be handler-based and registry-dispatched, not reducer-branch expansions
 9. **Intent-First Input:** Input/UI selects interaction intent first (mode/action selection), then target/direction; avoid making multi-key direction chords the primary extensibility path
+10. **LLM Provider Default:** For story-to-level generation and future LLM integrations, use Ollama as the default provider unless a new design decision explicitly changes the default (`docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md`)
 
 ---
 

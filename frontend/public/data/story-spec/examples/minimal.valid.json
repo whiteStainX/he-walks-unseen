@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "storyId": "Echoes In Hall",
+  "title": "Echoes in Hall",
+  "board": {
+    "width": 12,
+    "height": 12,
+    "timeDepth": 24
+  },
+  "start": {
+    "x": 1,
+    "y": 1,
+    "t": 0
+  },
+  "goal": {
+    "type": "ReachExit",
+    "target": {
+      "x": 10,
+      "y": 10,
+      "t": 0
+    }
+  },
+  "layout": {
+    "walls": [
+      {
+        "position": { "x": 4, "y": 4, "t": 0 }
+      }
+    ]
+  },
+  "actors": {
+    "enemies": [
+      {
+        "position": { "x": 6, "y": 6, "t": 0 },
+        "movement": {
+          "kind": "PatrolLoop",
+          "path": [
+            { "x": 6, "y": 6 },
+            { "x": 7, "y": 6 },
+            { "x": 7, "y": 7 }
+          ]
+        },
+        "detection": {
+          "enabled": true,
+          "delayTurns": 1,
+          "maxDistance": 2
+        }
+      }
+    ]
+  },
+  "interactives": {
+    "boxes": [
+      {
+        "position": { "x": 3, "y": 3, "t": 0 }
+      }
+    ],
+    "rifts": [
+      {
+        "source": { "x": 2, "y": 2, "t": 4 },
+        "target": { "x": 9, "y": 8, "t": 1 },
+        "bidirectional": true
+      }
+    ]
+  },
+  "rulesIntent": {
+    "rift": { "defaultDelta": 3, "baseEnergyCost": 0 },
+    "interaction": { "maxPushChain": 4, "allowPull": true },
+    "detection": { "enabled": true, "delayTurns": 1, "maxDistance": 2 }
+  },
+  "difficultyIntent": {
+    "tier": "normal",
+    "flavor": "Tight corridors with one patrol pivot."
+  },
+  "themeIntent": {
+    "id": "minimal-mono",
+    "iconPackId": "default-mono"
+  }
+}

@@ -25,7 +25,7 @@ Priority order on screen:
 1. Main map (`GameBoardCanvas`)
 2. 3D helper (`IsoTimeCubePanel`)
 3. Compact HUD windows (`COMMAND`, `STATE`, `LOG`)
-4. Temporary overlays (log/history, settings, future state details)
+4. Temporary overlays (log/history, settings, progression browser, future state details)
 
 Style constraints:
 - no drop shadows
@@ -119,6 +119,7 @@ Triggered by `Tab`:
 
 - `LogOverlay` full action history (`L`)
 - `SettingsOverlay` runtime display toggles (`M`)
+- `ProgressionOverlay` level/track browser (`G`)
 - future: story/dialog overlays
 
 ---
@@ -131,6 +132,7 @@ Current layers:
 3. `StateOverlay`
 4. `LogOverlay`
 5. `SystemMenu` (settings)
+6. `ProgressionOverlay` (level browser)
 
 Ownership rule:
 - only active layer consumes its inputs
@@ -142,6 +144,7 @@ Transition baseline:
 - `Tab`: `Gameplay <-> StateOverlay`
 - `L`: `Gameplay <-> LogOverlay`
 - `M`: `Gameplay <-> SystemMenu`
+- `G`: `Gameplay <-> ProgressionOverlay`
 - `Esc`: close active non-gameplay layer
 
 ---
@@ -190,6 +193,7 @@ Use this mapping when planning implementation tasks from this spec:
 - `frontend/src/app/GameShell.tsx`
 - `frontend/src/app/shell/HudPanels.tsx`
 - `frontend/src/app/shell/LogOverlay.tsx`
+- `frontend/src/app/shell/ProgressionOverlay.tsx`
 - `frontend/src/app/shell/StateOverlay.tsx`
 - `frontend/src/app/shell/SettingsOverlay.tsx`
 - `frontend/src/app/shell/BottomHintsBar.tsx`

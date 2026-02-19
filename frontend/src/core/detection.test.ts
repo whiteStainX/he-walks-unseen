@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createWorldLine, extendNormal } from './worldLine'
 import { createTimeCube, placeObjects } from './timeCube'
-import { evaluateDetectionV1 } from './detection'
+import { evaluateDetectionV1, hasLineOfSight, traceLineCells } from './detection'
 import type { ResolvedObjectInstance } from './objects'
 
 function enemyObject(id: string, x: number, y: number): ResolvedObjectInstance {
@@ -21,6 +21,47 @@ function enemyObject(id: string, x: number, y: number): ResolvedObjectInstance {
     },
   }
 }
+
+function visionBlockerObject(id: string, x: number, y: number): ResolvedObjectInstance {
+  return {
+    id,
+    archetypeKey: 'screen',
+    position: { x, y, t: 0 },
+    archetype: {
+      kind: 'screen',
+      components: [
+        { kind: 'BlocksVision' },
+        { kind: 'TimePersistent' },
+      ],
+      render: {},
+    },
+  }
+}
+
+describe('traceLineCells', () => {
+  it('returns deterministic horizontal, vertical, and diagonal traces', () => {
+    expect(traceLineCells({ x: 1, y: 1 }, { x: 4, y: 1 })).toEqual([
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 4, y: 1 },
+    ])
+
+    expect(traceLineCells({ x: 2, y: 2 }, { x: 2, y: 5 })).toEqual([
+      { x: 2, y: 2 },
+      { x: 2, y: 3 },
+      { x: 2, y: 4 },
+      { x: 2, y: 5 },
+    ])
+
+    expect(traceLineCells({ x: 1, y: 1 }, { x: 4, y: 4 })).toEqual([
+      { x: 1, y: 1 },
+      { x: 2, y: 2 },
+      { x: 3, y: 3 },
+      { x: 4, y: 4 },
+    ])
+  })
+})
 
 describe('evaluateDetectionV1', () => {
   it('returns no detection when disabled', () => {
@@ -151,5 +192,63 @@ describe('evaluateDetectionV1', () => {
     expect(report.detected).toBe(true)
     expect(report.events).toHaveLength(1)
     expect(report.events[0]?.enemyId).toBe('enemy.beta')
+  })
+
+  it('blocks detection when line of sight is occluded by BlocksVision', () => {
+    const cube = createTimeCube(8, 8, 6)
+    const placed = placeObjects(cube, [
+      enemyObject('enemy.alpha', 2, 2),
+      visionBlockerObject('screen.mid', 2, 3),
+    ])
+
+    expect(placed.ok).toBe(true)
+    if (!placed.ok) {
+      return
+    }
+
+    const worldLine = createWorldLine({ x: 2, y: 4, t: 0 })
+    const report = evaluateDetectionV1({
+      cube: placed.value,
+      worldLine,
+      currentTime: 1,
+      config: { enabled: true, delayTurns: 1, maxDistance: 4 },
+    })
+
+    expect(report.detected).toBe(false)
+    expect(report.events).toHaveLength(0)
+  })
+
+  it('supports diagonal LOS and blocks when a diagonal blocker exists on trace', () => {
+    const cube = createTimeCube(8, 8, 6)
+    const placedOpen = placeObjects(cube, [enemyObject('enemy.alpha', 1, 1)])
+    expect(placedOpen.ok).toBe(true)
+    if (!placedOpen.ok) {
+      return
+    }
+
+    const openLos = hasLineOfSight({
+      cube: placedOpen.value,
+      from: { x: 1, y: 1 },
+      to: { x: 4, y: 4 },
+      atTime: 1,
+    })
+    expect(openLos).toBe(true)
+
+    const placedBlocked = placeObjects(cube, [
+      enemyObject('enemy.alpha', 1, 1),
+      visionBlockerObject('screen.diag', 2, 2),
+    ])
+    expect(placedBlocked.ok).toBe(true)
+    if (!placedBlocked.ok) {
+      return
+    }
+
+    const blockedLos = hasLineOfSight({
+      cube: placedBlocked.value,
+      from: { x: 1, y: 1 },
+      to: { x: 4, y: 4 },
+      atTime: 1,
+    })
+    expect(blockedLos).toBe(false)
   })
 })

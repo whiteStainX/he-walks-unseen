@@ -116,6 +116,10 @@ export interface SolvabilityReport {
   solved: boolean
   shortestPathLength: number | null
   visitedNodes: number
+  deadEndRatio: number
+  requiredRiftCount: number
+  requiredPushPullCount: number
+  enemyExposureEvents: number
 }
 
 /** Metadata attached to accepted generation output. */
