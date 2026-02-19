@@ -303,11 +303,11 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Pack validation CLI for single/all packs
 - [x] Pack-class quality policy (`curated/generated/hybrid/experimental`)
 - [x] Generation export metadata support for hybrid workflow
-- [ ] Minimal runtime UI surfacing of pack class/difficulty
+- [x] Minimal runtime UI surfacing of pack class/difficulty
 
 ### Exit Criteria
 - [ ] Existing packs load unchanged
 - [x] Extended manifest entries parse/validate correctly
 - [x] `npm run validate:pack -- --all` gates manifest packs deterministically
 - [x] Generated/hybrid packs enforce configured solver/quality policy
-- [ ] `npm run lint`, `npm run test`, and `npm run build` pass
+- [x] `npm run lint`, `npm run test`, and `npm run build` pass

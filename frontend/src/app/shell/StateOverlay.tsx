@@ -21,6 +21,8 @@ interface StateOverlayProps {
   objectsAtCurrentTimeCount: number
   player: Position3D | null
   contentPackId: string
+  contentPackClass?: string
+  contentPackDifficulty?: string
 }
 
 export function StateOverlay({
@@ -39,6 +41,8 @@ export function StateOverlay({
   objectsAtCurrentTimeCount,
   player,
   contentPackId,
+  contentPackClass,
+  contentPackDifficulty,
 }: StateOverlayProps) {
   if (!isOpen) {
     return null
@@ -120,6 +124,14 @@ export function StateOverlay({
               <div className="metric-item">
                 <span className="metric-label">Content Pack</span>
                 <span className="metric-value">{contentPackId}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Pack Class</span>
+                <span className="metric-value">{contentPackClass ?? 'n/a'}</span>
+              </div>
+              <div className="metric-item">
+                <span className="metric-label">Difficulty</span>
+                <span className="metric-value">{contentPackDifficulty ?? 'n/a'}</span>
               </div>
             </div>
           </section>

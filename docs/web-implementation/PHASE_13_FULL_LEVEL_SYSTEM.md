@@ -8,14 +8,14 @@
 
 ## Status
 
-- `Status`: In Progress
+- `Status`: Completed (13A-13E baseline)
 
 Progress:
 1. 13A manifest extension implemented (metadata + backward-compatible parsing).
 2. 13B validation CLI implemented (`npm run validate:pack`).
 3. 13C pack-class quality policy implemented and enforced by validation CLI.
 4. 13D generation export metadata flags implemented (`--class`, `--tag`, `--author`).
-5. Remaining: 13E.
+5. 13E minimal runtime UI surfacing implemented in `StateOverlay` (pack class + difficulty).
 
 ---
 

@@ -22,6 +22,7 @@ import { LogOverlay } from './shell/LogOverlay'
 import { SettingsOverlay } from './shell/SettingsOverlay'
 import { StateOverlay } from './shell/StateOverlay'
 import {
+  type PackDisplayMeta,
   useContentPackManifest,
   useEnsureSelectedContentPack,
   useLoadSelectedContentPack,
@@ -40,6 +41,7 @@ export function GameShell() {
   const dispatch = useAppDispatch()
   const [inputMachine, setInputMachine] = useState(createInputStateMachine)
   const [availablePackIds, setAvailablePackIds] = useState<string[]>(DEFAULT_PACK_SEQUENCE)
+  const [packMetaById, setPackMetaById] = useState<Record<string, PackDisplayMeta>>({})
 
   const {
     uiSettings,
@@ -148,7 +150,7 @@ export function GameShell() {
     [],
   )
 
-  useContentPackManifest(setAvailablePackIds)
+  useContentPackManifest(setAvailablePackIds, setPackMetaById)
   useEnsureSelectedContentPack(dispatch, availablePackIds, contentPackId)
   useLoadSelectedContentPack(dispatch, contentPackId)
 
@@ -261,6 +263,8 @@ export function GameShell() {
         objectsAtCurrentTimeCount={objectsAtCurrentTime.length}
         player={player}
         contentPackId={contentPackId}
+        contentPackClass={packMetaById[contentPackId]?.class}
+        contentPackDifficulty={packMetaById[contentPackId]?.difficulty}
       />
 
       <SettingsOverlay
