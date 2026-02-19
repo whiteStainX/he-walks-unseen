@@ -84,6 +84,7 @@ npm run lint
 
 - Levels and themes should live in `frontend/public/data/`.
 - Content pack manifest lives at `frontend/public/data/index.json`.
+- Progression manifest lives at `frontend/public/data/progression/index.json`.
 - Core logic lives in `frontend/src/core/` and must remain UI-agnostic.
 - Interaction handlers live in `frontend/src/game/interactions/`.
 - Behavior resolver + enemy detection profile wiring live in `frontend/src/data/behaviorResolver.ts`.

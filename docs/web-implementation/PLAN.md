@@ -321,7 +321,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
 
 ### Deliverables
-- [ ] Progression manifest contract and parser
+- [x] Progression manifest contract and parser
 - [ ] Runtime progression state with local persistence
 - [ ] Minimal progression/level selection overlay (keyboard-first)
 - [ ] Completion-driven unlock flow

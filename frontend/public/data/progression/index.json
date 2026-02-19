@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "defaultTrack": "main",
+  "tracks": [
+    {
+      "id": "main",
+      "title": "Main Sequence",
+      "entries": [
+        {
+          "packId": "default",
+          "title": "Opening Lab",
+          "difficulty": "normal",
+          "tags": ["baseline", "tutorial"]
+        },
+        {
+          "packId": "variant",
+          "title": "Variant Hall",
+          "difficulty": "normal",
+          "unlock": {
+            "kind": "CompletePack",
+            "packId": "default"
+          },
+          "tags": ["variant"]
+        },
+        {
+          "packId": "generated/fixture-001",
+          "title": "Generated Fixture",
+          "difficulty": "normal",
+          "unlock": {
+            "kind": "CompletePack",
+            "packId": "variant"
+          },
+          "tags": ["generated", "fixture"]
+        }
+      ]
+    }
+  ]
+}
