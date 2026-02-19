@@ -18,6 +18,7 @@ Implement a deterministic, data-driven difficulty system that:
 
 - `Status`: In Progress
 - `Completed`: 16A Difficulty model config contract + validator + baseline model file
+- `Completed`: 16B Deterministic evaluator (`score`, `vector`, suggested tier) with test coverage
 
 ---
 

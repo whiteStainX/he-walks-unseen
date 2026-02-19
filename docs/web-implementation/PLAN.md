@@ -364,7 +364,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 
 ### Deliverables
 - [x] Versioned difficulty model config (thresholds/weights/tier bounds)
-- [ ] Deterministic evaluator (`score`, `vector`, suggested tier)
+- [x] Deterministic evaluator (`score`, `vector`, suggested tier)
 - [ ] Override policy validation (delta/note/review-evidence rules)
 - [ ] Progression ramp validator (cooldown constraints + expert gate)
 - [ ] Metadata wiring for manifest/progression and UI surface

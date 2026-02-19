@@ -158,14 +158,18 @@ function createInitialSolverState(pack: ContentPack): InteractionState | null {
   }
 }
 
-function isDetected(state: InteractionState): boolean {
+function evaluateDetection(state: InteractionState): ReturnType<typeof evaluateDetectionV1> {
   const current = currentPosition(state.worldLine)
 
   if (!current) {
-    return true
+    return {
+      detected: true,
+      atTime: state.currentTime,
+      events: [],
+    }
   }
 
-  const detection = evaluateDetectionV1({
+  return evaluateDetectionV1({
     cube: state.cube,
     worldLine: state.worldLine,
     currentTime: current.t,
@@ -173,7 +177,14 @@ function isDetected(state: InteractionState): boolean {
     configByEnemyId: state.enemyDetectionConfigById,
   })
 
-  return detection.detected
+}
+
+interface SearchNode {
+  state: InteractionState
+  depth: number
+  requiredRiftCount: number
+  requiredPushPullCount: number
+  enemyExposureEvents: number
 }
 
 export function evaluateSolvabilityV1(
@@ -183,7 +194,15 @@ export function evaluateSolvabilityV1(
   const initial = createInitialSolverState(pack)
 
   if (!initial) {
-    return { solved: false, shortestPathLength: null, visitedNodes: 0 }
+    return {
+      solved: false,
+      shortestPathLength: null,
+      visitedNodes: 0,
+      deadEndRatio: 0,
+      requiredRiftCount: 0,
+      requiredPushPullCount: 0,
+      enemyExposureEvents: 0,
+    }
   }
 
   const maxDepth = Math.max(1, options.maxDepth ?? Math.min(48, pack.level.map.timeDepth * 2))
@@ -200,9 +219,18 @@ export function evaluateSolvabilityV1(
     )
   const includePush = includePushPull && hasPushable
   const includePull = includePushPull && hasPullable
-  const queue: Array<{ state: InteractionState; depth: number }> = [{ state: initial, depth: 0 }]
+  const queue: SearchNode[] = [
+    {
+      state: initial,
+      depth: 0,
+      requiredRiftCount: 0,
+      requiredPushPullCount: 0,
+      enemyExposureEvents: 0,
+    },
+  ]
   const visited = new Set<string>([serializeState(initial)])
   let visitedNodes = 0
+  let deadEndNodes = 0
 
   for (let index = 0; index < queue.length && visitedNodes < maxNodes; index += 1) {
     const node = queue[index]
@@ -215,10 +243,15 @@ export function evaluateSolvabilityV1(
     visitedNodes += 1
 
     if (hasExit(node.state.cube, current)) {
+      const deadEndRatio = visitedNodes > 0 ? deadEndNodes / visitedNodes : 0
       return {
         solved: true,
         shortestPathLength: node.depth,
         visitedNodes,
+        deadEndRatio,
+        requiredRiftCount: node.requiredRiftCount,
+        requiredPushPullCount: node.requiredPushPullCount,
+        enemyExposureEvents: node.enemyExposureEvents,
       }
     }
 
@@ -230,6 +263,7 @@ export function evaluateSolvabilityV1(
       ...baseActions(includePush, includePull, includeRift),
       ...(includeRift ? tunnelActionsAtCurrent(node.state) : []),
     ]
+    let generatedSuccessor = false
 
     for (const action of actions) {
       const next = cloneState(node.state)
@@ -248,7 +282,9 @@ export function evaluateSolvabilityV1(
       next.turn = node.state.turn + 1
       next.currentTime = nextCurrent.t
 
-      if (isDetected(next)) {
+      const detection = evaluateDetection(next)
+
+      if (detection.detected) {
         continue
       }
 
@@ -259,16 +295,32 @@ export function evaluateSolvabilityV1(
       }
 
       visited.add(signature)
+      generatedSuccessor = true
       queue.push({
         state: next,
         depth: node.depth + 1,
+        requiredRiftCount:
+          node.requiredRiftCount + (action.kind === 'ApplyRift' ? 1 : 0),
+        requiredPushPullCount:
+          node.requiredPushPullCount + (action.kind === 'Push' || action.kind === 'Pull' ? 1 : 0),
+        enemyExposureEvents: node.enemyExposureEvents + detection.events.length,
       })
     }
+
+    if (!generatedSuccessor) {
+      deadEndNodes += 1
+    }
   }
+
+  const deadEndRatio = visitedNodes > 0 ? deadEndNodes / visitedNodes : 0
 
   return {
     solved: false,
     shortestPathLength: null,
     visitedNodes,
+    deadEndRatio,
+    requiredRiftCount: 0,
+    requiredPushPullCount: 0,
+    enemyExposureEvents: 0,
   }
 }
