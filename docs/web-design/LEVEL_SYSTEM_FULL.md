@@ -193,7 +193,8 @@ The full level system is considered ready when:
 
 ## 12. Immediate Next Step
 
-From this design, next concrete implementation target:
-1. Add a pack-class/progression metadata design draft.
-2. Decide minimal schema extension for `frontend/public/data/index.json`.
-3. Add validator support for the extended manifest without breaking existing packs.
+Current follow-up implementation target:
+1. Execute progression and level-program implementation in:
+- `docs/web-implementation/PHASE_14_PROGRESSION_AND_LEVEL_PROGRAM.md`
+2. Add progression manifest + runtime selection/unlock loop.
+3. Keep progression metadata strictly presentation/select-flow only (no simulation-logic branching).

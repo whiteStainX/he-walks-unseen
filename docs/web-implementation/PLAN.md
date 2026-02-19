@@ -311,3 +311,24 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] `npm run validate:pack -- --all` gates manifest packs deterministically
 - [x] Generated/hybrid packs enforce configured solver/quality policy
 - [x] `npm run lint`, `npm run test`, and `npm run build` pass
+
+---
+
+## Phase 14: Progression and Level Program
+
+**Goal:** Build player-facing progression and level-selection flow on top of Phase 13 pack infrastructure.
+**Implementation Detail:** `docs/web-implementation/PHASE_14_PROGRESSION_AND_LEVEL_PROGRAM.md`
+**Design Detail:** `docs/web-design/LEVEL_SYSTEM_FULL.md`
+
+### Deliverables
+- [ ] Progression manifest contract and parser
+- [ ] Runtime progression state with local persistence
+- [ ] Minimal progression/level selection overlay (keyboard-first)
+- [ ] Completion-driven unlock flow
+- [ ] Curated level-program baseline (ordered sequence)
+
+### Exit Criteria
+- [ ] Player can browse/select levels from progression UI
+- [ ] Unlock/completion state persists across reloads
+- [ ] Existing gameplay determinism remains unchanged
+- [ ] `npm run lint`, `npm run test`, `npm run build`, and `npm run validate:pack -- --all` pass

@@ -114,6 +114,8 @@ npm run lint
 - `docs/web-design/ICON_PACK_AUTHORING.md`
 - `docs/web-design/LEVEL_SYSTEM_FULL.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
+- `docs/web-implementation/PHASE_13_FULL_LEVEL_SYSTEM.md`
+- `docs/web-implementation/PHASE_14_PROGRESSION_AND_LEVEL_PROGRAM.md`
 - `docs/web-implementation/PHASE_07_PARADOX.md`
 - `docs/web-implementation/PHASE_08_POLISH.md`
 - `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
