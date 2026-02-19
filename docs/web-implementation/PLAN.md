@@ -324,11 +324,11 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Progression manifest contract and parser
 - [x] Runtime progression state with local persistence
 - [x] Minimal progression/level selection overlay (keyboard-first)
-- [ ] Completion-driven unlock flow
+- [x] Completion-driven unlock flow
 - [ ] Curated level-program baseline (ordered sequence)
 
 ### Exit Criteria
 - [x] Player can browse/select levels from progression UI
-- [ ] Unlock/completion state persists across reloads
-- [ ] Existing gameplay determinism remains unchanged
-- [ ] `npm run lint`, `npm run test`, `npm run build`, and `npm run validate:pack -- --all` pass
+- [x] Unlock/completion state persists across reloads
+- [x] Existing gameplay determinism remains unchanged
+- [x] `npm run lint`, `npm run test`, `npm run build`, and `npm run validate:pack -- --all` pass

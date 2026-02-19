@@ -15,7 +15,8 @@ Progress:
 2. Baseline progression manifest added at `frontend/public/data/progression/index.json`.
 3. 14B runtime progression state + local persistence implemented (`useProgressionState` + helper tests).
 4. 14C minimal progression/level selection overlay implemented (`ProgressionOverlay` + keyboard navigation).
-5. Remaining: 14D/14E.
+5. 14D completion + unlock policy implemented (mark complete on win, unlock next, lock-gated selection).
+6. Remaining: 14E.
 
 ---
 
@@ -87,8 +88,7 @@ Implement:
 - difficulty
 - lock/completion state
 3. Keyboard-first controls for selection and load (`G` open/close, arrows/WASD navigate, `Enter` load).
-4. During 14C, load is allowed for listed packs even if marked locked; strict unlock gating is finalized in 14D.
-5. Keep current `V` cycling as fallback.
+4. Keep current `V` cycling as fallback.
 
 File targets:
 1. `frontend/src/app/shell/ProgressionOverlay.tsx` (new)
@@ -107,6 +107,7 @@ Implement:
 1. Mark level completed on `Won`.
 2. Unlock next entry in track by default.
 3. Optional condition hooks (future-ready), but baseline unlock policy should remain simple and deterministic.
+4. Enforce lock gating in progression overlay selection (`Enter` loads only unlocked entry, except current loaded pack).
 
 File targets:
 1. `frontend/src/app/shell/useProgressionState.ts`

@@ -20,6 +20,7 @@ export interface UseProgressionStateResult {
   setCurrentEntryIndex: (index: number) => void
   unlockPack: (packId: string) => void
   markPackCompleted: (packId: string) => void
+  applyWinForPack: (packId: string) => void
   resetProgression: () => void
 }
 
@@ -70,6 +71,20 @@ function ensureTrackEntryUnlock(
     ...snapshot,
     unlockedPackIds: [...snapshot.unlockedPackIds, firstPackId],
   }
+}
+
+function findTrackContainingPack(
+  manifest: ProgressionManifest,
+  snapshot: ProgressionSnapshot,
+  packId: string,
+) {
+  const selectedTrack = getTrackById(manifest, snapshot.selectedTrackId)
+
+  if (selectedTrack?.entries.some((entry) => entry.packId === packId)) {
+    return selectedTrack
+  }
+
+  return manifest.tracks.find((track) => track.entries.some((entry) => entry.packId === packId)) ?? null
 }
 
 export function createDefaultProgressionSnapshot(
@@ -129,6 +144,46 @@ export function syncProgressionSnapshotToContentPack(
     ...normalized,
     currentEntryIndex: selectedIndex,
   }
+}
+
+export function applyCompletionToProgressionSnapshot(
+  manifest: ProgressionManifest,
+  snapshot: ProgressionSnapshot,
+  completedPackId: string,
+): ProgressionSnapshot {
+  const normalized = normalizeProgressionSnapshot(manifest, snapshot)
+
+  if (normalized.completedPackIds.includes(completedPackId)) {
+    return normalized
+  }
+
+  const completedSet = new Set([...normalized.completedPackIds, completedPackId])
+  const unlockedSet = new Set(normalized.unlockedPackIds)
+  const track = findTrackContainingPack(manifest, normalized, completedPackId)
+
+  if (track) {
+    const index = track.entries.findIndex((entry) => entry.packId === completedPackId)
+
+    if (index >= 0) {
+      const nextEntry = track.entries[index + 1]
+
+      if (nextEntry) {
+        unlockedSet.add(nextEntry.packId)
+      }
+    }
+
+    for (const entry of track.entries) {
+      if (entry.unlock?.kind === 'CompletePack' && completedSet.has(entry.unlock.packId)) {
+        unlockedSet.add(entry.packId)
+      }
+    }
+  }
+
+  return normalizeProgressionSnapshot(manifest, {
+    ...normalized,
+    unlockedPackIds: [...unlockedSet],
+    completedPackIds: [...completedSet],
+  })
 }
 
 export function parseStoredProgressionSnapshot(
@@ -288,6 +343,27 @@ export function useProgressionState(): UseProgressionStateResult {
     setProgressionState(createDefaultProgressionSnapshot(progressionManifest))
   }
 
+  const applyWinForPack = (packId: string) => {
+    if (!progressionManifest || !progressionState) {
+      return
+    }
+
+    const next = applyCompletionToProgressionSnapshot(
+      progressionManifest,
+      progressionState,
+      packId,
+    )
+
+    if (
+      next.completedPackIds.length === progressionState.completedPackIds.length &&
+      next.unlockedPackIds.length === progressionState.unlockedPackIds.length
+    ) {
+      return
+    }
+
+    setProgressionState(next)
+  }
+
   return {
     progressionManifest,
     progressionState,
@@ -296,6 +372,7 @@ export function useProgressionState(): UseProgressionStateResult {
     setCurrentEntryIndex,
     unlockPack,
     markPackCompleted,
+    applyWinForPack,
     resetProgression,
   }
 }

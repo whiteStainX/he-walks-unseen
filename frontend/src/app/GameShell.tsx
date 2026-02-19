@@ -164,6 +164,7 @@ export function GameShell() {
     progressionError,
     setSelectedTrack,
     setCurrentEntryIndex,
+    applyWinForPack,
   } = useProgressionState()
 
   useKeyboardControls({
@@ -211,6 +212,14 @@ export function GameShell() {
       progressionOverlayRef.current?.focus()
     }
   }, [isProgressionOverlayOpen])
+
+  useEffect(() => {
+    if (phase !== 'Won') {
+      return
+    }
+
+    applyWinForPack(contentPackId)
+  }, [applyWinForPack, contentPackId, phase])
 
   return (
     <div className="game-shell">

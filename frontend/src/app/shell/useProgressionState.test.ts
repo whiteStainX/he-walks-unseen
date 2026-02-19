@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  applyCompletionToProgressionSnapshot,
   createDefaultProgressionSnapshot,
   normalizeProgressionSnapshot,
   parseStoredProgressionSnapshot,
@@ -83,5 +84,58 @@ describe('useProgressionState helpers', () => {
     )
 
     expect(synced.currentEntryIndex).toBe(1)
+  })
+
+  it('marks completed pack and unlocks next entry in track', () => {
+    const next = applyCompletionToProgressionSnapshot(
+      fixtureManifest,
+      {
+        selectedTrackId: 'main',
+        currentEntryIndex: 0,
+        unlockedPackIds: ['default'],
+        completedPackIds: [],
+      },
+      'default',
+    )
+
+    expect(next.completedPackIds).toEqual(['default'])
+    expect(next.unlockedPackIds).toEqual(['default', 'variant'])
+  })
+
+  it('applies unlock conditions after completion', () => {
+    const manifestWithUnlock: ProgressionManifest = {
+      ...fixtureManifest,
+      tracks: [
+        {
+          id: 'main',
+          entries: [
+            { packId: 'default' },
+            { packId: 'variant' },
+            {
+              packId: 'generated/fixture-001',
+              unlock: { kind: 'CompletePack', packId: 'variant' },
+            },
+          ],
+        },
+      ],
+    }
+
+    const afterVariant = applyCompletionToProgressionSnapshot(
+      manifestWithUnlock,
+      {
+        selectedTrackId: 'main',
+        currentEntryIndex: 1,
+        unlockedPackIds: ['default', 'variant'],
+        completedPackIds: ['default'],
+      },
+      'variant',
+    )
+
+    expect(afterVariant.completedPackIds).toEqual(['default', 'variant'])
+    expect(afterVariant.unlockedPackIds).toEqual([
+      'default',
+      'variant',
+      'generated/fixture-001',
+    ])
   })
 })

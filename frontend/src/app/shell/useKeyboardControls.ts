@@ -209,8 +209,14 @@ export function useKeyboardControls(input: UseKeyboardControlsInput) {
             return
           }
 
-          // 14C allows direct browsing/load of any listed pack.
-          // Unlock gating/policy is finalized in 14D.
+          if (
+            entry.packId !== contentPackId &&
+            !progressionState.unlockedPackIds.includes(entry.packId)
+          ) {
+            dispatch(setStatus(`Level locked: ${entry.packId}`))
+            return
+          }
+
           dispatch(setContentPackId(entry.packId))
           applyMachineTransition(closeTopLayer(inputMachine))
         }
