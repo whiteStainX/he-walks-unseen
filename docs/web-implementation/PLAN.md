@@ -363,7 +363,7 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/LEVEL_DIFFICULTY_MODEL.md`
 
 ### Deliverables
-- [ ] Versioned difficulty model config (thresholds/weights/tier bounds)
+- [x] Versioned difficulty model config (thresholds/weights/tier bounds)
 - [ ] Deterministic evaluator (`score`, `vector`, suggested tier)
 - [ ] Override policy validation (delta/note/review-evidence rules)
 - [ ] Progression ramp validator (cooldown constraints + expert gate)
