@@ -2,7 +2,7 @@
 
 > **Purpose:** Single source of truth for creating and iterating content packs (manual + generated).
 > **Scope:** `frontend/public/data/`, loader/validator contracts, deterministic playtest loop.
-> **Related:** `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/MAP_GENERATION_V1.md`, `docs/web-design/ENEMY_LOGIC_V1.md`
+> **Related:** `docs/web-design/LEVEL_MANUAL_AUTHORING_GUIDE.md`, `docs/web-design/PHASE_06_CONTENT_SYSTEM.md`, `docs/web-design/MAP_GENERATION_V1.md`, `docs/web-design/ENEMY_LOGIC_V1.md`
 
 ---
 

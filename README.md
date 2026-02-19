@@ -78,12 +78,15 @@ npm run gen:pack -- --seed demo-001 --pack-id demo-001 --difficulty normal --wid
 - [Map Generation V1 Design](docs/web-design/MAP_GENERATION_V1.md)
 - [Math Model (Core)](docs/web-design/MATH_MODEL.md)
 - [UI Window System Spec](docs/web-design/UI_WINDOW_SYSTEM.md)
+- [Manual Level Authoring Guide](docs/web-design/LEVEL_MANUAL_AUTHORING_GUIDE.md)
+- [LLM Story-to-Level Pipeline](docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md)
 - [Modular Interaction Architecture](docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md)
 - [Web Implementation Plan](docs/web-implementation/PLAN.md)
 - [Phase 7 Paradox Plan](docs/web-implementation/PHASE_07_PARADOX.md)
 - [Phase 8 Polish Plan](docs/web-implementation/PHASE_08_POLISH.md)
 - [Phase 10 Enemy Logic Plan](docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md)
 - [Phase 12 Map Generation Plan](docs/web-implementation/PHASE_12_MAP_GENERATION.md)
+- [Phase 17 LLM Story Pipeline Plan](docs/web-implementation/PHASE_17_LLM_STORY_PIPELINE.md)
 - [Agent Guide](AGENTS.md)
 
 ## License

@@ -375,3 +375,25 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 - [x] Existing packs remain loadable (backward-compatible metadata path)
 - [x] Player can view difficulty internals in runtime UI
 - [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+
+---
+
+## Phase 17: LLM Story-to-Level Pipeline
+
+**Goal:** Implement deterministic story-authoring pipeline (`story -> StorySpec -> pack files -> validation`) with Ollama as default provider.
+**Implementation Detail:** `docs/web-implementation/PHASE_17_LLM_STORY_PIPELINE.md`
+**Design Detail:** `docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md`
+
+### Deliverables
+- [ ] `StorySpec` contract + strict validator
+- [ ] Ollama default provider adapter + provider abstraction
+- [ ] Deterministic `StorySpec` normalization + compiler
+- [ ] CLI flow (`story:spec`, `story:compile`, `story:build`)
+- [ ] Post-compile gate integration (`validate:pack`, `eval:difficulty`)
+- [ ] Documentation and operational guidance for author workflow
+
+### Exit Criteria
+- [ ] Same story prompt/spec + same seed yields deterministic compiled content
+- [ ] Ollama is default provider in implementation and docs
+- [ ] Compiled outputs pass existing pack/difficulty/progression gates
+- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass

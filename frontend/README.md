@@ -60,6 +60,17 @@ Notes:
 - Default output is a compact table for quick review.
 - `--json` emits one machine-readable JSON payload (`results` + `errors` + summary).
 
+## Manual Level Authoring
+
+Use:
+- `docs/web-design/LEVEL_MANUAL_AUTHORING_GUIDE.md`
+
+This guide includes:
+- minimal file templates for `level/behavior/rules/theme`
+- manifest and progression entry examples
+- validation loop (`validate:pack`, `eval:difficulty`, `dev`)
+- common error mapping for fast debugging
+
 Policy notes:
 - `generated` and `hybrid` packs enforce solver + quality gates.
 - `curated` packs enforce content/schema validity and emit solver warnings when not solver-confirmed.
@@ -134,6 +145,7 @@ npm run lint
 - `docs/web-design/MATH_MODEL.md`
 - `docs/web-design/UI_WINDOW_SYSTEM.md`
 - `docs/web-design/LEVEL_AUTHORING_WORKFLOW.md`
+- `docs/web-design/LLM_STORY_TO_LEVEL_PIPELINE.md`
 - `docs/web-design/ICON_PACK_AUTHORING.md`
 - `docs/web-design/LEVEL_SYSTEM_FULL.md`
 - `docs/web-design/MODULAR_INTERACTION_ARCHITECTURE.md`
@@ -143,3 +155,4 @@ npm run lint
 - `docs/web-implementation/PHASE_08_POLISH.md`
 - `docs/web-implementation/PHASE_10_ENEMY_LOGIC_DATA_DRIVEN.md`
 - `docs/web-implementation/PHASE_12_MAP_GENERATION.md`
+- `docs/web-implementation/PHASE_17_LLM_STORY_PIPELINE.md`
