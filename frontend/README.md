@@ -107,6 +107,7 @@ npm run lint
 - App shell hooks/components live under `frontend/src/app/shell/` (HUD, overlays, keyboard/content loading hooks).
 - Progression state/persistence hook lives under `frontend/src/app/shell/useProgressionState.ts`.
 - Progression unlock policy marks completed pack on win and unlocks the next track entry.
+- Detection uses LOS + distance + delay; only archetypes/components with `BlocksVision` occlude sight.
 - Board action preview model lives under `frontend/src/render/board/preview.ts`.
 - Board canvas rendering is container-measured and DPR-aware (`frontend/src/render/board/GameBoardCanvas.tsx`).
 

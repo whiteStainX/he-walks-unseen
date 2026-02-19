@@ -19,12 +19,14 @@ Primary outcomes:
 
 ## Status
 
-- `Status`: In Progress
+- `Status`: Completed
 
 Progress:
 1. 15A anchor canonicalization + dedup/index integration implemented.
-2. Pipeline now merges anchors through canonical rules before paradox evaluation.
-3. Remaining: 15B/15C/15D/15E.
+2. 15B LOS line-trace utility implemented with deterministic diagonal support.
+3. 15C detection evaluator migrated to LOS-based visibility with `BlocksVision` occlusion.
+4. 15D docs/contract alignment updated for LOS + `BlocksVision` semantics.
+5. 15E regression and quality gates passed.
 
 ---
 
@@ -93,6 +95,9 @@ File targets:
 Exit criteria:
 1. LOS traversal is deterministic and test-covered for diagonal and corner cases.
 
+Implementation status:
+1. Completed in current pass.
+
 ## 15C. Detection Evaluator Migration (LOS-First)
 
 Implement:
@@ -117,6 +122,9 @@ Exit criteria:
 1. Detection behavior is LOS-based across runtime and tests.
 2. Existing deterministic phase ordering remains unchanged.
 
+Implementation status:
+1. Completed in current pass.
+
 ## 15D. Data/Fixture and Contract Alignment
 
 Implement:
@@ -135,6 +143,9 @@ File targets:
 Exit criteria:
 1. Content semantics are clear: vision blocking is explicit and data-driven.
 2. Docs do not describe an old default model.
+
+Implementation status:
+1. Completed in current pass.
 
 ## 15E. Regression + Robustness Gates
 
@@ -155,6 +166,9 @@ Quality gates:
 Exit criteria:
 1. All gates pass.
 2. No behavior nondeterminism introduced.
+
+Implementation status:
+1. Completed in current pass.
 
 ---
 

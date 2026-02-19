@@ -342,14 +342,14 @@ This plan uses an **iterative progression**: start minimal, then add time travel
 **Design Detail:** `docs/web-design/PHASE_15_CONFLICT_PARADOX_HARDENING.md`
 
 ### Deliverables
-- [ ] Anchor dedup/index hardening with strict no-prune lifecycle
-- [ ] LOS detection utility with diagonal support and robust tests
-- [ ] Detection migration to LOS-only runtime path
-- [ ] `BlocksVision`-based occlusion semantics aligned in data and docs
-- [ ] Full regression/quality gate pass
+- [x] Anchor dedup/index hardening with strict no-prune lifecycle
+- [x] LOS detection utility with diagonal support and robust tests
+- [x] Detection migration to LOS-only runtime path
+- [x] `BlocksVision`-based occlusion semantics aligned in data and docs
+- [x] Full regression/quality gate pass
 
 ### Exit Criteria
-- [ ] Paradox outcomes remain correct under long-run play (no prune regressions)
-- [ ] Detection behavior is LOS-based and deterministic
-- [ ] Phase ordering remains `Paradox -> Won -> Detected`
-- [ ] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
+- [x] Paradox outcomes remain correct under long-run play (no prune regressions)
+- [x] Detection behavior is LOS-based and deterministic
+- [x] Phase ordering remains `Paradox -> Won -> Detected`
+- [x] `npm run lint`, `npm run test`, `npm run build`, `npx tsc --noEmit`, and `npm run validate:pack -- --all` pass
